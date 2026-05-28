@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>
+    Neon CHAOS Dodge
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="neon.css"
+  />
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="favicon.png"
+  />
+
+</head>
+
+<body>
+
+  <div id="main-area">
+
+    <!-- LEFT COLUMN -->
+
+    <div id="left-column">
+
+      <!-- ACTIVE POWERUPS -->
+
+      <div id="active-effects">
+
+        <div
+          class="effect-indicator"
+          id="shield-indicator"
+        >
+          <div class="effect-icon">🛡</div>
+
+          <div class="effect-info">
+            <span class="effect-name">
+              Shield
+            </span>
+
+            <span
+              class="effect-timer"
+              id="shield-timer"
+            >
+              00:00
+            </span>
+          </div>
+        </div>
+
+        <div
+          class="effect-indicator"
+          id="slow-indicator"
+        >
+          <div class="effect-icon">⏱</div>
+
+          <div class="effect-info">
+            <span class="effect-name">
+              Slow Time
+            </span>
+
+            <span
+              class="effect-timer"
+              id="slow-timer"
+            >
+              00:00
+            </span>
+          </div>
+        </div>
+
+        <div
+          class="effect-indicator"
+          id="multiplier-indicator"
+        >
+          <div class="effect-icon">×2</div>
+
+          <div class="effect-info">
+            <span class="effect-name">
+              x2 Multiplier
+            </span>
+
+            <span
+              class="effect-timer"
+              id="multiplier-timer"
+            >
+              00:00
+            </span>
+          </div>
+        </div>
+
+        <div
+  class="effect-indicator"
+  id="triple-indicator"
+>
+  <div class="effect-icon">×3</div>
+
+  <div class="effect-info">
+    <span class="effect-name">
+      x3 Multiplier
+    </span>
+
+    <span
+      class="effect-timer"
+      id="triple-timer"
+    >
+      00:00
+    </span>
+  </div>
+</div>
+
+<!-- SPECIAL POWERUPS -->
+
+<div
+  class="effect-indicator"
+  id="void-indicator"
+>
+  <div class="effect-icon">☄</div>
+
+  <div class="effect-info">
+
+    <span class="effect-name">
+      VOID BLAST
+    </span>
+
+    <span
+      class="effect-timer"
+      id="void-timer"
+    >
+      READY
+    </span>
+
+  </div>
+</div>
+
+<div
+  class="effect-indicator"
+  id="phantom-indicator"
+>
+  <div class="effect-icon">👻</div>
+
+  <div class="effect-info">
+
+    <span class="effect-name">
+      PHANTOM SHIFT
+    </span>
+
+    <span
+      class="effect-timer"
+      id="phantom-timer"
+    >
+      READY
+    </span>
+
+  </div>
+</div>
+
+<div
+  class="effect-indicator"
+  id="celestial-indicator"
+>
+  <div class="effect-icon">✨</div>
+
+  <div class="effect-info">
+
+    <span class="effect-name">
+      CELESTIAL SURGE
+    </span>
+
+    <span
+      class="effect-timer"
+      id="celestial-timer"
+    >
+      READY
+    </span>
+
+  </div>
+</div>
+
+<!-- GAME CONTROLS -->
+
+<div id="game-controls">
+
+  <button id="pause-btn">
+    ⏸
+  </button>
+
+  <button id="home-btn">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="white"
+      width="32"
+      height="32"
+    >
+      <path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/>
+    </svg>
+  </button>
+
+</div>
+
+      </div>
+
+      <!-- GAME CONTAINER -->
+
+      <div id="game-container">
+
+        <!-- HUD -->
+
+        <div id="hud">
+
+          <div class="hud-item">
+            Score:
+            <span id="score">0</span>
+          </div>
+
+          <div class="hud-item">
+            Best:
+            <span id="best-score">0</span>
+          </div>
+
+          <div class="hud-item">
+            Speed:
+            <span id="speed-level">1</span>
+          </div>
+
+          <div class="hud-item">
+            Coins:
+            <span id="coin-count">0</span>
+          </div>
+
+        </div>
+
+        <!-- PLAYER -->
+
+        <div id="player"></div>
+
+        <!-- FLASH -->
+
+        <div id="flash"></div>
+
+        <!-- GAME OVER -->
+
+        <div id="game-over-screen">
+
+          <h1>
+            GAME OVER
+          </h1>
+
+          <p>
+            Your Score:
+            <span id="final-score">0</span>
+          </p>
+
+          <p>
+            Best Score:
+            <span id="final-best-score">0</span>
+          </p>
+
+          <button id="restart-btn">
+            RESTART CHAOS
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- STATS PANEL -->
+
+      <div id="stats-panel">
+
+        <h2>
+          STATS
+        </h2>
+
+        <div class="stats-grid">
+
+          <div class="stat-box">
+
+            <span class="stat-title">
+              Total Deaths
+            </span>
+
+            <span
+              class="stat-value"
+              id="total-deaths"
+            >
+              0
+            </span>
+
+          </div>
+
+          <div class="stat-box">
+
+            <span class="stat-title">
+              Highest Speed
+            </span>
+
+            <span
+              class="stat-value"
+              id="highest-speed"
+            >
+              1
+            </span>
+
+          </div>
+
+          <div class="stat-box">
+
+            <span class="stat-title">
+              Total Rolls
+            </span>
+
+            <span
+              class="stat-value"
+              id="total-rolls"
+            >
+              0
+            </span>
+
+          </div>
+
+          <div class="stat-box">
+
+            <span class="stat-title">
+              Time Played
+            </span>
+
+            <span
+              class="stat-value"
+              id="time-played"
+            >
+              0 mins
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+
+    <div id="sidebar">
+
+      <!-- CONTROLS -->
+
+      <div id="controls">
+
+        <p>
+          Use
+          <span>←</span>
+          <span>→</span>
+          or
+          <span>A</span>
+          <span>D</span>
+          to move.
+          <br>
+          Survive as long as you can.
+        </p>
+
+        <div id="control-buttons">
+
+          <button
+            id="info-btn"
+            class="reset-btn"
+          >
+            More Info
+          </button>
+
+          <button
+            id="reset-btn"
+            class="reset-btn"
+          >
+            Reset Progress
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- SHOP -->
+
+      <div id="shop">
+
+        <h2>
+          SHOP
+        </h2>
+
+        <p>
+          Click a skin to buy or equip.
+        </p>
+
+        <!-- SKINS -->
+
+        <div id="skins">
+
+          <div
+            class="skin"
+            data-skin="cyan"
+          >
+
+            <span class="skin-name">
+              Cyan Skin
+            </span>
+
+            <span class="skin-status">
+              20 Coins
+            </span>
+
+          </div>
+
+          <div
+            class="skin"
+            data-skin="pink"
+          >
+
+            <span class="skin-name">
+              Pink Skin
+            </span>
+
+            <span class="skin-status">
+              35 Coins
+            </span>
+
+          </div>
+
+          <div
+            class="skin"
+            data-skin="gold"
+          >
+
+            <span class="skin-name">
+              Gold Skin
+            </span>
+
+            <span class="skin-status">
+              50 Coins
+            </span>
+
+          </div>
+
+          <div
+            class="skin legendary"
+            data-skin="galaxy"
+          >
+
+            <span class="skin-name">
+              Galaxy Skin
+            </span>
+
+            <span class="skin-status">
+              120 Coins
+            </span>
+
+          </div>
+
+          <div
+            class="skin legendary"
+            data-skin="lava"
+          >
+
+            <span class="skin-name">
+              Lava Core
+            </span>
+
+            <span class="skin-status">
+              150 Coins
+            </span>
+
+          </div>
+
+          <div
+            class="skin legendary"
+            data-skin="matrix"
+          >
+
+            <span class="skin-name">
+              Matrix Skin
+            </span>
+
+            <span class="skin-status">
+              180 Coins
+            </span>
+
+          </div>
+
+          <div
+            class="skin legendary"
+            data-skin="rainbow"
+          >
+
+            <span class="skin-name">
+              Rainbow Pulse
+            </span>
+
+            <span class="skin-status">
+              220 Coins
+            </span>
+
+          </div>
+
+            <div
+              class="skin mythical"
+              data-skin="celestial"
+            >
+
+              <span class="skin-name">
+                Celestial Skin
+              </span>
+
+              <span class="skin-status">
+                0.5% Roll Chance
+              </span>
+
+            </div>
+                      
+                      <div
+              class="skin mythical"
+              data-skin="phantom"
+            >
+
+              <span class="skin-name">
+                Phantom Skin
+              </span>
+
+              <span class="skin-status">
+                0.8% Roll Chance
+              </span>
+
+            </div>
+
+            <div
+            class="skin mythical"
+            data-skin="void"
+          >
+
+            <span class="skin-name">
+              Void Skin
+            </span>
+
+            <span class="skin-status">
+              0.1% Roll Chance
+            </span>
+
+          </div>
+
+
+        </div>
+
+        <!-- ROLL AREA -->
+
+        <div id="roll-area">
+
+          <button id="roll-btn">
+            ROLL FOR RARE SKINS — 15 COINS
+          </button>
+
+          <div id="roll-result">
+            Roll for ultra rare mythical skins...
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- RESET OVERLAY -->
+
+  <div
+    id="reset-overlay"
+    class="reset-overlay"
+  >
+
+    <div class="reset-card">
+
+      <h3>
+        Reset all progress?
+      </h3>
+
+      <p>
+        This will erase your best score,
+        coins, unlocked skins,
+        and equipped skin.
+      </p>
+
+      <p class="reset-instruction">
+
+        Type
+        <strong>RESET</strong>
+        below to confirm.
+
+      </p>
+
+      <input
+        id="reset-confirm-input"
+        type="text"
+        placeholder="Type RESET"
+        maxlength="5"
+        autocomplete="off"
+      />
+
+      <div class="reset-actions">
+
+        <button
+          id="cancel-reset-btn"
+          class="ghost-btn"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="confirm-reset-btn"
+          class="danger-btn"
+        >
+          Confirm reset
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+ <!-- INFO OVERLAY -->
+
+<div
+  id="info-overlay"
+  class="reset-overlay"
+>
+
+  <div class="reset-card info-card">
+
+    <h3>
+      GAME INFO
+    </h3>
+
+    <div class="info-sections">
+
+      <div class="info-block">
+        <p>
+          <strong>🛡 Shield</strong><br>
+          Puts a shield on the player for 6 seconds.<br>
+          Drop Chance: 50%
+        </p>
+      </div>
+
+      <div class="info-block">
+        <p>
+          <strong>⏱ Slow Time</strong><br>
+          Slows obstacle speed and spawn rate.<br>
+          Drop Chance: 50%
+        </p>
+      </div>
+
+      <div class="info-block">
+        <p>
+          <strong>×2 Multiplier</strong><br>
+          Doubles score and coin gains.<br>
+          Drop Chance: 50%
+        </p>
+      </div>
+
+      <div class="info-block">
+        <p>
+          <strong>×3 Multiplier</strong><br>
+          Triples score and coin gains.<br>
+          Drop Chance: 15%
+        </p>
+      </div>
+
+      <div class="info-block">
+        <p>
+          <strong>Coin Bag</strong><br>
+          Gives bonus coins instantly.<br>
+          Drop Chance: 5%
+        </p>
+      </div>
+
+      <div class="info-block">
+        <p>
+          <strong>CELESTIAL Skin</strong><br>
+          Ability: Bonus score boost and coin magnet.<br>
+          Roll Chance: 0.3%
+        </p>
+      </div>
+
+      <div class="info-block">
+        <p>
+          <strong>PHANTOM Skin</strong><br>
+          Ability: Become invincible against obstacles.<br>
+          Roll Chance: 0.2%
+        </p>
+      </div>
+
+      <div class="info-block">
+        <p>
+          <strong>VOID Skin</strong><br>
+          Ability: Destroy all obstacles visible on that frame.<br>
+          Roll Chance: 0.1%
+        </p>
+      </div>
+
+    </div>
+
+    <div class="reset-actions">
+
+      <button
+        id="close-info-btn"
+        class="ghost-btn"
+      >
+        Close
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- HOME SCREEN -->
+
+<div id="home-screen">
+
+  <div id="home-content">
+
+    <!-- TOP -->
+
+    <div id="home-top">
+
+      <h1 id="home-title">
+        NEON CHAOS DODGE
+      </h1>
+
+      <p id="home-subtitle">
+        Dodge the chaos. Survive the storm.
+      </p>
+
+    </div>
+
+    <!-- MIDDLE -->
+
+    <div id="home-middle">
+
+      <!-- LEFT CARD -->
+
+      <div class="home-card">
+
+        <h3>
+          HOW TO PLAY
+        </h3>
+
+        <p>
+          ← → or A / D to move
+        </p>
+
+        <p>
+          Collect powerups and coins.
+        </p>
+
+        <p>
+          Survive as long as possible.
+        </p>
+
+        <p>
+          SPACE Bar = VOID BLAST
+        </p>
+
+      </div>
+
+      <!-- CENTER CARD -->
+
+      <div class="home-card center-card">
+
+        <div id="home-buttons">
+
+          <button id="fullscreen-btn">
+            ⚡ ENTER FULLSCREEN ⚡
+          </button>
+          
+          <button id="music-toggle-btn">
+            MUSIC: OFF
+          </button>
+
+          <button id="start-game-btn">
+            START GAME
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT CARD -->
+
+      <div class="home-card">
+
+        <h3>
+          YOUR STATS
+        </h3>
+
+        <div id="home-stats">
+
+          <div class="home-stat">
+            Best Score:
+            <span id="home-best-score">0</span>
+          </div>
+
+          <div class="home-stat">
+            Coins:
+            <span id="home-coins">0</span>
+          </div>
+
+          <div class="home-stat">
+            Highest Speed:
+            <span id="home-highest-speed">1</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+  <audio id="bg-music" loop>
+    <source src="All I Need.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="neon.min.js"></script>
+
+</body>
+
+</html>
