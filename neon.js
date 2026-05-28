@@ -1423,7 +1423,7 @@ function updatePlayer() {
   const width = rect.width;
 
   const playerWidth =
-    player.offsetWidth;
+  player.getBoundingClientRect().width;
 
   if (keys["arrowleft"] || keys["a"]) {
     playerX -= playerSpeed;
@@ -1433,13 +1433,27 @@ function updatePlayer() {
     playerX += playerSpeed;
   }
 
-  if (playerX < 0) {
-    playerX = 0;
-  }
+  const playerRect =
+  player.getBoundingClientRect();
 
-  if (playerX > width - playerWidth) {
-    playerX = width - playerWidth;
-  }
+const containerRect =
+  gameContainer.getBoundingClientRect();
+
+/* LEFT WALL */
+
+if (playerRect.left < containerRect.left) {
+
+  playerX +=
+    containerRect.left - playerRect.left;
+}
+
+/* RIGHT WALL */
+
+if (playerRect.right > containerRect.right) {
+
+  playerX -=
+    playerRect.right - containerRect.right;
+}
 
   player.style.left = `${playerX}px`;
 }
