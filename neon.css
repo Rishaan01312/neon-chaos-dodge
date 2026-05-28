@@ -1587,6 +1587,88 @@ body {
     0 0 18px #00ffff;
 }
 
+#roll-btn {
+  position: relative;
+  overflow: hidden;
+
+  animation:
+    rollPulse 2s ease-in-out infinite;
+}
+
+/* SHINE EFFECT */
+
+#roll-btn::before {
+  content: "";
+
+  position: absolute;
+  top: -50%;
+  left: -120%;
+
+  width: 60%;
+  height: 200%;
+
+  background:
+    linear-gradient(
+      120deg,
+      transparent,
+      rgba(255,255,255,0.7),
+      transparent
+    );
+
+  transform: rotate(25deg);
+
+  filter: blur(2px);
+
+  animation:
+    rollShine 3s linear infinite;
+}
+
+/* SHINE SWEEP */
+
+@keyframes rollShine {
+
+  0% {
+    left: -120%;
+  }
+
+  100% {
+    left: 160%;
+  }
+}
+
+/* PULSE GLOW */
+
+@keyframes rollPulse {
+
+  0% {
+
+    transform: scale(1);
+
+    box-shadow:
+      0 0 12px #00ffff,
+      0 0 24px #00ffff;
+  }
+
+  50% {
+
+    transform: scale(1.04);
+
+    box-shadow:
+      0 0 22px #00ffff,
+      0 0 44px #00ffff,
+      0 0 70px #00ffff;
+  }
+
+  100% {
+
+    transform: scale(1);
+
+    box-shadow:
+      0 0 12px #00ffff,
+      0 0 24px #00ffff;
+  }
+}
+
 #roll-btn:hover {
 
   transform: scale(1.03);
