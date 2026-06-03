@@ -19,7 +19,7 @@ const timePlayedEl = document.getElementById("time-played");
 const shieldStatus = document.getElementById("shield-status");
 const slowStatus = document.getElementById("slow-status");
 const multiplierStatus = document.getElementById("multiplier-status");
-const shieldIndicator =document.getElementById("shield-indicator");
+const shieldIndicator = document.getElementById("shield-indicator");
 const slowIndicator = document.getElementById("slow-indicator");
 const multiplierIndicator = document.getElementById("multiplier-indicator");
 const shieldTimer = document.getElementById("shield-timer");
@@ -27,25 +27,10 @@ const slowTimer = document.getElementById("slow-timer");
 const multiplierTimer = document.getElementById("multiplier-timer");
 const voidIndicator = document.getElementById("void-indicator");
 const voidTimer = document.getElementById("void-timer");
-const phantomIndicator =
-  document.getElementById(
-    "phantom-indicator"
-  );
-
-const phantomTimer =
-  document.getElementById(
-    "phantom-timer"
-  );
-
-const celestialIndicator =
-  document.getElementById(
-    "celestial-indicator"
-  );
-
-const celestialTimer =
-  document.getElementById(
-    "celestial-timer"
-  );
+const phantomIndicator = document.getElementById("phantom-indicator");
+const phantomTimer = document.getElementById("phantom-timer");
+const celestialIndicator = document.getElementById("celestial-indicator");
+const celestialTimer = document.getElementById("celestial-timer");
 const tripleIndicator = document.getElementById("triple-indicator");
 const tripleTimer = document.getElementById("triple-timer");
 const homeScreen = document.getElementById("home-screen");
@@ -54,10 +39,66 @@ const homeBestScore = document.getElementById("home-best-score");
 const homeCoins = document.getElementById("home-coins");
 const homeHighestSpeed = document.getElementById("home-highest-speed");
 const musicToggleBtn = document.getElementById("music-toggle-btn");
+const musicToggleLabel = document.querySelector("#music-toggle-btn .music-toggle-label");
 const fullscreenBtn = document.getElementById("fullscreen-btn");
 const pauseBtn = document.getElementById("pause-btn");
 const homeBtn = document.getElementById("home-btn");
-const pauseOverlay = document.getElementById("pause-overlay");
+const pauseOverlay = document.getElementById("pause-overlay") || {classList: {add: () => {},remove: () => {}}};
+const gameAchievementsBtn = document.getElementById("game-achievements-btn");
+const sidebarAchievementsBtn = document.getElementById("achievements-btn");
+const gameplayAchievementsBtn = document.getElementById("gameplay-achievements-btn");
+const achievementsOverlay = document.getElementById("achievements-overlay");
+const achievementsList = document.getElementById("achievements-list");
+const achievementCompletion = document.getElementById("achievement-progress-text");
+const closeAchievementsBtn = document.getElementById("close-achievements-btn");
+const settingsBtn = document.getElementById("settings-btn");
+const settingsOverlay = document.getElementById("settings-overlay");
+const closeSettingsBtn = document.getElementById("close-settings-btn");
+const musicVolumeSlider = document.getElementById("music-volume");
+const sfxVolumeSlider = document.getElementById("sfx-volume");
+const graphicsModeSelect = document.getElementById("graphics-mode");
+
+let musicVolume = 0.22;
+let sfxVolume = 0.75;
+let graphicsMode = "high";
+
+settingsBtn?.addEventListener("click", () => {
+  settingsOverlay?.classList.add("show");
+});
+
+closeSettingsBtn?.addEventListener("click", () => {
+  settingsOverlay?.classList.remove("show");
+});
+
+settingsOverlay?.addEventListener("click", (event) => {
+  if (event.target === settingsOverlay) {
+    settingsOverlay.classList.remove("show");
+  }
+});
+
+if (musicVolumeSlider) {
+  musicVolumeSlider.value = String(musicVolume);
+  musicVolumeSlider.addEventListener("input", (event) => {
+    musicVolume = Number(event.target.value);
+    bgMusic.volume = musicVolume;
+  });
+}
+
+if (sfxVolumeSlider) {
+  sfxVolumeSlider.value = String(sfxVolume);
+  sfxVolumeSlider.addEventListener("input", (event) => {
+    sfxVolume = Number(event.target.value);
+  });
+}
+
+if (graphicsModeSelect) {
+  graphicsModeSelect.value = graphicsMode;
+  graphicsModeSelect.addEventListener("change", (event) => {
+    graphicsMode = event.target.value;
+    document.body.dataset.graphicsMode = graphicsMode;
+  });
+}
+
 
 let playerX = 0;
 let playerSpeed = 8;
@@ -68,6 +109,9 @@ let obstacles = [];
 let powerUps = [];
 let coins = [];
 let moneyBags = [];
+
+let achievementQueue = [];
+let achievementShowing = false;
 
 let score = 0;
 let coinCount = 0;
@@ -206,8 +250,9 @@ let gameRunning = false;
 let tabHidden = false;
 let paused = false;
 let pauseStartTime = 0;
+let chaosMode = false;
 
-/* HIDDEN DEV SYSTEM */
+/* x93 FluxState SYSTEM */
 
 let x93FluxState = false;
 let devMode = false;
@@ -215,6 +260,10 @@ let devMode = false;
 let shiftHeldTime = 0;
 let escPresses = 0;
 let escTimer = null;
+let devHoldReady = false;
+let devReadyTimer = null;
+
+const DEV_HOLD_MS = 1200;
 
 let spawnInterval = 700;
 let lastSpawn = 0;
@@ -225,7 +274,7 @@ let speedLevel = 1;
 let powerUpInterval = 6000;
 let lastPowerUp = 0;
 
-let coinInterval = 4000;
+let coinInterval = 2500;
 let lastCoin = 0;
 
 /* VOID */
@@ -254,11 +303,10 @@ let celestialReady = true;
 let celestialEndTime = 0;
 let celestialCooldownEndTime = 0;
 
-let shieldEndTime = 0;
 let slowEndTime = 0;
 let multiplierEndTime = 0;
+let shieldStacks = 0;
 
-let shieldTimeout = null;
 let slowTimeout = null;
 let multiplierTimeout = null;
 
@@ -269,6 +317,13 @@ let multiplierActive = false;
 let tripleEndTime = 0;
 let tripleTimeout = null;
 let tripleActive = false;
+
+/* ACHIEVEMENT TRACKING */
+let lastPlayerXPosition = 0;
+let lastHorizontalMoveTime = Date.now();
+let lastHitTime = 0;
+let shieldDamageTaken = false;
+let narrowEscapeCount = 0;
 
 let totalDeaths =
   parseInt(
@@ -297,6 +352,156 @@ let ownedSkins = JSON.parse(
 
 let equippedSkin =
   localStorage.getItem("neonChaosSkin") || "default";
+
+let unlockedAchievements = JSON.parse(
+  localStorage.getItem(
+    "neonChaosAchievements"
+  ) || "[]"
+);
+
+let usedPowerups = JSON.parse(
+  localStorage.getItem(
+    "neonChaosUsedPowerups"
+  ) || "[]"
+);
+
+const achievements = [
+
+{
+  id: "first_death",
+  title: "First Death",
+  desc: "Die for the first time",
+  reward: 15
+},
+
+{
+  id: "speed_5",
+  title: "Speed Runner I",
+  desc: "Reach Speed 5",
+  reward: 18
+},
+
+{
+  id: "coins_50",
+  title: "Coin Collector I",
+  desc: "Collect 50 Coins",
+  reward: 20
+},
+
+{
+  id: "survive_1",
+  title: "Still Standing",
+  desc: "Survive 1 Minute",
+  reward: 25
+},
+
+{
+  id: "speed_15",
+  title: "Speed Runner II",
+  desc: "Reach Speed 15",
+  reward: 40
+},
+
+{
+  id: "coins_500",
+  title: "Coin Collector II",
+  desc: "Collect 500 Coins",
+  reward: 60
+},
+
+{
+  id: "roll_25",
+  title: "Lucky Spinner",
+  desc: "Roll 25 Times",
+  reward: 50
+},
+
+{
+  id: "all_powerups",
+  title: "Power Master",
+  desc: "Use Every Powerup",
+  reward: 75
+},
+
+{
+  id: "speed_20",
+  title: "Extreme",
+  desc: "Reach Speed 20",
+  reward: 90
+},
+
+{
+  id: "speed_30",
+  title: "Beyond Human",
+  desc: "Reach Speed 30",
+  reward: 150
+},
+
+{
+  id: "score_1000",
+  title: "Champion",
+  desc: "Reach Score 1000",
+  reward: 125
+},
+
+{
+  id: "rare_skin",
+  title: "Mythical Luck",
+  desc: "Win a Rare Skin",
+  reward: 125
+},
+
+{
+  id: "survive_5",
+  title: "Unbreakable",
+  desc: "Survive 5 Minutes",
+  reward: 200
+},
+
+{
+  id: "coins_10000",
+  title: "Wealth God",
+  desc: "Collect 10000 Coins",
+  reward: 350
+},
+
+{
+  id: "perfect_dodger",
+  title: "Perfect Dodger",
+  desc: "Survive 30 seconds without moving left or right",
+  reward: 35
+},
+
+{
+  id: "thread_needle",
+  title: "Thread the Needle",
+  desc: "Pass between two obstacles with less than 10px clearance",
+  reward: 40
+},
+
+{
+  id: "clutch_save",
+  title: "Clutch Save",
+  desc: "Activate a powerup within 0.2 seconds of being hit",
+  reward: 50
+},
+
+{
+  id: "zero_damage_run",
+  title: "Zero Damage Run",
+  desc: "Reach Speed 10 without taking shield damage",
+  reward: 60
+},
+
+{
+  id: "hidden",
+  title: "???",
+  desc: "Unlock condition unknown",
+  reward: 300,
+  hidden: true
+}
+
+];
 
   const rareSkins = [
   "void",
@@ -373,6 +578,12 @@ if (savedVoidVersion !== VOID_VERSION) {
 }
 
 loadGame();
+// SAFETY FIX: Ensure rare skins are always verified if owned
+["void", "phantom", "celestial"].forEach(skin => {
+  if (ownedSkins.includes(skin)) {
+    localStorage.setItem(`${skin}Verified`, "true");
+  }
+});
 
 lastCoinCount = coinCount;
 lastScore = score;
@@ -383,6 +594,7 @@ totalDeathsEl.textContent = totalDeaths;
 highestSpeedEl.textContent = highestSpeed;
 totalRollsEl.textContent = totalRolls;
 timePlayedEl.textContent = totalPlaySeconds;
+updateAchievementBadge();
 
 /* INPUT */
 
@@ -439,22 +651,42 @@ window.addEventListener("keydown", (e) => {
 
   /* HOLD SHIFT */
 
-  if (e.key === "Shift") {
+  if (
+    e.key === "Shift" ||
+    e.key === "ShiftLeft" ||
+    e.key === "ShiftRight"
+  ) {
 
     if (shiftHeldTime === 0) {
 
       shiftHeldTime = Date.now();
+      devHoldReady = false;
+      clearTimeout(devReadyTimer);
     }
+  }
+
+  if (
+    shiftHeldTime !== 0 &&
+    !devHoldReady &&
+    Date.now() - shiftHeldTime >= DEV_HOLD_MS
+  ) {
+
+    devHoldReady = true;
+    devReadyTimer = setTimeout(() => {
+      devHoldReady = false;
+    }, 5000);
   }
 
   /* DOUBLE ESC */
 
-  if (e.key === "Escape") {
+  if (
+    e.key === "Escape" ||
+    e.key === "Esc" ||
+    e.code === "Escape" ||
+    e.keyCode === 27
+  ) {
 
-    if (
-      shiftHeldTime !== 0 &&
-      Date.now() - shiftHeldTime > 3000
-    ) {
+    if (devHoldReady) {
 
       escPresses++;
 
@@ -468,27 +700,30 @@ window.addEventListener("keydown", (e) => {
 
       if (escPresses >= 2) {
 
-        devMode = !devMode;
+        x93FluxState = !x93FluxState;
+        devMode = x93FluxState;
 
         escPresses = 0;
 
-        console.log(
-          "DEV MODE:",
-          devMode ? "ENABLED" : "DISABLED"
-        );
-
         rollResult.textContent =
-          devMode
+          x93FluxState
             ? "⚡ DEV MODE ENABLED"
             : "DEV MODE DISABLED";
       }
+    }
+    else {
+      // do nothing when not ready yet
     }
   }
 });
 
 window.addEventListener("keyup", (e) => {
 
-  if (e.key === "Shift") {
+  if (
+    e.key === "Shift" ||
+    e.key === "ShiftLeft" ||
+    e.key === "ShiftRight"
+  ) {
 
     shiftHeldTime = 0;
   }
@@ -550,69 +785,6 @@ document.addEventListener(
   "contextmenu",
   (e) => e.preventDefault()
 );
-
-/* SECRET DEV ACTIVATOR */
-
-window.addEventListener("keydown", (e) => {
-
-  /* HOLD SHIFT */
-
-  if (e.key === "Shift") {
-
-    if (shiftHeldTime === 0) {
-
-      shiftHeldTime = Date.now();
-    }
-  }
-
-  /* DOUBLE ESC */
-
-  if (e.key === "Escape") {
-
-    if (
-      shiftHeldTime !== 0 &&
-      Date.now() - shiftHeldTime > 3000
-    ) {
-
-      escPresses++;
-
-      clearTimeout(escTimer);
-
-      escTimer = setTimeout(() => {
-
-        escPresses = 0;
-
-      }, 1000);
-
-      if (escPresses >= 2) {
-
-        x93FluxState = !x93FluxState;
-
-        escPresses = 0;
-
-        console.log(
-          "SYSTEM:",
-          x93FluxState
-            ? "ONLINE"
-            : "OFFLINE"
-        );
-
-        rollResult.textContent =
-          x93FluxState
-            ? "⚡ SYSTEM ONLINE"
-            : "SYSTEM OFFLINE";
-      }
-    }
-  }
-});
-
-window.addEventListener("keyup", (e) => {
-
-  if (e.key === "Shift") {
-
-    shiftHeldTime = 0;
-  }
-});
 
 /* TAB VISIBILITY PROTECTION */
 
@@ -1055,6 +1227,8 @@ updateRollButton();
 
     updateHomeStats();
 
+    renderAchievements();
+
   });
 
 });
@@ -1066,6 +1240,7 @@ function fluxCoins(amount) {
   if (!x93FluxState) return;
 
   coinCount += amount;
+  checkAchievements();
 
   coinCountEl.textContent =
     coinCount;
@@ -1366,6 +1541,246 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+function unlockAchievement(id) {
+  if (unlockedAchievements.includes(id)) return;
+
+  unlockedAchievements.push(id);
+
+  localStorage.setItem(
+    "neonChaosAchievements",
+    JSON.stringify(unlockedAchievements)
+  );
+
+  const achievement = achievements.find(a => a.id === id);
+  if (!achievement) return;
+
+  // SHOW POPUP OF UNLOCKED ACHIEVEMENT
+  showAchievementPopup(achievement.title, achievement.reward);
+
+  renderAchievements();
+  updateAchievementBadge();
+}
+
+function resetAchievements() {
+  localStorage.removeItem("neonChaosAchievements");
+
+  achievements.forEach(a => {
+    localStorage.removeItem("claim_" + a.id);
+  });
+
+  unlockedAchievements = [];
+
+  renderAchievements();
+  updateAchievementBadge();
+}
+
+/* ACHIEVEMENTS */
+
+function checkAchievements() {
+
+  if (totalDeaths >= 1) {
+    unlockAchievement("first_death");
+  }
+
+  if (highestSpeed >= 5) {
+    unlockAchievement("speed_5");
+  }
+
+  if (highestSpeed >= 15) {
+    unlockAchievement("speed_15");
+  }
+
+  if (highestSpeed >= 20) {
+    unlockAchievement("speed_20");
+  }
+
+  if (highestSpeed >= 30) {
+    unlockAchievement("speed_30");
+  }
+
+  if (coinCount >= 50) {
+    unlockAchievement("coins_50");
+  }
+
+  if (coinCount >= 500) {
+    unlockAchievement("coins_500");
+  }
+
+  if (coinCount >= 10000) {
+    unlockAchievement("coins_10000");
+  }
+
+  if (totalRolls >= 25) {
+    unlockAchievement("roll_25");
+  }
+
+  if (
+    score >= 1000 ||
+    bestScore >= 1000
+  ) {
+    unlockAchievement("score_1000");
+  }
+
+  if (totalPlaySeconds >= 60) {
+    unlockAchievement("survive_1");
+  }
+
+  if (totalPlaySeconds >= 300) {
+    unlockAchievement("survive_5");
+  }
+
+  if (
+    ownsVerifiedRareSkin("void") ||
+    ownsVerifiedRareSkin("phantom") ||
+    ownsVerifiedRareSkin("celestial")
+  ) {
+
+    unlockAchievement("rare_skin");
+  }
+
+  const allPowerups =
+    [
+      "shield",
+      "slow",
+      "multiplier",
+      "triple"
+    ];
+
+  const usedAll =
+    allPowerups.every(
+      p => usedPowerups.includes(p)
+    );
+
+  if (usedAll) {
+    unlockAchievement("all_powerups");
+  }
+
+  if (
+    highestSpeed >= 25 &&
+    score >= 2500
+  ) {
+
+    unlockAchievement("hidden");
+  }
+
+  if ((Date.now() - lastHorizontalMoveTime) >= 30000 && gameRunning) {
+    unlockAchievement("perfect_dodger");
+  }
+
+  if (highestSpeed >= 10 && !shieldDamageTaken) {
+    unlockAchievement("zero_damage_run");
+  }
+
+  if ((Date.now() - lastHitTime) <= 200 && lastHitTime > 0) {
+    unlockAchievement("clutch_save");
+  }
+}
+
+function renderAchievements() {
+  achievementsList.innerHTML = "";
+
+  // Sort achievements: unlocked not claimed → locked → claimed
+  const sorted = achievements.sort((a, b) => {
+    const aUnlocked = unlockedAchievements.includes(a.id);
+    const bUnlocked = unlockedAchievements.includes(b.id);
+    const aClaimed = localStorage.getItem("claim_" + a.id) === "true";
+    const bClaimed = localStorage.getItem("claim_" + b.id) === "true";
+
+    // Unlocked not claimed (priority 1)
+    if (aUnlocked && !aClaimed && !(bUnlocked && !bClaimed)) return -1;
+    if (!(aUnlocked && !aClaimed) && bUnlocked && !bClaimed) return 1;
+
+    // Locked (priority 2)
+    if (!aUnlocked && bUnlocked) return -1;
+    if (aUnlocked && !bUnlocked) return 1;
+
+    // Claimed (priority 3)
+    if (aClaimed && !bClaimed) return 1;
+    if (!aClaimed && bClaimed) return -1;
+
+    return 0;
+  });
+
+  sorted.forEach((a) => {
+    const unlocked = unlockedAchievements.includes(a.id);
+    const claimed = localStorage.getItem("claim_" + a.id) === "true";
+
+    const card = document.createElement("div");
+    card.className = "achievement";
+
+    if (!unlocked) card.classList.add("locked");
+    if (claimed) card.classList.add("claimed");
+
+    card.innerHTML = `
+    <div class="achievement-left">
+      <div class="achievement-lock"></div>
+
+      <div class="achievement-text">
+        <div class="achievement-title">
+          ${unlocked || !a.hidden ? a.title : "???"}
+        </div>
+
+        <div class="achievement-desc">
+          ${unlocked || !a.hidden ? a.desc : "Unlock condition unknown"}
+        </div>
+      </div>
+    </div>
+
+    <div class="achievement-right">
+      <div class="achievement-reward-text">+${a.reward}</div>
+
+      <button class="claim-btn" ${unlocked && !claimed ? "" : "disabled"}>
+        ${claimed ? "CLAIMED" : "CLAIM"}
+      </button>
+    </div>
+  `;
+
+    const claimBtn = card.querySelector(".claim-btn");
+
+    if (unlocked && !claimed) {
+      claimBtn.addEventListener("click", () => {
+        coinCount += a.reward;
+        coinCountEl.textContent = coinCount;
+
+        localStorage.setItem("claim_" + a.id, "true");
+        saveGame();
+        renderAchievements();
+        updateAchievementBadge();
+      });
+    }
+
+    achievementsList.appendChild(card);
+  });
+
+  const completion = Math.floor((unlockedAchievements.length / achievements.length) * 100);
+  achievementCompletion.textContent = `${completion}% COMPLETE`;
+
+  // progress bar fill
+  const fill = document.getElementById("achievement-progress-fill");
+  fill.style.width = completion + "%";
+  updateAchievementBadge();
+}
+
+/*ACHIEVEMENT BADGE UPDATE*/
+
+function updateAchievementBadge() {
+  const badge = document.getElementById("achievement-badge");
+
+  // Count achievements that are unlocked but not claimed
+  const unclaimed = achievements.filter(a =>
+    unlockedAchievements.includes(a.id) &&
+    !localStorage.getItem("claim_" + a.id)
+  ).length;
+
+  if (unclaimed > 0) {
+    badge.textContent = unclaimed;
+    badge.classList.remove("hidden");
+  } else {
+    badge.classList.add("hidden");
+  }
+}
+
+
 /* STATS FORMATTING */
 
 function formatPlayTime(seconds) {
@@ -1414,50 +1829,39 @@ function updateHomeStats() {
 function updatePlayer() {
 
   if (!gameRunning) {
-  return;
-}
+    return;
+  }
 
   const rect =
     gameContainer.getBoundingClientRect();
 
-  const width = rect.width;
-
   const playerWidth =
-  player.getBoundingClientRect().width;
+    player.offsetWidth;
 
   if (keys["arrowleft"] || keys["a"]) {
     playerX -= playerSpeed;
+    lastHorizontalMoveTime = Date.now();
   }
 
   if (keys["arrowright"] || keys["d"]) {
     playerX += playerSpeed;
+    lastHorizontalMoveTime = Date.now();
   }
 
-  const playerRect =
-  player.getBoundingClientRect();
+  /* HARD LIMITS */
 
-const containerRect =
-  gameContainer.getBoundingClientRect();
+  const leftPadding = 12;
 
-/* LEFT WALL */
+  if (playerX < leftPadding) {
+    playerX = leftPadding;
+  }
 
-if (playerRect.left < containerRect.left) {
-
-  playerX +=
-    containerRect.left - playerRect.left;
-}
-
-/* RIGHT WALL */
-
-if (playerRect.right > containerRect.right) {
-
-  playerX -=
-    playerRect.right - containerRect.right;
-}
+  if (playerX > rect.width - playerWidth) {
+    playerX = rect.width - playerWidth;
+  }
 
   player.style.left = `${playerX}px`;
 }
-
 
 /* OBSTACLES */
 
@@ -1490,91 +1894,70 @@ function spawnObstacle() {
 
 function updateObstacles(delta) {
 
-  const height =
-    gameContainer.offsetHeight;
+  const height = gameContainer.offsetHeight;
 
-  for (
-    let i = obstacles.length - 1;
-    i >= 0;
-    i--
-  ) {
+  for (let i = obstacles.length - 1; i >= 0; i--) {
 
     const o = obstacles[i];
 
-    const speed =
-      parseFloat(o.dataset.speed);
+    // BASE SPEED
+    const baseSpeed = parseFloat(o.dataset.speed) || 0;
 
+    // CHAOS MODE MULTIPLIER
+    const finalSpeed = chaosMode ? baseSpeed * 2 : baseSpeed;
+
+    // MOVEMENT
     const top =
       (parseFloat(o.style.top || "-40") || -40)
-      + speed * (delta / 16.67);
+      + finalSpeed * (delta / 16.67);
 
     o.style.top = `${top}px`;
 
     if (top > height + 50) {
-
       o.remove();
-
       obstacles.splice(i, 1);
-
       continue;
     }
 
     if (checkCollision(player, o)) {
 
-    if (phantomShiftActive) {
+      if (phantomShiftActive) {
+        o.remove();
+        obstacles.splice(i, 1);
+        continue;
+      }
 
-      o.remove();
+      if (shieldStacks > 0) {
+        shieldStacks--;
+        shieldDamageTaken = true;
+        lastHitTime = Date.now();
+        updateShieldIndicator();
 
-      obstacles.splice(i, 1);
+        if (shieldStacks === 0) {
+          shieldActive = false;
+        }
 
-      continue;
-    }
+        o.remove();
+        obstacles.splice(i, 1);
+        continue;
+      }
 
-      if (shieldActive) {
-
-  shieldActive = false;
-
-  /* RESET SHIELD TIMER */
-
-  shieldEndTime = 0;
-
-  /* REMOVE INDICATOR */
-
-  shieldIndicator.classList.remove("active");
-
-  /* STOP EXISTING TIMEOUT */
-
-  clearTimeout(shieldTimeout);
-
-  o.remove();
-
-  obstacles.splice(i, 1);
-
-  continue;
-}
-    
       if (equippedSkin === "void") {
+        const voidSaveChance = Math.random();
+        if (voidSaveChance < 0.2) {
+          o.remove();
+          obstacles.splice(i, 1);
+          rollResult.textContent = "VOID GOD consumed an obstacle!";
+          continue;
+        }
+      }
 
-  const voidSaveChance = Math.random();
-
-  if (voidSaveChance < 0.2) {
-
-    o.remove();
-
-    obstacles.splice(i, 1);
-
-    rollResult.textContent =
-      "VOID GOD consumed an obstacle!";
-
-    continue;
-  }
-}
       handleGameOver();
-
       return;
     }
   }
 }
+
 
 /* COINS */
 
@@ -1631,57 +2014,41 @@ function spawnMoneyBag() {
 
 function updateMoneyBags(delta) {
 
-  const height =
-    gameContainer.offsetHeight;
+  const height = gameContainer.offsetHeight;
 
-  for (
-    let i = moneyBags.length - 1;
-    i >= 0;
-    i--
-  ) {
+  for (let i = moneyBags.length - 1; i >= 0; i--) {
 
     const bag = moneyBags[i];
 
-    const speed =
-      parseFloat(bag.dataset.speed);
+    // BASE MONEY BAG SPEED
+    const bagSpeed = parseFloat(bag.dataset.speed) || 1.4;
 
+    // MOVEMENT
     const top =
       (parseFloat(bag.style.top || "-40") || -40)
-      + speed * (delta / 16.67);
+      + bagSpeed * (delta / 16.67);
 
     bag.style.top = `${top}px`;
 
     if (top > height + 50) {
-
       bag.remove();
-
       moneyBags.splice(i, 1);
-
       continue;
     }
 
     if (checkCollision(player, bag)) {
 
-      const reward = 
-      Math.floor(Math.random() * 18) + 8;
-
+      const reward = Math.floor(Math.random() * 18) + 8;
 
       coinCount += reward;
       saveGame();
 
-      localStorage.setItem(
-        "neonChaosCoins",
-        coinCount.toString()
-      );
+      localStorage.setItem("neonChaosCoins", coinCount.toString());
+      coinCountEl.textContent = coinCount;
 
-      coinCountEl.textContent =
-        coinCount;
-
-      rollResult.textContent =
-        `+${reward} BONUS COINS!`;
+      rollResult.textContent = `+${reward} BONUS COINS!`;
 
       bag.remove();
-
       moneyBags.splice(i, 1);
     }
   }
@@ -1689,32 +2056,25 @@ function updateMoneyBags(delta) {
 
 function updateCoins(delta) {
 
-  const height =
-    gameContainer.offsetHeight;
+  const height = gameContainer.offsetHeight;
 
-  for (
-    let i = coins.length - 1;
-    i >= 0;
-    i--
-  ) {
+  for (let i = coins.length - 1; i >= 0; i--) {
 
     const c = coins[i];
 
-    const speed =
-      parseFloat(c.dataset.speed);
+    // BASE COIN SPEED
+    const coinSpeed = parseFloat(c.dataset.speed) || 1.2;
 
+    // MOVEMENT
     const top =
       (parseFloat(c.style.top || "-40") || -40)
-      + speed * (delta / 16.67);
+      + coinSpeed * (delta / 16.67);
 
     c.style.top = `${top}px`;
 
     if (top > height + 50) {
-
       c.remove();
-
       coins.splice(i, 1);
-
       continue;
     }
 
@@ -1722,27 +2082,16 @@ function updateCoins(delta) {
 
       let reward = 1;
 
-if (multiplierActive) {
-  reward *= 2;
-}
+      if (multiplierActive) reward *= 2;
+      if (tripleActive) reward *= 3;
 
-if (tripleActive) {
-  reward *= 3;
-}
+      coinCount += reward;
+      saveGame();
 
-coinCount += reward;
-saveGame();
-
-      localStorage.setItem(
-        "neonChaosCoins",
-        coinCount.toString()
-      );
-
-      coinCountEl.textContent =
-        coinCount;
+      localStorage.setItem("neonChaosCoins", coinCount.toString());
+      coinCountEl.textContent = coinCount;
 
       c.remove();
-
       coins.splice(i, 1);
     }
   }
@@ -1867,6 +2216,23 @@ function updatePowerUps(delta) {
   }
 }
 
+function updateShieldIndicator() {
+  const indicator = document.getElementById("shield-indicator");
+  const timer = document.getElementById("shield-timer");
+
+  if (shieldStacks > 0) {
+    indicator.classList.add("active");
+    timer.textContent = `${shieldStacks} LEFT`;
+  } else {
+    indicator.classList.remove("active");
+    timer.textContent = "";
+  }
+
+  if (shieldStacks === 0) {
+    timer.textContent = "";
+}
+}
+
 function showPowerupTimer(
   element,
   seconds
@@ -1909,27 +2275,31 @@ function activatePowerUp(type) {
 
   const now = Date.now();
 
-  /* SHIELD */
-
-  if (type === "shield") {
-
-    shieldActive = true;
-
-    shieldEndTime =
-      Math.max(shieldEndTime, now) + 4000;
-
-    shieldIndicator.classList.add("active");
-
-    clearTimeout(shieldTimeout);
-
-    shieldTimeout = setTimeout(() => {
-
-      shieldActive = false;
-
-      shieldIndicator.classList.remove("active");
-
-    }, shieldEndTime - now);
+  // Check for Clutch Save achievement
+  if (lastHitTime > 0 && (now - lastHitTime) <= 200) {
+    unlockAchievement("clutch_save");
   }
+
+  if (!usedPowerups.includes(type)) {
+
+  usedPowerups.push(type);
+  checkAchievements();
+
+  localStorage.setItem(
+    "neonChaosUsedPowerups",
+    JSON.stringify(usedPowerups)
+  );
+}
+
+/* SHIELD — STACK SYSTEM */
+
+if (type === "shield") {
+
+  shieldStacks++;          // add one shield
+  shieldActive = true;     // shields are available
+
+  updateShieldIndicator(); // update UI
+}
 
   /* SLOW */
 
@@ -2137,7 +2507,7 @@ function activateCelestialSurge() {
 
   /* COIN MAGNET EFFECT */
 
-  const magnetInterval = setInterval(() => {
+  let magnetInterval = setInterval(() => {
 
     if (!celestialSurgeActive) {
 
@@ -2165,6 +2535,8 @@ function activateCelestialSurge() {
   setTimeout(() => {
 
     celestialSurgeActive = false;
+
+    clearInterval(magnetInterval);
 
     player.classList.remove(
       "celestial-surge"
@@ -2237,7 +2609,6 @@ voidBlastReady = true;
 
 /* RESET EFFECT TIMERS */
 
-shieldEndTime = 0;
 slowEndTime = 0;
 multiplierEndTime = 0;
 tripleEndTime = 0;
@@ -2250,6 +2621,7 @@ celestialEndTime = 0;
 shieldIndicator.classList.remove("active");
 slowIndicator.classList.remove("active");
 multiplierIndicator.classList.remove("active");
+tripleIndicator.classList.remove("active");
 
 phantomTimer.textContent = "READY";
 celestialTimer.textContent = "READY";
@@ -2257,12 +2629,12 @@ voidTimer.textContent = "READY";
 
 /* CLEAR TIMEOUTS */
 
-clearTimeout(shieldTimeout);
 clearTimeout(slowTimeout);
 clearTimeout(multiplierTimeout);
 clearTimeout(tripleTimeout);
 
   totalDeaths++;
+  checkAchievements();
 
 localStorage.setItem(
   "neonChaosDeaths",
@@ -2309,10 +2681,12 @@ restartBtn.addEventListener("click", () => {
   obstacles.forEach((o) => o.remove());
   powerUps.forEach((p) => p.remove());
   coins.forEach((c) => c.remove());
+  moneyBags.forEach((b) => b.remove());
 
   obstacles = [];
   powerUps = [];
   coins = [];
+  moneyBags = [];
 
   score = 0;
 
@@ -2334,6 +2708,13 @@ restartBtn.addEventListener("click", () => {
   slowActive = false;
   multiplierActive = false;
   tripleActive = false;
+  voidBlastCooldown = false;
+  phantomCooldown = false;
+  celestialCooldown = false;
+
+  voidBlastActive = false;
+  phantomShiftActive = false;
+  celestialSurgeActive = false;
 
   player.classList.remove(
     "shielded",
@@ -2364,21 +2745,47 @@ restartBtn.addEventListener("click", () => {
 const infoBtn =
   document.getElementById("info-btn");
 
+const homeHelpBtn =
+  document.getElementById("home-help-btn");
+
 const infoOverlay =
   document.getElementById("info-overlay");
+
+const devOverlay =
+  document.getElementById("dev-overlay");
 
 const closeInfoBtn =
   document.getElementById("close-info-btn");
 
-infoBtn.addEventListener("click", () => {
+const closeDevBtn =
+  document.getElementById("close-dev-btn");
 
+function openInfoOverlay() {
   infoOverlay.classList.add("show");
-});
+}
+
+function openDevOverlay() {
+  if (!devOverlay) return;
+  devOverlay.classList.add("show");
+}
+
+if (infoBtn) {
+  infoBtn.addEventListener("click", openInfoOverlay);
+}
+
+if (homeHelpBtn) {
+  homeHelpBtn.addEventListener("click", openDevOverlay);
+}
 
 closeInfoBtn.addEventListener("click", () => {
-
   infoOverlay.classList.remove("show");
 });
+
+if (closeDevBtn) {
+  closeDevBtn.addEventListener("click", () => {
+    devOverlay.classList.remove("show");
+  });
+}
 
 infoOverlay.addEventListener(
   "click",
@@ -2390,6 +2797,14 @@ infoOverlay.addEventListener(
     }
   }
 );
+
+if (devOverlay) {
+  devOverlay.addEventListener("click", (event) => {
+    if (event.target === devOverlay) {
+      devOverlay.classList.remove("show");
+    }
+  });
+}
 
 /* RESET SYSTEM */
 
@@ -2439,6 +2854,26 @@ function performReset() {
   localStorage.removeItem("phantomVerified");
   localStorage.removeItem("celestialVerified");
   localStorage.removeItem("voidVersion");
+  localStorage.removeItem("neonChaosAchievements");
+  localStorage.removeItem("claim_first_death");
+  localStorage.removeItem("claim_speed_5");
+  localStorage.removeItem("claim_speed_15");
+  localStorage.removeItem("claim_speed_20");
+  localStorage.removeItem("claim_speed_30");
+  localStorage.removeItem("claim_coins_50");
+  localStorage.removeItem("claim_coins_500");
+  localStorage.removeItem("claim_coins_10000");
+  localStorage.removeItem("claim_roll_25");
+  localStorage.removeItem("claim_score_1000");
+  localStorage.removeItem("claim_survive_1");
+  localStorage.removeItem("claim_survive_5");
+  localStorage.removeItem("claim_rare_skin");
+  localStorage.removeItem("claim_all_powerups");
+  localStorage.removeItem("claim_hidden");
+  localStorage.removeItem("claim_perfect_dodger");
+  localStorage.removeItem("claim_zero_damage_run");
+  localStorage.removeItem("claim_clutch_save");
+  localStorage.removeItem("neonChaosUsedPowerups");
 
   ownedSkins = [];
   equippedSkin = "default";
@@ -2491,10 +2926,14 @@ function performReset() {
   location.reload();
 }
 
-resetBtn.addEventListener(
-  "click",
-  openResetOverlay
-);
+if (resetBtn) {
+
+  resetBtn.addEventListener(
+    "click",
+    openResetOverlay
+  );
+
+}
 
 cancelResetBtn.addEventListener(
   "click",
@@ -2572,6 +3011,8 @@ rollBtn.addEventListener("click", () => {
     saveGame();
 
     totalRolls++;
+    checkAchievements();
+
 
 localStorage.setItem(
   "neonChaosRolls",
@@ -2629,7 +3070,9 @@ for (const rare of availableRareSkins) {
 
 if (wonSkin) {
 
+  if (!ownedSkins.includes(wonSkin)) {
   ownedSkins.push(wonSkin);
+}
 
   localStorage.setItem(
     "neonChaosSkins",
@@ -2657,6 +3100,7 @@ if (wonSkin) {
 
   setTimeout(() => {
 
+    rollResult.classList.remove("roll-fade");
     rollResult.classList.add("roll-fade");
 
     setTimeout(() => {
@@ -2673,60 +3117,168 @@ if (wonSkin) {
   }
 );
 
+let contextSkin = null;
+const menu = document.getElementById("skin-context-menu");
+const removeOption = document.getElementById("remove-skin-option");
+
+// Right-click on skin
+document.querySelectorAll(".skin").forEach(skinEl => {
+  skinEl.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+
+    contextSkin = skinEl.dataset.skin;
+
+    menu.style.left = e.pageX + "px";
+    menu.style.top = e.pageY + "px";
+    menu.style.display = "block";
+  });
+});
+
+// Click outside closes menu
+document.addEventListener("click", () => {
+  menu.style.display = "none";
+});
+
+// Remove skin
+removeOption.addEventListener("click", () => {
+  if (!contextSkin) return;
+
+  // Remove from owned list
+  ownedSkins = ownedSkins.filter(s => s !== contextSkin);
+  localStorage.setItem("neonChaosSkins", JSON.stringify(ownedSkins));
+
+  // Remove verification flags for rare skins
+  if (["void", "phantom", "celestial"].includes(contextSkin)) {
+    localStorage.removeItem(contextSkin + "Verified");
+  }
+
+  // If equipped, reset to default
+  if (equippedSkin === contextSkin) {
+    equippedSkin = "default";
+    localStorage.setItem("neonChaosSkin", "default");
+  }
+
+  saveGame();
+  updateSkinButtons();
+  applySkin(equippedSkin);
+
+  menu.style.display = "none";
+});
+
+/* MUSIC SYSTEM — MULTIPLE TRACKS + DEFAULT ON */
+
+const soundtracks = [
+  "assets/music/All I Need.mp3",
+  "assets/music/Nevada.mp3"
+];
+
+let currentTrackIndex = 0;
+let musicEnabled = true;
+
+let bgMusic = new Audio(soundtracks[currentTrackIndex]);
+bgMusic.loop = true;
+bgMusic.volume = 0.22;
+bgMusic.autoplay = true;
+
+function tryPlayBackgroundMusic() {
+  bgMusic.muted = false;
+  return bgMusic.play().catch(() => {
+    return Promise.reject();
+  });
+}
+
+function enableAutoplayOnInteraction() {
+  const resumeAudio = () => {
+    bgMusic.muted = false;
+    bgMusic.play().catch(() => {
+      // Still blocked, but user interaction has been attempted.
+    });
+  };
+
+  window.addEventListener("click", resumeAudio, { once: true, capture: true });
+  window.addEventListener("keydown", resumeAudio, { once: true, capture: true });
+  window.addEventListener("touchstart", resumeAudio, { once: true, capture: true });
+}
+
+/* AUTO-PLAY ON LOAD */
+window.addEventListener("load", () => {
+  bgMusic.volume = 0.22;
+  tryPlayBackgroundMusic().catch(() => {
+    enableAutoplayOnInteraction();
+  });
+  if (musicToggleLabel) {
+    musicToggleLabel.textContent = "MUSIC: ON";
+  }
+});
+
+const nextTrackBtn = document.getElementById("next-track-btn");
+
+nextTrackBtn.addEventListener("click", (event) => {
+  event.stopPropagation();
+  currentTrackIndex = (currentTrackIndex + 1) % soundtracks.length;
+
+  bgMusic.src = soundtracks[currentTrackIndex];
+
+  if (musicEnabled) {
+    bgMusic.play();
+  }
+});
+
+
+/* MUSIC TOGGLE */
+musicToggleBtn.addEventListener("click", () => {
+  musicEnabled = !musicEnabled;
+
+  if (musicEnabled) {
+    bgMusic.volume = 0.22;
+    bgMusic.play();
+    if (musicToggleLabel) {
+      musicToggleLabel.textContent = "MUSIC: ON";
+    }
+  } else {
+    bgMusic.pause();
+    if (musicToggleLabel) {
+      musicToggleLabel.textContent = "MUSIC: OFF";
+    }
+  }
+});
+
+/* SETTINGS OPTIONS */
+
+const sensitivitySlider = document.getElementById("game-sensitivity");
+
+if (sensitivitySlider) {
+  sensitivitySlider.value = playerSpeed; // sync slider with current speed
+  sensitivitySlider.addEventListener("input", (event) => {
+    playerSpeed = Number(event.target.value);
+  });
+}
+
+const chaosToggle = document.getElementById("chaos-mode");
+
+if (chaosToggle) {
+  chaosToggle.addEventListener("change", () => {
+    chaosMode = chaosToggle.checked;
+  });
+}
 
 /* HOME SCREEN */
 
 updateHomeStats();
 
-const bgMusic =
-  document.getElementById("bg-music");
-
-let musicEnabled = false;
-
-musicToggleBtn.addEventListener(
-  "click",
-  () => {
-
-    musicEnabled = !musicEnabled;
-
-    if (musicEnabled) {
-
-      bgMusic.volume = 0.22;
-
-      bgMusic.play();
-
-      musicToggleBtn.textContent =
-        "MUSIC: ON";
-    }
-
-    else {
-
-      bgMusic.pause();
-
-      musicToggleBtn.textContent =
-        "MUSIC: OFF";
-    }
-  }
-);
-
 fullscreenBtn.addEventListener(
   "click",
   async () => {
-
     try {
-
       if (!document.fullscreenElement) {
-
         await document.documentElement.requestFullscreen();
+        fullscreenBtn.textContent = "⚡ EXIT FULLSCREEN ⚡";
+      } else {
+        await document.exitFullscreen();
+        fullscreenBtn.textContent = "⚡ ENTER FULLSCREEN ⚡";
       }
-
-    }
-
-    catch (err) {
-
-      console.log(
-        "Fullscreen blocked"
-      );
+    } catch (err) {
+      console.log("Fullscreen error:", err);
     }
   }
 );
@@ -2784,9 +3336,8 @@ function runAntiCheat() {
   const coinIncrease =
     coinCount - lastCoinCount;
 if (
-  coinIncrease > 35 &&
-  !multiplierActive &&
-  !tripleActive
+  coinIncrease > 500 &&
+  !x93FluxState
 )
    {
 
@@ -2863,7 +3414,6 @@ const triggerCheatDetection = Object.freeze(
     multiplierActive = false;
     tripleActive = false;
 
-    clearTimeout(shieldTimeout);
     clearTimeout(slowTimeout);
     clearTimeout(multiplierTimeout);
     clearTimeout(tripleTimeout);
@@ -2880,112 +3430,220 @@ const triggerCheatDetection = Object.freeze(
 
 /* PAUSE SYSTEM */
 
-pauseBtn.addEventListener("click", () => {
+if (pauseBtn) {
 
-  if (
-    gameOverScreen.classList.contains("show")
-  ) return;
+  pauseBtn.addEventListener("click", () => {
 
-  paused = !paused;
+    if (
+      gameOverScreen.classList.contains("show")
+    ) return;
 
-  if (paused) {
+    paused = !paused;
+
+    if (paused) {
+
+      pauseStartTime = Date.now();
+      gameRunning = false;
+
+      pauseBtn.innerHTML = "<span>▶</span>";
+
+      gameContainer.classList.add("paused");
+
+    } 
     
-  pauseStartTime = Date.now();
-  gameRunning = false;
+    else {
 
-  pauseBtn.innerHTML = "<span>▶</span>";
+      const pausedDuration =
+      Date.now() - pauseStartTime;
 
-  gameContainer.classList.add("paused");
+      /* VOID */
 
-} else {
+      if (voidBlastActive) {
+        voidBlastEndTime += pausedDuration;
+      }
 
-  const pausedDuration =
-  Date.now() - pauseStartTime;
+      if (voidBlastCooldown) {
+        voidBlastCooldownEndTime += pausedDuration;
+      }
 
-/* VOID */
+      /* PHANTOM */
 
-if (voidBlastActive) {
-  voidBlastEndTime += pausedDuration;
+      if (phantomShiftActive) {
+        phantomEndTime += pausedDuration;
+      }
+
+      if (phantomCooldown) {
+        phantomCooldownEndTime += pausedDuration;
+      }
+
+      /* CELESTIAL */
+
+      if (celestialSurgeActive) {
+        celestialEndTime += pausedDuration;
+      }
+
+      if (celestialCooldown) {
+        celestialCooldownEndTime += pausedDuration;
+      }
+
+      /* POWERUPS */
+
+      if (slowActive) {
+        slowEndTime += pausedDuration;
+      }
+
+      if (multiplierActive) {
+        multiplierEndTime += pausedDuration;
+      }
+
+      if (tripleActive) {
+        tripleEndTime += pausedDuration;
+      }
+
+      gameRunning = true;
+
+      pauseBtn.innerHTML = "<span>⏸</span>";
+
+      gameContainer.classList.remove("paused");
+
+      lastTime = performance.now();
+    }
+
+  });
+
 }
 
-if (voidBlastCooldown) {
-  voidBlastCooldownEndTime += pausedDuration;
+/* ACHIEVEMENT POPUP */
+
+function showAchievementPopup(title, reward) {
+
+  achievementQueue.push({
+    title,
+    reward
+  });
+
+  processAchievementQueue();
 }
 
-/* PHANTOM */
+function processAchievementQueue() {
 
-if (phantomShiftActive) {
-  phantomEndTime += pausedDuration;
+  if (achievementShowing) return;
+  if (achievementQueue.length === 0) return;
+
+  achievementShowing = true;
+
+  const popup = document.getElementById("achievement-popup");
+  const titleEl = document.getElementById("achievement-popup-title");
+  const rewardEl = document.getElementById("achievement-popup-reward");
+
+  const achievement = achievementQueue.shift();
+
+titleEl.textContent = `${achievement.title} Unlocked`;
+rewardEl.textContent = `+${achievement.reward} Coins Available`;
+
+  popup.classList.add("show");
+
+  setTimeout(() => {
+    popup.classList.remove("show");
+
+    setTimeout(() => {
+      achievementShowing = false;
+      processAchievementQueue();
+      updateAchievementBadge();
+
+    }, 300);
+
+  }, 3000);
 }
 
-if (phantomCooldown) {
-  phantomCooldownEndTime += pausedDuration;
+/* ACHIEVEMENTS OVERLAY */
+
+function openAchievements() {
+  if (!achievementsOverlay) return;
+  achievementsOverlay.classList.add("show");
+  renderAchievements();
 }
 
-/* CELESTIAL */
-
-if (celestialSurgeActive) {
-  celestialEndTime += pausedDuration;
+if (gameAchievementsBtn) {
+  gameAchievementsBtn.addEventListener(
+    "click",
+    openAchievements
+  );
 }
 
-if (celestialCooldown) {
-  celestialCooldownEndTime += pausedDuration;
+if (sidebarAchievementsBtn) {
+  sidebarAchievementsBtn.addEventListener(
+    "click",
+    openAchievements
+  );
 }
 
-/* POWERUPS */
-
-if (shieldActive) {
-  shieldEndTime += pausedDuration;
+if (gameplayAchievementsBtn) {
+  gameplayAchievementsBtn.addEventListener(
+    "click",
+    openAchievements
+  );
 }
 
-if (slowActive) {
-  slowEndTime += pausedDuration;
+if (closeAchievementsBtn) {
+
+  closeAchievementsBtn.addEventListener(
+    "click",
+    () => {
+
+      achievementsOverlay.classList.remove(
+        "show"
+      );
+    }
+  );
+
 }
 
-if (multiplierActive) {
-  multiplierEndTime += pausedDuration;
-}
+achievementsOverlay.addEventListener(
+  "click",
+  (event) => {
 
-if (tripleActive) {
-  tripleEndTime += pausedDuration;
-}
+    if (
+      event.target === achievementsOverlay
+    ) {
 
-  gameRunning = true;
-
-  pauseBtn.innerHTML = "<span>⏸</span>";
-
-  gameContainer.classList.remove("paused");
-
-  lastTime = performance.now();
-}
-});
+      achievementsOverlay.classList.remove(
+        "show"
+      );
+    }
+  }
+);
 
 /* HOME BUTTON */
 
-homeBtn.addEventListener(
-  "click",
-  () => {
+if (homeBtn) {
 
-    paused = false;
+  homeBtn.addEventListener(
+    "click",
+    () => {
 
-    gameRunning = false;
+      paused = false;
 
-    pauseBtn.textContent = "⏸";
+      gameRunning = false;
 
-    gameOverScreen.classList.remove(
-      "show"
-    );
+      pauseBtn.textContent = "⏸";
 
-    homeScreen.style.display =
-      "flex";
+      gameOverScreen.classList.remove(
+        "show"
+      );
 
-    homeScreen.classList.remove(
-      "fade-out"
-    );
+      homeScreen.style.display =
+        "flex";
 
-    updateHomeStats();
-  }
-);
+      homeScreen.classList.remove(
+        "fade-out"
+      );
+
+      updateHomeStats();
+    }
+  );
+
+}
 
 /* GAME LOOP */
 
@@ -3017,14 +3675,8 @@ if (
 
     const now = Date.now();
     runAntiCheat();
+    checkAchievements();
     saveGame();
-
-    if (shieldActive) {
-      shieldTimer.textContent =
-        formatEffectTime(
-          shieldEndTime - now
-        );
-    }
 
     if (slowActive) {
       slowTimer.textContent =
@@ -3168,8 +3820,7 @@ if (equippedSkin === "celestial") {
     updateCoins(delta);
     updateMoneyBags(delta);
 
-    let gain =
-      delta * 0.01;
+    let gain = delta * (chaosMode ? 0.02 : 0.01);
 
     if (multiplierActive) {
       gain *= 2;
@@ -3185,6 +3836,7 @@ if (equippedSkin === "celestial") {
 
     if (score > speedLevel * 50) {
       speedLevel++;
+      checkAchievements();
       speedLevelEl.textContent =
         speedLevel;
 
@@ -3205,31 +3857,23 @@ if (equippedSkin === "celestial") {
         );
     }
 
-    if (
-      timestamp - lastSpawn
-      > spawnInterval
-    ) {
+    if (timestamp - lastSpawn > (chaosMode ? spawnInterval * 0.5 : spawnInterval)) {
       spawnObstacle();
       lastSpawn = timestamp;
     }
 
-    if (
-      timestamp - lastPowerUp
-      > powerUpInterval
-    ) {
+    if (timestamp - lastPowerUp > (chaosMode ? powerUpInterval * 0.7 : powerUpInterval)) {
       spawnPowerUp();
       lastPowerUp = timestamp;
     }
 
     const currentCoinInterval =
-        celestialSurgeActive
-          ? coinInterval / 3
+        (equippedSkin === "celestial" && celestialSurgeActive)
+          ? 1000   // 1000 = 1s
           : coinInterval;
 
-      if (
-        timestamp - lastCoin
-        > currentCoinInterval
-      ) {
+
+      if (timestamp - lastCoin > (chaosMode ? currentCoinInterval * 0.7 : currentCoinInterval)) {
       spawnCoin();
 
       if (equippedSkin === "void") {
@@ -3270,6 +3914,7 @@ setInterval(() => {
   if (gameRunning) {
 
     totalPlaySeconds++;
+    checkAchievements();
 
     localStorage.setItem(
       "neonChaosPlayTime",

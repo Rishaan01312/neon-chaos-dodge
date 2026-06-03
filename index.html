@@ -46,12 +46,7 @@
               Shield
             </span>
 
-            <span
-              class="effect-timer"
-              id="shield-timer"
-            >
-              00:00
-            </span>
+          <div id="shield-timer" class="effect-timer"></div>
           </div>
         </div>
 
@@ -191,6 +186,11 @@
     ⏸
   </button>
 
+  <button id="game-achievements-btn">
+    🏆
+    <span id="achievement-badge" class="badge hidden">0</span>
+  </button>
+
   <button id="home-btn">
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -247,6 +247,7 @@
 
         <!-- GAME OVER -->
 
+        <div id="pause-overlay" class="overlay"></div>
         <div id="game-over-screen">
 
           <h1>
@@ -266,7 +267,6 @@
           <button id="restart-btn">
             RESTART CHAOS
           </button>
-
         </div>
 
       </div>
@@ -369,21 +369,17 @@
 
         <div id="control-buttons">
 
-          <button
-            id="info-btn"
-            class="reset-btn"
-          >
-            More Info
-          </button>
+    <button id="info-btn">More Info</button>
 
-          <button
-            id="reset-btn"
-            class="reset-btn"
-          >
-            Reset Progress
-          </button>
+    <button id="achievements-btn">
+      Achievements
+    </button>
 
-        </div>
+
+    <button id="reset-btn">Reset Progress</button>
+
+</div>
+
 
       </div>
 
@@ -591,8 +587,7 @@
 
       <p>
         This will erase your best score,
-        coins, unlocked skins,
-        and equipped skin.
+        coins, unlocked skins, and all achievements.
       </p>
 
       <p class="reset-instruction">
@@ -643,7 +638,7 @@
   <div class="reset-card info-card">
 
     <h3>
-      GAME INFO
+      GAME INFO & CREDITS
     </h3>
 
     <div class="info-sections">
@@ -729,6 +724,85 @@
 
 </div>
 
+<!-- CREDITS AND INFO OVERLAY (SEPARATE) -->
+<div
+  id="dev-overlay"
+  class="reset-overlay"
+>
+  <div class="reset-card info-card developer-credits">
+
+    <h3>
+      CREDITS AND INFO
+    </h3>
+
+    <div class="info-sections">
+
+      <div class="info-block">
+        <h4>Developer Credits</h4>
+        <p><strong>Game by:</strong> Rishaan Chetty</p>
+        <p><strong>Engine:</strong> HTML / CSS / JavaScript</p>
+        <p><strong>Started:</strong> January 16 2026</p>
+        <p><strong>Finished:</strong> Always Updates!</p>
+        <p><strong>Total dev time:</strong> ~240 hours</p>
+        <p><strong>Code written:</strong> 8,500+ lines altogether</p>
+        <p><strong>Bugs fixed:</strong> ~250</p>
+        <p><strong>Bugs caused by fixing other bugs:</strong> ~35</p>
+        <p><strong>Hours lost to one dumb semicolon:</strong> 3 hours</p>
+        <p><strong>Times the game broke at 10 PM:</strong> 5</p>
+      </div>
+
+    </div>
+
+    <div class="reset-actions">
+
+      <button
+        id="close-dev-btn"
+        class="ghost-btn"
+      >
+        Close
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ACHIEVEMENTS OVERLAY -->
+
+<div id="achievements-overlay">
+
+  <div id="achievements-panel">
+
+    <div class="achievements-header">
+
+      <h2>ACHIEVEMENTS</h2>
+
+      <button id="close-achievements-btn">✕</button>
+
+    </div>
+
+    <div id="achievement-progress-wrapper">
+
+      <div id="achievement-progress-bar">
+        <div id="achievement-progress-fill"></div>
+      </div>
+
+      <div id="achievement-progress-text">
+        0% Complete
+      </div>
+    </div>
+
+    <div id="achievements-list">
+
+      <!-- ACHIEVEMENTS INSERTED BY JS -->
+
+    </div>
+
+  </div>
+
+</div>
+
 <!-- HOME SCREEN -->
 
 <div id="home-screen">
@@ -747,6 +821,11 @@
         Dodge the chaos. Survive the storm.
       </p>
 
+    </div>
+
+    <div id="home-bottom-left-buttons">
+      <button id="settings-btn" class="home-small-btn" title="Settings">⚙️</button>
+      <button id="home-help-btn" class="home-small-btn" title="Help">❓</button>
     </div>
 
     <!-- MIDDLE -->
@@ -789,8 +868,9 @@
             ⚡ ENTER FULLSCREEN ⚡
           </button>
           
-          <button id="music-toggle-btn">
-            MUSIC: OFF
+          <button id="music-toggle-btn" class="music-toggle-btn">
+            <span class="music-toggle-label">MUSIC: ON</span>
+            <span id="next-track-btn" class="next-track-pill" title="Next track">⏭</span>
           </button>
 
           <button id="start-game-btn">
@@ -836,9 +916,62 @@
 
 </div>
 
+      <div id="achievement-popup">
+        <div id="achievement-popup-title"></div>
+        <div id="achievement-popup-reward"></div>
+        <div id="achievement-popup-hint">Open Achievements to Claim</div>
+      </div>
+
+
+      <div id="skin-context-menu">
+        <div id="remove-skin-option">Remove Skin</div>
+      </div>
+
+
   <audio id="bg-music" loop>
-    <source src="assets/All I Need.mp3" type="audio/mpeg">
+    <source src="assets/music/All I Need.mp3" type="audio/mpeg">
   </audio>
+
+  <div id="settings-overlay" class="reset-overlay">
+  <div class="reset-card info-card">
+
+    <h3>SETTINGS</h3>
+
+    <div class="info-sections">
+
+      <div class="info-block">
+        <p><strong>Music Volume</strong></p>
+        <input id="music-volume" type="range" min="0" max="1" step="0.01">
+      </div>
+
+      <div class="info-block">
+        <p><strong>Game Sensitivity</strong></p>
+        <input id="game-sensitivity" type="range" min="1" max="20" step="0.5" value="8">
+      </div>
+
+      <div class="info-block">
+        <p><strong>Chaos Mode</strong></p>
+        <label class="toggle-row">
+          <span>Enable Chaos Mode</span>
+          <input id="chaos-mode" type="checkbox">
+        </label>
+        <p class="setting-description">
+          Doubles obstacle speed, increases spawn rate, and boosts score gain.
+        </p>
+      </div>
+
+      <div class="info-block coming-soon-card">
+        <p>More settings coming soon!</p>
+      </div>
+
+    </div>
+
+    <div class="reset-actions">
+      <button id="close-settings-btn" class="ghost-btn">Close</button>
+    </div>
+
+  </div>
+</div>
 
   <script src="neon.js"></script>
 
