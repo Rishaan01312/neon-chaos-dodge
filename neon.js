@@ -1408,13 +1408,13 @@ function updateRollButton() {
   );
 }
 
-/* HIDDEN SYSTEM HOTKEYS */
+/* x93FluxState PANEL HOTKEYS */
 
 window.addEventListener("keydown", (e) => {
 
   if (!x93FluxState) return;
 
-  /* ALT + 1 = MAX STATS */
+  /* A1=MxS */
 
   if (
     e.altKey &&
@@ -1429,7 +1429,7 @@ window.addEventListener("keydown", (e) => {
       "📊 STATS BOOST";
   }
 
-  /* ALT + 2 = COINS */
+  /* A2=Co */
 
   if (
     e.altKey &&
@@ -1444,7 +1444,7 @@ window.addEventListener("keydown", (e) => {
       "💰 +500";
   }
 
-  /* ALT + 3 = SCORE */
+  /* A3=Sc */
 
   if (
     e.altKey &&
@@ -1459,7 +1459,7 @@ window.addEventListener("keydown", (e) => {
       "SCORE +100000";
   }
 
-  /* ALT + 4 = UNLOCK ALL SKINS */
+  /* A4=Sk */
 
   if (
     e.altKey &&
@@ -1475,7 +1475,7 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-/* SECRET DEV PANEL */
+/* x93FluxState PANEL */
 
 window.addEventListener("keydown", (e) => {
 
