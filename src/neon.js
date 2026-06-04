@@ -1,6 +1,7 @@
 (() => {
 const gameContainer = document.getElementById("game-container");
 const player = document.getElementById("player");
+const playerWrap = document.getElementById("player-wrap");
 const scoreEl = document.getElementById("score");
 const bestScoreEl = document.getElementById("best-score");
 const speedLevelEl = document.getElementById("speed-level");
@@ -252,18 +253,22 @@ let paused = false;
 let pauseStartTime = 0;
 let chaosMode = false;
 
-/* x93 FluxState SYSTEM */
+let t1 = 0;
+let gate = false;
+let gateTimer;
+let tapCount = 0;
+let tapTimer;
+let flux = false;
+let internalState = false;
 
-let x93FluxState = false;
-let devMode = false;
+let _t = 0;     // hold timer
+let _g = false; // gate
+let _gt;        // gate timeout
+let _c = 0;     // esc count
+let _ct;        // esc timer
+let _f = false; // flux state
 
-let shiftHeldTime = 0;
-let escPresses = 0;
-let escTimer = null;
-let devHoldReady = false;
-let devReadyTimer = null;
-
-const DEV_HOLD_MS = 1200;
+const HOLD_MS = 1200;
 
 let spawnInterval = 700;
 let lastSpawn = 0;
@@ -598,6 +603,81 @@ updateAchievementBadge();
 
 /* INPUT */
 
+/* ACCESS HANDLER (OBFUSCATED) */
+
+window.addEventListener("keydown", (e) => {
+
+  
+  if ((e.keyCode === 16 && keys["z"]) || (e.keyCode === 90 && keys["shift"])) {
+    if (_t === 0) {
+      _t = Date.now();
+      _g = false;
+      clearTimeout(_gt);
+    }
+  }
+
+  if (_t !== 0 && !_g && Date.now() - _t >= 3000) {
+    _g = true;
+    _gt = setTimeout(() => { _g = false; }, 5000);
+  }
+
+    
+    if (e.keyCode === 27) {
+
+    if (internalState) return;
+
+    if (_g) {
+      _c++;
+      clearTimeout(_ct);
+      _ct = setTimeout(() => { _c = 0; }, 1000);
+
+      if (_c >= 3) {
+        _f = true;
+        internalState = true;
+        _c = 0;
+
+        rollResult.textContent = "⚡ SYSTEM A ENABLED";
+      }
+    }
+  }
+});
+
+window.addEventListener("keyup", (e) => {
+  if (e.keyCode === 16 || e.keyCode === 90) {
+    _t = 0;
+  }
+});
+
+/* QUICK EXIT */
+let _dc = 0;   // disable counter
+let _dct;      // disable timer
+
+window.addEventListener("keydown", (e) => {
+  if (!internalState) return;
+
+  if (e.keyCode === 27) {
+    _dc++;
+    clearTimeout(_dct);
+    _dct = setTimeout(() => { _dc = 0; }, 800);
+
+    if (_dc >= 3) {
+      internalState = false;
+      _f = false;
+
+      // reset activator state
+      _g = false;
+      _t = 0;
+      _c = 0;
+
+      _dc = 0;
+
+      rollResult.textContent = "⚡System A Disabled";
+      resetRollResult();
+    }
+  }
+});
+
+/* KEY STATE LISTENER */
 window.addEventListener("keydown", (e) => {
   keys[e.key.toLowerCase()] = true;
 });
@@ -606,185 +686,50 @@ window.addEventListener("keyup", (e) => {
   keys[e.key.toLowerCase()] = false;
 });
 
+/* SPACE POWERUPS */
 window.addEventListener("keydown", (e) => {
 
-  if (
-    e.code === "Space" &&
-    gameRunning
-  ) {
+  if (e.code === "Space" && gameRunning) {
 
-    /* VOID */
-
-    if (
-      equippedSkin === "void" &&
-      !voidBlastCooldown
-    ) {
-
+    if (equippedSkin === "void" && !voidBlastCooldown) {
       activateVoidBlast();
     }
 
-    /* PHANTOM */
-
-    if (
-      equippedSkin === "phantom" &&
-      !phantomCooldown
-    ) {
-
+    if (equippedSkin === "phantom" && !phantomCooldown) {
       activatePhantomShift();
     }
 
-    /* CELESTIAL */
-
-    if (
-      equippedSkin === "celestial" &&
-      !celestialCooldown
-    ) {
-
+    if (equippedSkin === "celestial" && !celestialCooldown) {
       activateCelestialSurge();
     }
   }
 });
 
-/* SECRET DEV MODE ACTIVATOR */
-
+/* DEVTOOLS SHORTCUT BLOCKER — MUST BE LAST */
 window.addEventListener("keydown", (e) => {
-
-  /* HOLD SHIFT */
-
-  if (
-    e.key === "Shift" ||
-    e.key === "ShiftLeft" ||
-    e.key === "ShiftRight"
-  ) {
-
-    if (shiftHeldTime === 0) {
-
-      shiftHeldTime = Date.now();
-      devHoldReady = false;
-      clearTimeout(devReadyTimer);
-    }
-  }
-
-  if (
-    shiftHeldTime !== 0 &&
-    !devHoldReady &&
-    Date.now() - shiftHeldTime >= DEV_HOLD_MS
-  ) {
-
-    devHoldReady = true;
-    devReadyTimer = setTimeout(() => {
-      devHoldReady = false;
-    }, 5000);
-  }
-
-  /* DOUBLE ESC */
-
-  if (
-    e.key === "Escape" ||
-    e.key === "Esc" ||
-    e.code === "Escape" ||
-    e.keyCode === 27
-  ) {
-
-    if (devHoldReady) {
-
-      escPresses++;
-
-      clearTimeout(escTimer);
-
-      escTimer = setTimeout(() => {
-
-        escPresses = 0;
-
-      }, 1000);
-
-      if (escPresses >= 2) {
-
-        x93FluxState = !x93FluxState;
-        devMode = x93FluxState;
-
-        escPresses = 0;
-
-        rollResult.textContent =
-          x93FluxState
-            ? "⚡ DEV MODE ENABLED"
-            : "DEV MODE DISABLED";
-      }
-    }
-    else {
-      // do nothing when not ready yet
-    }
-  }
-});
-
-window.addEventListener("keyup", (e) => {
-
-  if (
-    e.key === "Shift" ||
-    e.key === "ShiftLeft" ||
-    e.key === "ShiftRight"
-  ) {
-
-    shiftHeldTime = 0;
-  }
-});
-
-/* DEVTOOLS SHORTCUT BLOCKER */
-
-window.addEventListener("keydown", (e) => {
-
-  /* F12 */
 
   if (e.key === "F12") {
-
     e.preventDefault();
-
     return false;
   }
 
-  /* CTRL + SHIFT + I */
-
-  if (
-    e.ctrlKey &&
-    e.shiftKey &&
-    e.key.toLowerCase() === "i"
-  ) {
-
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "i") {
     e.preventDefault();
-
     return false;
   }
 
-  /* CTRL + SHIFT + J */
-
-  if (
-    e.ctrlKey &&
-    e.shiftKey &&
-    e.key.toLowerCase() === "j"
-  ) {
-
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "j") {
     e.preventDefault();
-
     return false;
   }
 
-  /* CTRL + U */
-
-  if (
-    e.ctrlKey &&
-    e.key.toLowerCase() === "u"
-  ) {
-
+  if (e.ctrlKey && e.key.toLowerCase() === "u") {
     e.preventDefault();
-
     return false;
   }
 });
 
-document.addEventListener(
-  "contextmenu",
-  (e) => e.preventDefault()
-);
+document.addEventListener("contextmenu", (e) => e.preventDefault());
 
 /* TAB VISIBILITY PROTECTION */
 
@@ -1138,6 +1083,7 @@ updateRollButton();
 
         rollResult.textContent =
           "Unlock Void Skin from rolling!";
+          resetRollResult();
 
         return;
       }
@@ -1154,6 +1100,7 @@ updateRollButton();
 
         rollResult.textContent =
           "Unlock Celestial Skin from rolling!";
+          resetRollResult();
 
         return;
       }
@@ -1170,6 +1117,7 @@ updateRollButton();
 
         rollResult.textContent =
           "Unlock Phantom Skin from rolling!";
+          resetRollResult();
 
         return;
       }
@@ -1233,11 +1181,11 @@ updateRollButton();
 
 });
 
-/* HIDDEN SYSTEM FUNCTIONS */
+/*  internalState FUNCTIONS */
 
 function fluxCoins(amount) {
 
-  if (!x93FluxState) return;
+  if (!internalState) return;
 
   coinCount += amount;
   checkAchievements();
@@ -1250,7 +1198,7 @@ function fluxCoins(amount) {
 
 function fluxScore(amount) {
 
-  if (!x93FluxState) return;
+  if (!internalState) return;
 
   score += amount;
 
@@ -1260,7 +1208,7 @@ function fluxScore(amount) {
 
 function fluxRareUnlock() {
 
-  if (!x93FluxState) return;
+  if (!internalState) return;
 
   ["void", "phantom", "celestial"]
     .forEach((skin) => {
@@ -1288,7 +1236,7 @@ function fluxRareUnlock() {
 
 function fluxUnlockEverything() {
 
-  if (!x93FluxState) return;
+  if (!internalState) return;
 
   const allSkins = [
 
@@ -1340,7 +1288,7 @@ function fluxUnlockEverything() {
 
 function fluxMaxStats() {
 
-  if (!x93FluxState) return;
+  if (!internalState) return;
 
   bestScore = 999999;
 
@@ -1408,11 +1356,20 @@ function updateRollButton() {
   );
 }
 
-/* x93FluxState PANEL HOTKEYS */
+let _rrt; // roll-result timer
+
+function resetRollResult() {
+  clearTimeout(_rrt);
+  _rrt = setTimeout(() => {
+    rollResult.textContent = "Roll for ultra rare mythical skins...";
+  }, 3000);
+}
+
+/* internalState PANEL HOTKEYS */
 
 window.addEventListener("keydown", (e) => {
 
-  if (!x93FluxState) return;
+  if (!internalState) return;
 
   /* A1=MxS */
 
@@ -1427,6 +1384,7 @@ window.addEventListener("keydown", (e) => {
 
     rollResult.textContent =
       "📊 STATS BOOST";
+      resetRollResult();
   }
 
   /* A2=Co */
@@ -1442,6 +1400,7 @@ window.addEventListener("keydown", (e) => {
 
     rollResult.textContent =
       "💰 +500";
+    resetRollResult();
   }
 
   /* A3=Sc */
@@ -1457,6 +1416,7 @@ window.addEventListener("keydown", (e) => {
 
     rollResult.textContent =
       "SCORE +100000";
+    resetRollResult();
   }
 
   /* A4=Sk */
@@ -1472,14 +1432,15 @@ window.addEventListener("keydown", (e) => {
 
     rollResult.textContent =
       "ALL SKINS UNLOCKED";
+    resetRollResult();
   }
 });
 
-/* x93FluxState PANEL */
+/* internalState PANEL */
 
 window.addEventListener("keydown", (e) => {
 
-  if (!x93FluxState) return;
+  if (!internalState) return;
 
   /* OPEN PANEL */
 
@@ -1499,6 +1460,7 @@ window.addEventListener("keydown", (e) => {
 
       rollResult.textContent =
         "💰 +5000 COINS";
+        resetRollResult();
     }
 
     /* SCORE */
@@ -1509,6 +1471,7 @@ window.addEventListener("keydown", (e) => {
 
       rollResult.textContent =
         "+500000 SCORE";
+        resetRollResult();
     }
 
     /* ALL SKINS */
@@ -1519,6 +1482,7 @@ window.addEventListener("keydown", (e) => {
 
       rollResult.textContent =
         " UNLOCK ALL RARE SKINS";
+        resetRollResult();
     }
 
     /* MAX */
@@ -1529,6 +1493,7 @@ window.addEventListener("keydown", (e) => {
 
       rollResult.textContent =
         "📊 MAX STATS";
+        resetRollResult();
     }
 
     /* UNKNOWN */
@@ -1537,6 +1502,7 @@ window.addEventListener("keydown", (e) => {
 
       rollResult.textContent =
         "UNKNOWN COMMAND";
+      resetRollResult();
     }
   }
 });
@@ -1824,20 +1790,16 @@ function updateHomeStats() {
     highestSpeed;
 }
 
-/* PLAYER */
+/* PLAYER MOVEMENT AND WRAPPING */
 
 function updatePlayer() {
 
-  if (!gameRunning) {
-    return;
-  }
+  if (!gameRunning) return;
 
-  const rect =
-    gameContainer.getBoundingClientRect();
+  const rect = gameContainer.getBoundingClientRect();
+  const playerWidth = player.offsetWidth;
 
-  const playerWidth =
-    player.offsetWidth;
-
+  // MOVEMENT
   if (keys["arrowleft"] || keys["a"]) {
     playerX -= playerSpeed;
     lastHorizontalMoveTime = Date.now();
@@ -1848,19 +1810,44 @@ function updatePlayer() {
     lastHorizontalMoveTime = Date.now();
   }
 
-  /* HARD LIMITS */
-
-  const leftPadding = 12;
-
-  if (playerX < leftPadding) {
-    playerX = leftPadding;
-  }
-
-  if (playerX > rect.width - playerWidth) {
-    playerX = rect.width - playerWidth;
-  }
-
+  // MAIN PLAYER POSITION
   player.style.left = `${playerX}px`;
+
+  // WRAP COPY LOGIC
+  let wrapX = null;
+
+  // If player is crossing left edge
+  if (playerX < 0) {
+    wrapX = playerX + rect.width;
+  }
+
+  // If player is crossing right edge
+  else if (playerX + playerWidth > rect.width) {
+    wrapX = playerX - rect.width;
+  }
+
+  // If wrap copy is needed
+  if (wrapX !== null) {
+    playerWrap.style.display = "block";
+    playerWrap.style.left = `${wrapX}px`;
+    playerWrap.style.bottom = player.style.bottom;
+    playerWrap.style.background = player.style.background;
+    playerWrap.style.boxShadow = player.style.boxShadow;
+  }
+
+  // If not wrapping, hide wrap copy
+  else {
+    playerWrap.style.display = "none";
+  }
+
+  // HARD WRAP (position reset) — AFTER dual render
+  if (playerX < -playerWidth) {
+    playerX += rect.width;
+  }
+
+  if (playerX > rect.width) {
+    playerX -= rect.width;
+  }
 }
 
 /* OBSTACLES */
@@ -1919,7 +1906,10 @@ function updateObstacles(delta) {
       continue;
     }
 
-    if (checkCollision(player, o)) {
+    if (
+      checkCollision(player, o) ||
+      checkCollision(playerWrap, o)
+    ) {
 
       if (phantomShiftActive) {
         o.remove();
@@ -1942,22 +1932,11 @@ function updateObstacles(delta) {
         continue;
       }
 
-      if (equippedSkin === "void") {
-        const voidSaveChance = Math.random();
-        if (voidSaveChance < 0.2) {
-          o.remove();
-          obstacles.splice(i, 1);
-          rollResult.textContent = "VOID GOD consumed an obstacle!";
-          continue;
-        }
-      }
-
       handleGameOver();
       return;
     }
   }
 }
-
 
 /* COINS */
 
@@ -2036,7 +2015,10 @@ function updateMoneyBags(delta) {
       continue;
     }
 
-    if (checkCollision(player, bag)) {
+        if (
+      checkCollision(player, bag) ||
+      checkCollision(playerWrap, bag)
+    ) {
 
       const reward = Math.floor(Math.random() * 18) + 8;
 
@@ -2047,6 +2029,7 @@ function updateMoneyBags(delta) {
       coinCountEl.textContent = coinCount;
 
       rollResult.textContent = `+${reward} BONUS COINS!`;
+      resetRollResult();
 
       bag.remove();
       moneyBags.splice(i, 1);
@@ -2078,7 +2061,10 @@ function updateCoins(delta) {
       continue;
     }
 
-    if (checkCollision(player, c)) {
+    if (
+      checkCollision(player, c) ||
+      checkCollision(playerWrap, c)
+    ) {
 
       let reward = 1;
 
@@ -2205,12 +2191,14 @@ function updatePowerUps(delta) {
       continue;
     }
 
-    if (checkCollision(player, p)) {
+    if (
+      checkCollision(player, p) ||
+      checkCollision(playerWrap, p)
+    ) {
 
       activatePowerUp(p.dataset.type);
 
       p.remove();
-
       powerUps.splice(i, 1);
     }
   }
@@ -2455,6 +2443,7 @@ function activatePhantomShift() {
 
   rollResult.textContent =
     "PHANTOM SHIFT ACTIVATED";
+    resetRollResult();
 
   /* END ACTIVE STATE */
 
@@ -2504,6 +2493,7 @@ function activateCelestialSurge() {
 
   rollResult.textContent =
     "CELESTIAL SURGE";
+    resetRollResult();
 
   /* COIN MAGNET EFFECT */
 
@@ -2728,6 +2718,7 @@ restartBtn.addEventListener("click", () => {
 
   rollResult.textContent =
     "Press SPACE to fire a VOID BLAST";
+    resetRollResult();
 }
 
   const rect =
@@ -3003,6 +2994,7 @@ rollBtn.addEventListener("click", () => {
 
       rollResult.textContent = 
       "Not enough coins!";
+      resetRollResult();
     
       return;
     }
@@ -3088,6 +3080,7 @@ if (wonSkin) {
 
   rollResult.textContent =
     `YOU WON THE ${wonSkin.toUpperCase()} SKIN!`;
+    resetRollResult();
 
   updateSkinButtons();
   updateRollButton();
@@ -3097,6 +3090,7 @@ if (wonSkin) {
 
   rollResult.textContent =
     "Unlucky... Try again next time!";
+    resetRollResult();
 
   setTimeout(() => {
 
@@ -3313,23 +3307,17 @@ startGameBtn.addEventListener(
       gameRunning = true;
       pauseOverlay.classList.remove("show");
 
-      if (equippedSkin === "void") {
-
-        rollResult.textContent =
-          "Press SPACE to fire VOID BLAST";
-      }
-
-    }, 700);
+    }, 1000);
   }
 );
 
 function runAntiCheat() {
 
-  if (x93FluxState) {
-  lastCoinCount = coinCount;
-  lastScore = score;
-  return;
-}
+  if (!internalState === "flux") {
+    lastCoinCount = coinCount;
+    lastScore = score;
+    return;
+  }
 
   /* COIN SPIKE DETECTION */
 
@@ -3337,7 +3325,7 @@ function runAntiCheat() {
     coinCount - lastCoinCount;
 if (
   coinIncrease > 500 &&
-  !x93FluxState
+  !internalState
 )
    {
 

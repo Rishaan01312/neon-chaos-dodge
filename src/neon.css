@@ -424,6 +424,18 @@ body {
     box-shadow 0.3s ease;
 }
 
+#player-wrap {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+#player-wrap {
+  bottom: 40px;
+}
+
 /* OBSTACLES */
 
 .obstacle {
