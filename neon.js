@@ -351,6 +351,16 @@ let totalPlaySeconds =
     localStorage.getItem("neonChaosPlayTime") || "0"
   );
 
+function formatTime(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
 let ownedSkins = JSON.parse(
   localStorage.getItem("neonChaosSkins") || "[]"
 );
@@ -598,7 +608,7 @@ coinCountEl.textContent = coinCount;
 totalDeathsEl.textContent = totalDeaths;
 highestSpeedEl.textContent = highestSpeed;
 totalRollsEl.textContent = totalRolls;
-timePlayedEl.textContent = totalPlaySeconds;
+timePlayedEl.textContent = formatTime(totalPlaySeconds);
 updateAchievementBadge();
 
 /* INPUT */
@@ -1436,72 +1446,106 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-/* internalState PANEL */
-
 window.addEventListener("keydown", (e) => {
-
   if (!internalState) return;
 
-  /* OPEN PANEL */
-
   if (e.key === "`") {
-
-    const command = prompt(
-      "X93 FLUX CONSOLE"
-    );
-
+    const command = prompt("X93 FLUX CONSOLE");
     if (!command) return;
 
-    /* COINS */
+    // --- NEW: direct stat assignment ---
+    const match = command.match(/^(\w+)\s*=\s*(\d+)$/);
+    if (match) {
+      const field = match[1].toLowerCase();
+      const value = Number(match[2]);
 
-    if (command === "coins") {
+      switch (field) {
+        case "coins":
+          coinCount = value;
+          coinCountEl.textContent = coinCount;
+          saveGame();
+          rollResult.textContent = `💰 Coins set to ${value}`;
+          break;
 
-      fluxCoins(5000);
+        case "score":
+          score = value;
+          scoreEl.textContent = score;
+          rollResult.textContent = `Score set to ${value}`;
+          break;
 
-      rollResult.textContent =
-        "💰 +5000 COINS";
-        resetRollResult();
+        case "best":
+        case "bestscore":
+          bestScore = value;
+          bestScoreEl.textContent = bestScore;
+          saveGame();
+          rollResult.textContent = `Best Score set to ${value}`;
+          break;
+
+        case "deaths":
+          totalDeaths = value;
+          totalDeathsEl.textContent = totalDeaths;
+          saveGame();
+          rollResult.textContent = `Deaths set to ${value}`;
+          break;
+
+        case "speed":
+        case "highestspeed":
+          highestSpeed = value;
+          highestSpeedEl.textContent = highestSpeed;
+          saveGame();
+          rollResult.textContent = `Highest Speed set to ${value}`;
+          break;
+
+        case "rolls":
+          totalRolls = value;
+          totalRollsEl.textContent = totalRolls;
+          saveGame();
+          rollResult.textContent = `Rolls set to ${value}`;
+          break;
+
+        case "playtime":
+        case "time":
+          totalPlaySeconds = value;
+          timePlayedEl.textContent = formatTime(totalPlaySeconds);
+          saveGame();
+          rollResult.textContent = `Play Time set to ${value}s`;
+          break;
+
+        default:
+          rollResult.textContent = "Unknown stat name";
+      }
+
+      resetRollResult();
+      return;
     }
 
-    /* SCORE */
+    // --- OLD COMMANDS STILL WORK ---
+    if (command === "coins") {
+      fluxCoins(5000);
+      rollResult.textContent = "💰 +5000 COINS";
+      resetRollResult();
+    }
 
     else if (command === "score") {
-
       fluxScore(500000);
-
-      rollResult.textContent =
-        "+500000 SCORE";
-        resetRollResult();
+      rollResult.textContent = "+500000 SCORE";
+      resetRollResult();
     }
-
-    /* ALL SKINS */
 
     else if (command === "skins") {
-
       fluxRareUnlock();
-
-      rollResult.textContent =
-        " UNLOCK ALL RARE SKINS";
-        resetRollResult();
+      rollResult.textContent = "UNLOCK ALL RARE SKINS";
+      resetRollResult();
     }
-
-    /* MAX */
 
     else if (command === "max") {
-
       fluxMaxStats();
-
-      rollResult.textContent =
-        "📊 MAX STATS";
-        resetRollResult();
+      rollResult.textContent = "📊 MAX STATS";
+      resetRollResult();
     }
 
-    /* UNKNOWN */
-
     else {
-
-      rollResult.textContent =
-        "UNKNOWN COMMAND";
+      rollResult.textContent = "UNKNOWN COMMAND";
       resetRollResult();
     }
   }
@@ -1639,6 +1683,10 @@ function checkAchievements() {
 
   if ((Date.now() - lastHitTime) <= 200 && lastHitTime > 0) {
     unlockAchievement("clutch_save");
+  }
+
+  if (narrowEscapeCount > 0) {
+    unlockAchievement("thread_needle");
   }
 }
 
@@ -2711,6 +2759,7 @@ restartBtn.addEventListener("click", () => {
     "multiplier"
   );
 
+  shieldDamageTaken = false;
   gameRunning = true;
 
   gameOverScreen.classList.remove("show");
