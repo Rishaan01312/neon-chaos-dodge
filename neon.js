@@ -4428,7 +4428,8 @@ if (equippedSkin === "celestial") {
         );
     }
 
-    if (timestamp - lastSpawn > (chaosMode ? spawnInterval * 0.5 : spawnInterval)) {
+    const effectiveSpawnInterval = (chaosMode ? spawnInterval * 0.5 : spawnInterval) * (slowActive ? 5 : 1);
+    if (timestamp - lastSpawn > effectiveSpawnInterval) {
       spawnObstacle();
       lastSpawn = timestamp;
     }
