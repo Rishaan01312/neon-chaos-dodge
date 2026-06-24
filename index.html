@@ -25,7 +25,9 @@
 
     <div id="left-column">
 
-      <!-- ACTIVE POWERUPS -->
+      <!-- ACTIVE POWERUPS + CONTROLS -->
+
+      <div class="top-bar">
 
       <div id="active-effects">
 
@@ -40,7 +42,7 @@
               Shield
             </span>
 
-          <div id="shield-timer" class="effect-timer"></div>
+            <div id="shield-timer" class="effect-timer"></div>
           </div>
         </div>
 
@@ -55,12 +57,7 @@
               Slow Time
             </span>
 
-            <span
-              class="effect-timer"
-              id="slow-timer"
-            >
-              00:00
-            </span>
+            <div id="slow-timer" class="effect-timer"></div>
           </div>
         </div>
 
@@ -72,132 +69,56 @@
 
           <div class="effect-info">
             <span class="effect-name">
-              x2 Multiplier
+              ×2 Multiplier
             </span>
 
-            <span
-              class="effect-timer"
-              id="multiplier-timer"
-            >
-              00:00
-            </span>
+            <div id="multiplier-timer" class="effect-timer"></div>
           </div>
         </div>
 
         <div
-  class="effect-indicator"
-  id="triple-indicator"
->
-  <div class="effect-icon">×3</div>
+          class="effect-indicator"
+          id="triple-indicator"
+        >
+          <div class="effect-icon">×3</div>
 
-  <div class="effect-info">
-    <span class="effect-name">
-      x3 Multiplier
-    </span>
+          <div class="effect-info">
+            <span class="effect-name">
+              ×3 Multiplier
+            </span>
 
-    <span
-      class="effect-timer"
-      id="triple-timer"
-    >
-      00:00
-    </span>
-  </div>
-</div>
+            <div id="triple-timer" class="effect-timer"></div>
+          </div>
+        </div>
 
-<!-- SPECIAL POWERUPS -->
+      </div>
 
-<div
-  class="effect-indicator"
-  id="void-indicator"
->
-  <div class="effect-icon">☄</div>
+        <!-- GAME CONTROLS -->
 
-  <div class="effect-info">
+        <div id="game-controls">
 
-    <span class="effect-name">
-      VOID BLAST
-    </span>
+          <button id="pause-btn">
+            ⏸
+          </button>
 
-    <span
-      class="effect-timer"
-      id="void-timer"
-    >
-      READY
-    </span>
+          <button id="game-achievements-btn">
+            🏆
+            <span id="achievement-badge" class="badge hidden">0</span>
+          </button>
 
-  </div>
-</div>
+          <button id="home-btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="white"
+              width="32"
+              height="32"
+            >
+              <path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/>
+            </svg>
+          </button>
 
-<div
-  class="effect-indicator"
-  id="phantom-indicator"
->
-  <div class="effect-icon">👻</div>
-
-  <div class="effect-info">
-
-    <span class="effect-name">
-      PHANTOM SHIFT
-    </span>
-
-    <span
-      class="effect-timer"
-      id="phantom-timer"
-    >
-      READY
-    </span>
-
-  </div>
-</div>
-
-<div
-  class="effect-indicator"
-  id="celestial-indicator"
->
-  <div class="effect-icon">✨</div>
-
-  <div class="effect-info">
-
-    <span class="effect-name">
-      CELESTIAL SURGE
-    </span>
-
-    <span
-      class="effect-timer"
-      id="celestial-timer"
-    >
-      READY
-    </span>
-
-  </div>
-</div>
-
-<!-- GAME CONTROLS -->
-
-<div id="game-controls">
-
-  <button id="pause-btn">
-    ⏸
-  </button>
-
-  <button id="game-achievements-btn">
-    🏆
-    <span id="achievement-badge" class="badge hidden">0</span>
-  </button>
-
-  <button id="home-btn">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="white"
-      width="32"
-      height="32"
-    >
-      <path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/>
-    </svg>
-  </button>
-
-</div>
+        </div>
 
       </div>
 
@@ -364,17 +285,12 @@
 
         <div id="control-buttons">
 
-    <button id="info-btn">More Info</button>
+          <button id="info-btn">More Info</button>
+          <button id="achievements-btn">Achievements</button>
+          <button id="reset-btn">Hard Reset</button>
+          <button id="prestige-btn">Prestige</button>
 
-    <button id="achievements-btn">
-      Achievements
-    </button>
-
-
-    <button id="reset-btn">Reset Progress</button>
-
-</div>
-
+        </div>
 
       </div>
 
@@ -544,7 +460,6 @@
 
           </div>
 
-
         </div>
 
         <!-- ROLL AREA -->
@@ -555,9 +470,9 @@
             ROLL FOR RARE SKINS — 15 COINS
           </button>
 
-          <div id="roll-result">
-            Roll for ultra rare mythical skins...
-          </div>
+            <div id="roll-result">
+              Roll for ultra rare mythical skins...
+            </div>
 
         </div>
 
@@ -581,8 +496,7 @@
       </h3>
 
       <p>
-        This will erase your best score,
-        coins, unlocked skins, and all achievements.
+        This will erase EVERYTHING including your prestige tokens.
       </p>
 
       <p class="reset-instruction">
@@ -603,19 +517,9 @@
 
       <div class="reset-actions">
 
-        <button
-          id="cancel-reset-btn"
-          class="ghost-btn"
-        >
-          Cancel
-        </button>
+        <button id="cancel-reset-btn" class="ghost-btn">Cancel</button>
 
-        <button
-          id="confirm-reset-btn"
-          class="danger-btn"
-        >
-          Confirm reset
-        </button>
+        <button id="confirm-reset-btn" class="danger-btn">Confirm reset</button>
 
       </div>
 
@@ -625,94 +529,77 @@
 
  <!-- INFO OVERLAY -->
 
-<div
-  id="info-overlay"
-  class="reset-overlay"
->
+<div id="info-overlay" class="reset-overlay">
+  <div class="reset-card info-card info-landscape">
+    <h3>MORE INFO</h3>
 
-  <div class="reset-card info-card">
+    <div class="info-sections info-grid">
 
-    <h3>
-      MORE INFO
-    </h3>
+      <section class="info-column">
+        <h4>Powerups</h4>
+        <div class="info-block">
+          <p><strong>🛡 Shield</strong><br>Grants invulnerability when collected, and is stackable. Use to survive tight windows and avoid death penalties. Drop chance: 50%.</p>
+        </div>
+        <div class="info-block">
+          <p><strong>⏱ Slow Time</strong><br>Temporarily reduces obstacle speed and spawn rate for smoother navigation. Useful for recovery. Drop chance: 50%.</p>
+        </div>
+        <div class="info-block">
+          <p><strong>×2 Multiplier</strong><br>Doubles score & coin gains while active. Stacking multipliers increases pacing for high-score runs. Drop chance: 50%.</p>
+        </div>
+        <div class="info-block">
+          <p><strong>×3 Multiplier</strong><br>Triples score & coin gains for a short burst — rarer but high payoff. Drop chance: 15%.</p>
+        </div>
+        <div class="info-block">
+          <p><strong>Coin Bag</strong><br>Instant coin payout. Best when near a shop purchase or to meet prestige requirements. Drop chance: 5%.</p>
+        </div>
+      </section>
 
-    <div class="info-sections">
+      <section class="info-column">
+        <h4>Skins</h4>
+        <div class="info-block">
+          <p><strong>Celestial</strong><br>Passive: score boost + coin magnet on pick-up. Rare (0.3%).</p>
+        </div>
+        <div class="info-block">
+          <p><strong>Phantom</strong><br>Active: temporary invulnerability to obstacles while ability is used. Rare (0.2%).</p>
+        </div>
+        <div class="info-block">
+          <p><strong>Void</strong><br>Active: clears visible obstacles on activation. Ultra-rare (0.1%).</p>
+        </div>
+      </section>
 
-      <div class="info-block">
-        <p>
-          <strong>🛡 Shield</strong><br>
-          Puts a shield on the player for 6 seconds.<br>
-          Drop Chance: 50%
-        </p>
-      </div>
+      <section class="info-column">
+        <h4>Prestige Boosts</h4>
+        <div class="info-block">
+          <p><strong>Coin Spawn Rate</strong><br>Each +5% reduces the interval between coin spawns (minimum cap), increasing the number of coins you can collect per run. Stacks additively.</p>
+        </div>
+        <div class="info-block">
+          <p><strong>Coin Value</strong><br>Each +5% increases the value of every coin. Since coin rewards are integers, values are rounded up to preserve meaningful gains.</p>
+        </div>
+        <div class="info-block">
+          <p><strong>Score Gain</strong><br>Each +5% multiplies per-action score gain, helping you reach higher scores faster.</p>
+        </div>
+        <div class="info-block">
+          <p><strong>Money Bag Reward</strong><br>Each +5% increases the payout from money bag drops, making rare bag drops more impactful.</p>
+        </div>
+        <div class="info-block">
+          <p><strong>Speed Progress</strong><br>Each +5% reduces the score required to reach the next speed level, accelerating progression to higher difficulty and reward tiers.</p>
+        </div>
+      </section>
 
-      <div class="info-block">
-        <p>
-          <strong>⏱ Slow Time</strong><br>
-          Slows obstacle speed and spawn rate.<br>
-          Drop Chance: 50%
-        </p>
-      </div>
-
-      <div class="info-block">
-        <p>
-          <strong>×2 Multiplier</strong><br>
-          Doubles score and coin gains.<br>
-          Drop Chance: 50%
-        </p>
-      </div>
-
-      <div class="info-block">
-        <p>
-          <strong>×3 Multiplier</strong><br>
-          Triples score and coin gains.<br>
-          Drop Chance: 15%
-        </p>
-      </div>
-
-      <div class="info-block">
-        <p>
-          <strong>Coin Bag</strong><br>
-          Gives bonus coins instantly.<br>
-          Drop Chance: 5%
-        </p>
-      </div>
-
-      <div class="info-block">
-        <p>
-          <strong>CELESTIAL Skin</strong><br>
-          Ability: Bonus score boost and coin magnet.<br>
-          Roll Chance: 0.3%
-        </p>
-      </div>
-
-      <div class="info-block">
-        <p>
-          <strong>PHANTOM Skin</strong><br>
-          Ability: Become invincible against obstacles.<br>
-          Roll Chance: 0.2%
-        </p>
-      </div>
-
-      <div class="info-block">
-        <p>
-          <strong>VOID Skin</strong><br>
-          Ability: Destroy all obstacles visible on that frame.<br>
-          Roll Chance: 0.1%
-        </p>
-      </div>
+      <section class="info-column">
+        <h4>Other</h4>
+        <div class="info-block">
+          <p><strong>Chaos Mode</strong><br>A harder mode that increases obstacle speed and spawn rate while boosting score gain — toggle in settings for challenge runs.</p>
+        </div>
+        <div class="info-block">
+          <p><strong>Prestige</strong><br>A full reset that grants prestige tokens when requirements are met. Tokens can be spent permanently on the Prestige Shop to buy +5% boosts that persist across resets (excluding hard resets).</p>
+        </div>
+      </section>
 
     </div>
 
     <div class="reset-actions">
-
-      <button
-        id="close-info-btn"
-        class="ghost-btn"
-      >
-        Close
-      </button>
-
+      <button id="close-info-btn" class="ghost-btn">Close</button>
     </div>
 
   </div>
@@ -738,11 +625,11 @@
         <p><strong>Engine:</strong> HTML / CSS / JavaScript</p>
         <p><strong>Started:</strong> January 16 2026</p>
         <p><strong>Finished:</strong> Always Updating!</p>
-        <p><strong>Total dev time:</strong> ~245 hours</p>
-        <p><strong>Code written:</strong> 6,950 lines altogether</p>
-        <p><strong>Bugs fixed:</strong> ~260</p>
-        <p><strong>Bugs caused by fixing other bugs:</strong> ~35</p>
-        <p><strong>Hours lost to one dumb semicolon:</strong> 3 hours</p>
+        <p><strong>Total dev time:</strong> ~268 hours</p>
+        <p><strong>Code written:</strong> 9,608 lines altogether</p>
+        <p><strong>Bugs fixed:</strong> ~276</p>
+        <p><strong>Bugs caused by fixing other bugs:</strong> ~342</p>
+        <p><strong>Hours lost to one dumb semicolon:</strong> 10 hours</p>
         <p><strong>Times the game broke at 10 PM:</strong> 5</p>
       </div>
 
@@ -827,25 +714,21 @@
 
     <div id="home-middle">
 
-      <!-- LEFT CARD -->
+      <!-- LEFT CARD — DAILY CHALLENGES -->
 
-      <div class="home-card">
+      <div class="home-card" id="daily-challenges-card">
 
-        <h3>
-          HOW TO PLAY
-        </h3>
+        <h3>DAILY CHALLENGES</h3>
 
-        <p>
-          ← → or A / D to move
-        </p>
+        <div id="daily-challenges-list">
+          <!-- Inserted by JS -->
+        </div>
 
-        <p>
-          Collect powerups and coins.
-        </p>
+        <button id="daily-claim-btn" class="daily-claim-btn" disabled>
+          Claim +50 Coins
+        </button>
 
-        <p>
-          Survive as long as possible.
-        </p>
+        <div id="daily-countdown" class="daily-countdown" style="display:none;"></div>
 
       </div>
 
@@ -864,9 +747,9 @@
             <span id="next-track-btn" class="next-track-pill" title="Next track">⏭</span>
           </button>
 
-          <button id="start-game-btn">
-            START GAME
-          </button>
+          <button id="theme-btn">Themes</button>
+
+          <button id="start-game-btn">START GAME</button>
 
         </div>
 
@@ -897,6 +780,11 @@
             <span id="home-highest-speed">1</span>
           </div>
 
+          <div class="home-stat prestige-stat" id="home-prestige-stat">
+            ⭐ Prestige Tokens:
+            <span id="home-prestige-level">0</span>
+          </div>
+
         </div>
 
       </div>
@@ -923,46 +811,210 @@
     <source src="assets/music/All I Need.mp3" type="audio/mpeg">
   </audio>
 
+  <!-- SETTINGS OVERLAY -->
   <div id="settings-overlay" class="reset-overlay">
-  <div class="reset-card info-card">
+    <div class="reset-card info-card">
 
-    <h3>SETTINGS</h3>
+      <h3>SETTINGS</h3>
 
-    <div class="info-sections">
+      <div class="info-sections">
 
-      <div class="info-block">
-        <p><strong>Music Volume</strong></p>
-        <input id="music-volume" type="range" min="0" max="1" step="0.01">
+        <div class="info-block">
+          <p><strong>Music Volume</strong></p>
+          <input id="music-volume" type="range" min="0" max="1" step="0.01">
+        </div>
+
+        <div class="info-block">
+          <p><strong>Game Sensitivity</strong></p>
+          <input id="game-sensitivity" type="range" min="1" max="20" step="0.5" value="8">
+        </div>
+
+        <div class="info-block">
+          <p><strong>Chaos Mode</strong></p>
+          <label class="toggle-row">
+            <span>Enable Chaos Mode</span>
+            <input id="chaos-mode" type="checkbox">
+          </label>
+          <p class="setting-description">
+            Doubles obstacle speed, increases spawn rate, and boosts score gain.
+          </p>
+        </div>
+
+        <div class="info-block coming-soon-card">
+          <p>More settings coming soon!</p>
+        </div>
+
       </div>
 
-      <div class="info-block">
-        <p><strong>Game Sensitivity</strong></p>
-        <input id="game-sensitivity" type="range" min="1" max="20" step="0.5" value="8">
-      </div>
-
-      <div class="info-block">
-        <p><strong>Chaos Mode</strong></p>
-        <label class="toggle-row">
-          <span>Enable Chaos Mode</span>
-          <input id="chaos-mode" type="checkbox">
-        </label>
-        <p class="setting-description">
-          Doubles obstacle speed, increases spawn rate, and boosts score gain.
-        </p>
-      </div>
-
-      <div class="info-block coming-soon-card">
-        <p>More settings coming soon!</p>
+      <div class="reset-actions">
+        <button id="close-settings-btn" class="ghost-btn">Close</button>
       </div>
 
     </div>
-
-    <div class="reset-actions">
-      <button id="close-settings-btn" class="ghost-btn">Close</button>
-    </div>
-
   </div>
-</div>
+
+  <!-- THEME MENU OVERLAY -->
+  <div id="theme-menu" class="reset-overlay">
+    <div class="reset-card info-card theme-card">
+
+      <h3>🎨 THEMES</h3>
+
+      <div class="theme-grid">
+
+        <button class="theme-option theme-opt-neonBlue" data-theme="neonBlue">
+          <span class="theme-swatch" style="background:linear-gradient(135deg,#00ffff,#0044ff)"></span>
+          <span class="theme-label">Neon Blue</span>
+        </button>
+
+        <button class="theme-option theme-opt-neonPurple" data-theme="neonPurple">
+          <span class="theme-swatch" style="background:linear-gradient(135deg,#b400ff,#6600cc)"></span>
+          <span class="theme-label">Neon Purple</span>
+        </button>
+
+        <button class="theme-option theme-opt-neonRed" data-theme="neonRed">
+          <span class="theme-swatch" style="background:linear-gradient(135deg,#ff0033,#ff6600)"></span>
+          <span class="theme-label">Neon Red</span>
+        </button>
+
+        <button class="theme-option theme-opt-neonGreen" data-theme="neonGreen">
+          <span class="theme-swatch" style="background:linear-gradient(135deg,#00ff66,#00aa44)"></span>
+          <span class="theme-label">Neon Green</span>
+        </button>
+
+        <button class="theme-option theme-opt-neonGold" data-theme="neonGold">
+          <span class="theme-swatch" style="background:linear-gradient(135deg,#ffdd00,#ff8800)"></span>
+          <span class="theme-label">Neon Gold</span>
+        </button>
+
+        <button class="theme-option theme-opt-neonCyber" data-theme="neonCyber">
+          <span class="theme-swatch" style="background:linear-gradient(135deg,#0000ff,#00ffff,#ff00ff)"></span>
+          <span class="theme-label">Cyber</span>
+        </button>
+
+      </div>
+
+      <div class="reset-actions" style="margin-top:20px">
+        <button id="close-theme-menu" class="ghost-btn">Close</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PRESTIGE OVERLAY -->
+  <div id="prestige-overlay" class="reset-overlay">
+    <div class="reset-card prestige-card">
+
+      <div class="prestige-header">
+        <span class="prestige-icon">⭐</span>
+        <h3>PRESTIGE</h3>
+        <span class="prestige-icon">⭐</span>
+      </div>
+
+      <p class="prestige-tagline">Reset your progress and earn a Prestige badge.</p>
+
+      <div class="prestige-requirements">
+        <div class="prestige-req" id="req-skins">
+          <span class="req-icon">🎨</span>
+          <span class="req-text">Unlock ALL skins</span>
+          <span class="req-status" id="req-skins-status">✗</span>
+        </div>
+        <div class="prestige-req" id="req-coins">
+          <span class="req-icon">💰</span>
+          <span class="req-text">Have 1,000+ coins</span>
+          <span class="req-status" id="req-coins-status">✗</span>
+        </div>
+        <div class="prestige-req" id="req-type">
+          <span class="req-icon">⌨️</span>
+          <span class="req-text">Type PRESTIGE below</span>
+          <span class="req-status" id="req-type-status">✗</span>
+        </div>
+      </div>
+
+      <p class="prestige-what-resets">
+        <strong>Resets:</strong> coins, score, skins, stats &nbsp;|&nbsp;
+        <strong>Keeps:</strong> achievements, prestige level
+      </p>
+
+      <input
+        id="prestige-confirm-input"
+        type="text"
+        placeholder="Type PRESTIGE to confirm"
+        maxlength="8"
+        autocomplete="off"
+      />
+
+      <div class="reset-actions">
+        <button id="prestige-shop-btn" class="secondary-btn">Prestige Shop</button>
+        <button id="prestige-confirm-btn" class="danger-btn prestige-confirm-btn">⭐ Prestige</button>
+        <button id="prestige-close-btn" class="ghost-btn">Cancel</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="prestige-shop-overlay" class="reset-overlay">
+    <div class="reset-card prestige-card prestige-shop-card">
+      <div class="prestige-header">
+        <span class="prestige-icon">💠</span>
+        <h3>PRESTIGE SHOP</h3>
+        <span class="prestige-icon">💠</span>
+      </div>
+
+      <p class="prestige-tagline">
+        Spend Prestige Tokens for permanent +5% boosts. Every purchase costs 1 token and stacks infinitely.
+      </p>
+
+      <div class="prestige-tokens-display">
+        <span>Prestige Tokens:</span>
+        <strong id="prestige-shop-tokens">0</strong>
+      </div>
+
+      <div id="prestige-shop-list" class="prestige-shop-list"></div>
+
+      <div class="prestige-shop-summary">
+        <h4>Current boost totals</h4>
+        <div class="prestige-shop-summary-row">
+          <span>Coin Spawn Rate</span>
+          <span id="boost-coinSpawn">+0%</span>
+        </div>
+        <div class="prestige-shop-summary-row">
+          <span>Coin Value</span>
+          <span id="boost-coinValue">+0%</span>
+        </div>
+        <div class="prestige-shop-summary-row">
+          <span>Score Gain</span>
+          <span id="boost-scoreGain">+0%</span>
+        </div>
+        <div class="prestige-shop-summary-row">
+          <span>Money Bag Reward</span>
+          <span id="boost-moneyBagValue">+0%</span>
+        </div>
+        <div class="prestige-shop-summary-row">
+          <span>Speed Progress</span>
+          <span id="boost-speedGain">+0%</span>
+        </div>
+        <div class="prestige-shop-summary-row">
+          <span>Slow Duration</span>
+          <span id="boost-slowDuration">+0s</span>
+        </div>
+        <div class="prestige-shop-summary-row">
+          <span>x2 Multiplier Duration</span>
+          <span id="boost-multiplierDuration">+0s</span>
+        </div>
+        <div class="prestige-shop-summary-row">
+          <span>x3 Multiplier Duration</span>
+          <span id="boost-tripleDuration">+0s</span>
+        </div>
+      </div>
+
+      <div class="reset-actions">
+        <button id="prestige-shop-back-btn" class="secondary-btn">Back</button>
+        <button id="prestige-shop-close-btn" class="ghost-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="neon-toast" class="neon-toast"></div>
 
   <script src="neon.js"></script>
 

@@ -1,4 +1,13 @@
 (() => {
+function getSafe(id) {
+  const el = document.getElementById(id);
+  if (el) return el;
+  return {
+    textContent: "",
+    classList: { add: () => {}, remove: () => {}, toggle: () => {} },
+    style: {},
+  };
+}
 const gameContainer = document.getElementById("game-container");
 const player = document.getElementById("player");
 const playerWrap = document.getElementById("player-wrap");
@@ -17,23 +26,23 @@ const totalDeathsEl = document.getElementById("total-deaths");
 const highestSpeedEl = document.getElementById("highest-speed");
 const totalRollsEl = document.getElementById("total-rolls");
 const timePlayedEl = document.getElementById("time-played");
-const shieldStatus = document.getElementById("shield-status");
-const slowStatus = document.getElementById("slow-status");
-const multiplierStatus = document.getElementById("multiplier-status");
-const shieldIndicator = document.getElementById("shield-indicator");
-const slowIndicator = document.getElementById("slow-indicator");
-const multiplierIndicator = document.getElementById("multiplier-indicator");
-const shieldTimer = document.getElementById("shield-timer");
-const slowTimer = document.getElementById("slow-timer");
-const multiplierTimer = document.getElementById("multiplier-timer");
-const voidIndicator = document.getElementById("void-indicator");
-const voidTimer = document.getElementById("void-timer");
-const phantomIndicator = document.getElementById("phantom-indicator");
-const phantomTimer = document.getElementById("phantom-timer");
-const celestialIndicator = document.getElementById("celestial-indicator");
-const celestialTimer = document.getElementById("celestial-timer");
-const tripleIndicator = document.getElementById("triple-indicator");
-const tripleTimer = document.getElementById("triple-timer");
+const shieldStatus = getSafe("shield-status");
+const slowStatus = getSafe("slow-status");
+const multiplierStatus = getSafe("multiplier-status");
+const shieldIndicator = getSafe("shield-indicator");
+const slowIndicator = getSafe("slow-indicator");
+const multiplierIndicator = getSafe("multiplier-indicator");
+const shieldTimer = getSafe("shield-timer");
+const slowTimer = getSafe("slow-timer");
+const multiplierTimer = getSafe("multiplier-timer");
+const voidIndicator = getSafe("void-indicator");
+const voidTimer = getSafe("void-timer");
+const phantomIndicator = getSafe("phantom-indicator");
+const phantomTimer = getSafe("phantom-timer");
+const celestialIndicator = getSafe("celestial-indicator");
+const celestialTimer = getSafe("celestial-timer");
+const tripleIndicator = getSafe("triple-indicator");
+const tripleTimer = getSafe("triple-timer");
 const homeScreen = document.getElementById("home-screen");
 const startGameBtn = document.getElementById("start-game-btn");
 const homeBestScore = document.getElementById("home-best-score");
@@ -58,10 +67,188 @@ const closeSettingsBtn = document.getElementById("close-settings-btn");
 const musicVolumeSlider = document.getElementById("music-volume");
 const sfxVolumeSlider = document.getElementById("sfx-volume");
 const graphicsModeSelect = document.getElementById("graphics-mode");
+const themeMenu = document.getElementById("theme-menu");
+const themeBtn = document.getElementById("theme-btn");
+const closeThemeMenu = document.getElementById("close-theme-menu");
+const prestigeOverlay = document.getElementById("prestige-overlay");
+const prestigeConfirmBtn = document.getElementById("prestige-confirm-btn");
+const prestigeCloseBtn = document.getElementById("prestige-close-btn");
+const prestigeConfirmInput = document.getElementById("prestige-confirm-input");
+const prestigeBtn = document.getElementById("prestige-btn");
+const prestigeShopBtn = document.getElementById("prestige-shop-btn");
+const prestigeShopOverlay = document.getElementById("prestige-shop-overlay");
+const prestigeShopTokensEl = document.getElementById("prestige-shop-tokens");
+const prestigeShopList = document.getElementById("prestige-shop-list");
+const prestigeShopBackBtn = document.getElementById("prestige-shop-back-btn");
+const prestigeShopCloseBtn = document.getElementById("prestige-shop-close-btn");
+
 
 let musicVolume = 0.22;
 let sfxVolume = 0.75;
 let graphicsMode = "high";
+
+prestigeBtn?.addEventListener("click", () => {
+  updatePrestigeRequirementsUI();
+  prestigeOverlay.classList.add("show");
+});
+
+prestigeShopBtn?.addEventListener("click", () => {
+  prestigeOverlay.classList.remove("show");
+  openPrestigeShopOverlay();
+});
+
+prestigeCloseBtn?.addEventListener("click", () => {
+  prestigeOverlay.classList.remove("show");
+});
+
+prestigeShopBackBtn?.addEventListener("click", () => {
+  closePrestigeShopOverlay();
+  prestigeOverlay.classList.add("show");
+});
+
+prestigeShopCloseBtn?.addEventListener("click", () => {
+  closePrestigeShopOverlay();
+});
+
+prestigeShopOverlay?.addEventListener("click", (event) => {
+  if (event.target === prestigeShopOverlay) {
+    closePrestigeShopOverlay();
+  }
+});
+
+function updatePrestigeRequirementsUI() {
+  const allSkinsUnlocked =
+    ownedSkins.length >= 10 &&
+    ["void","phantom","celestial"].every(s => localStorage.getItem(`${s}Verified`) === "true");
+
+  const hasEnoughCoins = coinCount >= 1000;
+  const typed = (document.getElementById("prestige-confirm-input")?.value || "") === "PRESTIGE";
+
+  const reqSkins = document.getElementById("req-skins");
+  const reqCoins = document.getElementById("req-coins");
+  const reqType  = document.getElementById("req-type");
+  const statusSkins = document.getElementById("req-skins-status");
+  const statusCoins = document.getElementById("req-coins-status");
+  const statusType  = document.getElementById("req-type-status");
+
+  if (reqSkins) reqSkins.classList.toggle("req-met", allSkinsUnlocked);
+  if (reqCoins) reqCoins.classList.toggle("req-met", hasEnoughCoins);
+  if (reqType)  reqType.classList.toggle("req-met", typed);
+
+  if (statusSkins) statusSkins.textContent = allSkinsUnlocked ? "✓" : "✗";
+  if (statusCoins) statusCoins.textContent = hasEnoughCoins  ? "✓" : "✗";
+  if (statusType)  statusType.textContent  = typed           ? "✓" : "✗";
+}
+
+document.getElementById("prestige-confirm-input")?.addEventListener("input", updatePrestigeRequirementsUI);
+
+prestigeConfirmBtn?.addEventListener("click", () => {
+
+  // REQUIREMENT 1 — All skins unlocked
+  const allSkinsUnlocked =
+    ownedSkins.length >= 10 &&
+    ["void","phantom","celestial"].every(s => localStorage.getItem(`${s}Verified`) === "true");
+
+  // REQUIREMENT 2 — 1000 coins
+  const hasEnoughCoins = coinCount >= 1000;
+
+  // REQUIREMENT 3 — Type PRESTIGE
+  const typedCorrectly = prestigeConfirmInput.value === "PRESTIGE";
+
+  if (!allSkinsUnlocked || !hasEnoughCoins || !typedCorrectly) {
+
+    if (!allSkinsUnlocked) {
+      const row = document.getElementById("req-skins");
+      row?.classList.add("req-error");
+      setTimeout(() => row?.classList.remove("req-error"), 600);
+    }
+
+    if (!hasEnoughCoins) {
+      const row = document.getElementById("req-coins");
+      row?.classList.add("req-error");
+      setTimeout(() => row?.classList.remove("req-error"), 600);
+    }
+
+    if (!typedCorrectly) {
+      prestigeConfirmInput.value = "";
+      prestigeConfirmInput.classList.add("prestige-input-error");
+      setTimeout(() => prestigeConfirmInput.classList.remove("prestige-input-error"), 600);
+    }
+
+    return;
+  }
+
+  // RESET STATS
+  coinCount = 0;
+  authState.coins = coinCount;
+  score = 0;
+  bestScore = 0;
+  authState.bestScore = bestScore;
+  totalDeaths = 0;
+  authState.totalDeaths = totalDeaths;
+  highestSpeed = 1;
+  authState.highestSpeed = highestSpeed;
+  totalRolls = 0;
+  authState.totalRolls = totalRolls;
+
+  // RESET SKINS
+  ownedSkins = [];
+  equippedSkin = "default";
+
+  localStorage.setItem("neonChaosSkins", "[]");
+  localStorage.setItem("neonChaosSkin", "default");
+
+  ["void","phantom","celestial"].forEach(s => {
+    localStorage.removeItem(`${s}Verified`);
+  });
+
+  // APPLY PRESTIGE
+  prestigeLevel++;
+  prestigeTokens++;
+  authState.prestigeLevel = prestigeLevel;
+  authState.prestigeTokens = prestigeTokens;
+  localStorage.setItem("neonChaosPrestige", prestigeLevel.toString());
+
+  // Reset daily challenges
+  localStorage.removeItem("neonChaosDailyDate");
+  localStorage.removeItem("neonChaosDailyChallenges");
+  localStorage.removeItem("neonChaosDailyCompleted");
+  localStorage.removeItem("neonChaosDailyClaimed");
+
+  // Flag for toast after reload
+  localStorage.setItem("neonChaosPrestigeToast", "1");
+
+  saveGame();
+
+  prestigeConfirmInput.value = "";
+  prestigeOverlay.classList.remove("show");
+
+  location.reload();
+});
+
+themeBtn?.addEventListener("click", () => {
+  updateThemeMenuUI();
+  themeMenu.classList.add("show");
+});
+
+closeThemeMenu?.addEventListener("click", () => {
+  themeMenu.classList.remove("show");
+});
+
+function updateThemeMenuUI() {
+  document.querySelectorAll(".theme-option").forEach(btn => {
+    btn.classList.toggle("theme-active", btn.dataset.theme === theme);
+  });
+}
+
+document.querySelectorAll(".theme-option").forEach(btn => {
+  btn.addEventListener("click", () => {
+    applyTheme(btn.dataset.theme);
+    updateThemeMenuUI();
+    saveGame();
+    themeMenu.classList.remove("show");
+  });
+});
 
 settingsBtn?.addEventListener("click", () => {
   settingsOverlay?.classList.add("show");
@@ -121,41 +308,47 @@ const SAVE_KEY = "neonChaosSecureSave";
 const SECRET_KEY = "NEON_SECRET_2026";
 
 function createChecksum(data) {
-  return btoa(
-    JSON.stringify(data) + SECRET_KEY
-  );
+  return btoa(JSON.stringify(data) + SECRET_KEY);
 }
 
 function saveGame() {
-
+  // Tamper detection: ensure public variables match authoritative snapshot.
+  if (
+    coinCount !== authState.coins ||
+    bestScore !== authState.bestScore ||
+    totalDeaths !== authState.totalDeaths ||
+    highestSpeed !== authState.highestSpeed ||
+    totalRolls !== authState.totalRolls ||
+    prestigeLevel !== authState.prestigeLevel ||
+    prestigeTokens !== authState.prestigeTokens ||
+    JSON.stringify(prestigeBoosts) !==
+      JSON.stringify(authState.prestigeBoosts)
+  ) {
+    triggerCheatDetection("In-memory tampering detected. Save blocked.");
+    return;
+  }
   const data = {
-  coins: coinCount,
-  bestScore,
-  totalDeaths,
-  highestSpeed,
-  totalRolls,
-  ownedSkins,
-  equippedSkin,
-
-  voidVerified:
-  localStorage.getItem("voidVerified") === "true",
-
-phantomVerified:
-  localStorage.getItem("phantomVerified") === "true",
-
-celestialVerified:
-  localStorage.getItem("celestialVerified") === "true"
-};
-
-  const save = {
-    data,
-    checksum: createChecksum(data)
+    coins: coinCount,
+    bestScore,
+    totalDeaths,
+    highestSpeed,
+    totalRolls,
+    totalPlaySeconds,
+    ownedSkins,
+    equippedSkin,
+    prestigeLevel,
+    prestigeTokens,
+    prestigeBoosts,
+    theme,
+    voidVerified: localStorage.getItem("voidVerified") === "true",
+    phantomVerified:
+      localStorage.getItem("phantomVerified") === "true",
+    celestialVerified:
+      localStorage.getItem("celestialVerified") === "true"
   };
 
-  localStorage.setItem(
-    SAVE_KEY,
-    JSON.stringify(save)
-  );
+  const save = { data, checksum: createChecksum(data) };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(save));
 }
 
 function loadGame() {
@@ -198,6 +391,37 @@ function loadGame() {
 
     totalRolls =
       save.data.totalRolls || 0;
+    totalPlaySeconds = save.data.totalPlaySeconds || totalPlaySeconds;
+    prestigeTokens = save.data.prestigeTokens || 0;
+    const defaultPrestigeBoosts = {
+      coinSpawnRate: 0,
+      coinValue: 0,
+      scoreGain: 0,
+      moneyBagValue: 0,
+      speedGain: 0,
+      slowDuration: 0,
+      multiplierDuration: 0,
+      tripleDuration: 0
+    };
+    prestigeBoosts = {
+      ...defaultPrestigeBoosts,
+      ...(save.data.prestigeBoosts || {})
+    };
+
+    prestigeLevel = save.data.prestigeLevel || 0;
+
+    // Sync authoritative snapshot after loading
+    authState.coins = coinCount;
+    authState.bestScore = bestScore;
+    authState.totalDeaths = totalDeaths;
+    authState.highestSpeed = highestSpeed;
+    authState.totalRolls = totalRolls;
+    authState.prestigeLevel = prestigeLevel;
+    authState.prestigeTokens = prestigeTokens;
+    authState.prestigeBoosts = prestigeBoosts;
+    
+    theme = save.data.theme || "neonBlue";
+    applyTheme(theme);
 
     ownedSkins =
       save.data.ownedSkins || [];
@@ -351,6 +575,74 @@ let totalPlaySeconds =
     localStorage.getItem("neonChaosPlayTime") || "0"
   );
 
+let prestigeLevel = parseInt(localStorage.getItem("neonChaosPrestige") || "0", 10);
+let prestigeTokens = 0;
+let prestigeBoosts = {
+  coinSpawnRate: 0,
+  coinValue: 0,
+  scoreGain: 0,
+  moneyBagValue: 0,
+  speedGain: 0,
+  slowDuration: 0,
+  multiplierDuration: 0,
+  tripleDuration: 0
+};
+
+// Authoritative in-memory snapshot of critical fields to detect console tampering.
+const authState = {
+  coins: coinCount,
+  bestScore: bestScore || 0,
+  totalDeaths: totalDeaths || 0,
+  highestSpeed: highestSpeed || 1,
+  totalRolls: totalRolls || 0,
+  prestigeLevel: prestigeLevel || 0,
+  prestigeTokens: prestigeTokens,
+  prestigeBoosts: prestigeBoosts
+};
+
+const prestigeShopItems = [
+  {
+    id: "coinSpawnRate",
+    label: "Coin Spawn Rate",
+    description: "Coins appear faster for every +5% boost."
+  },
+  {
+    id: "coinValue",
+    label: "Coin Value",
+    description: "Each coin is worth more neon credit."
+  },
+  {
+    id: "scoreGain",
+    label: "Score Gain",
+    description: "Earn score faster from every action."
+  },
+  {
+    id: "moneyBagValue",
+    label: "Money Bag Reward",
+    description: "Money bags pay out bigger bonuses."
+  },
+  {
+    id: "speedGain",
+    label: "Speed Progress",
+    description: "Reach higher speed milestones more quickly."
+  },
+  {
+    id: "slowDuration",
+    label: "Slow Duration",
+    description: "Slow powerups last longer for each token purchased."
+  },
+  {
+    id: "multiplierDuration",
+    label: "Multiplier Duration",
+    description: "Multiplier boosts last longer for every token purchased."
+  },
+  {
+    id: "tripleDuration",
+    label: "Triple Duration",
+    description: "Triple score boosts last longer for every token purchased."
+  }
+];
+
 function formatTime(sec) {
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
@@ -367,6 +659,30 @@ let ownedSkins = JSON.parse(
 
 let equippedSkin =
   localStorage.getItem("neonChaosSkin") || "default";
+
+const themeClasses = [
+  "neonBlue",
+  "neonPurple",
+  "neonRed",
+  "neonGreen",
+  "neonGold",
+  "neonCyber"
+];
+
+let theme =
+  localStorage.getItem("neonChaosTheme") || "neonBlue";
+
+function applyTheme(selectedTheme) {
+  if (!themeClasses.includes(selectedTheme)) {
+    selectedTheme = "neonBlue";
+  }
+  theme = selectedTheme;
+  document.body.classList.remove(...themeClasses);
+  document.body.classList.add(theme);
+  localStorage.setItem("neonChaosTheme", theme);
+}
+
+applyTheme(theme);
 
 let unlockedAchievements = JSON.parse(
   localStorage.getItem(
@@ -1141,6 +1457,7 @@ updateRollButton();
       if (coinCount >= cost) {
 
         coinCount -= cost;
+        authState.coins = coinCount;
 
         ownedSkins.push(skin);
 
@@ -1196,8 +1513,8 @@ updateRollButton();
 function fluxCoins(amount) {
 
   if (!internalState) return;
-
   coinCount += amount;
+  authState.coins = coinCount;
   checkAchievements();
 
   coinCountEl.textContent =
@@ -1307,6 +1624,11 @@ function fluxMaxStats() {
   totalRolls = 99999;
 
   totalDeaths = 0;
+  authState.bestScore = bestScore;
+  authState.highestSpeed = highestSpeed;
+  authState.totalRolls = totalRolls;
+  authState.totalDeaths = totalDeaths;
+  saveGame();
 
   bestScoreEl.textContent =
     bestScore;
@@ -1371,7 +1693,10 @@ let _rrt; // roll-result timer
 function resetRollResult() {
   clearTimeout(_rrt);
   _rrt = setTimeout(() => {
-    rollResult.textContent = "Roll for ultra rare mythical skins...";
+    // If the player owns all rare skins, clear the status text instead
+    const rareSkins = ["void", "phantom", "celestial"];
+    const hasAllRare = typeof ownedSkins !== "undefined" && rareSkins.every(s => ownedSkins.includes(s));
+    rollResult.textContent = hasAllRare ? "" : "Roll for ultra rare mythical skins...";
   }, 3000);
 }
 
@@ -1461,9 +1786,10 @@ window.addEventListener("keydown", (e) => {
 
       switch (field) {
         case "coins":
-          coinCount = value;
-          coinCountEl.textContent = coinCount;
-          saveGame();
+              coinCount = value;
+              coinCountEl.textContent = coinCount;
+              authState.coins = coinCount;
+              saveGame();
           rollResult.textContent = `💰 Coins set to ${value}`;
           break;
 
@@ -1477,6 +1803,7 @@ window.addEventListener("keydown", (e) => {
         case "bestscore":
           bestScore = value;
           bestScoreEl.textContent = bestScore;
+          authState.bestScore = bestScore;
           saveGame();
           rollResult.textContent = `Best Score set to ${value}`;
           break;
@@ -1484,6 +1811,7 @@ window.addEventListener("keydown", (e) => {
         case "deaths":
           totalDeaths = value;
           totalDeathsEl.textContent = totalDeaths;
+          authState.totalDeaths = totalDeaths;
           saveGame();
           rollResult.textContent = `Deaths set to ${value}`;
           break;
@@ -1492,6 +1820,7 @@ window.addEventListener("keydown", (e) => {
         case "highestspeed":
           highestSpeed = value;
           highestSpeedEl.textContent = highestSpeed;
+          authState.highestSpeed = highestSpeed;
           saveGame();
           rollResult.textContent = `Highest Speed set to ${value}`;
           break;
@@ -1499,6 +1828,7 @@ window.addEventListener("keydown", (e) => {
         case "rolls":
           totalRolls = value;
           totalRollsEl.textContent = totalRolls;
+          authState.totalRolls = totalRolls;
           saveGame();
           rollResult.textContent = `Rolls set to ${value}`;
           break;
@@ -1755,6 +2085,7 @@ function renderAchievements() {
       claimBtn.addEventListener("click", () => {
         coinCount += a.reward;
         coinCountEl.textContent = coinCount;
+        authState.coins = coinCount;
 
         localStorage.setItem("claim_" + a.id, "true");
         saveGame();
@@ -1824,6 +2155,16 @@ function formatPlayTime(seconds) {
 timePlayedEl.textContent =
   formatPlayTime(totalPlaySeconds);
 
+/* TOAST */
+
+function showToast(message, duration = 2800) {
+  const toast = document.getElementById("neon-toast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), duration);
+}
+
 /* HOME SCREEN STATS */
 
 function updateHomeStats() {
@@ -1836,6 +2177,144 @@ function updateHomeStats() {
 
   homeHighestSpeed.textContent =
     highestSpeed;
+
+  const homePrestigeEl = document.getElementById("home-prestige-level");
+  const homePrestigeStat = document.getElementById("home-prestige-stat");
+
+  if (homePrestigeEl) {
+    homePrestigeEl.textContent = prestigeTokens;
+  }
+
+  if (homePrestigeStat) {
+    homePrestigeStat.style.display =
+      prestigeLevel > 0 || prestigeTokens > 0 ? "" : "none";
+  }
+}
+
+function getBoostDisplay(id) {
+  if (id.endsWith("Duration")) {
+    const value = prestigeBoosts[id] || 0;
+    return `${value >= 0 ? "+" : ""}${value}s`;
+  }
+  const value = (prestigeBoosts[id] || 0) * 5;
+  return `${value >= 0 ? "+" : ""}${value}%`;
+}
+
+function getPrestigeBoostFactor(id) {
+  return 1 + 0.05 * (prestigeBoosts[id] || 0);
+}
+
+function getCoinSpawnInterval() {
+  return Math.max(
+    250,
+    coinInterval * Math.max(0.25, 1 - 0.05 * (prestigeBoosts.coinSpawnRate || 0))
+  );
+}
+
+function getCoinValueReward(reward) {
+  return Math.ceil(reward * getPrestigeBoostFactor("coinValue"));
+}
+
+function getMoneyBagReward(reward) {
+  return Math.ceil(reward * getPrestigeBoostFactor("moneyBagValue"));
+}
+
+function getScoreGain(delta) {
+  return delta * (chaosMode ? 0.02 : 0.01) * getPrestigeBoostFactor("scoreGain");
+}
+
+function getSpeedThreshold(level) {
+  return (level * 50) / getPrestigeBoostFactor("speedGain");
+}
+
+function updatePrestigeShopSummary() {
+  const boostFields = {
+    coinSpawnRate: "boost-coinSpawn",
+    coinValue: "boost-coinValue",
+    scoreGain: "boost-scoreGain",
+    moneyBagValue: "boost-moneyBagValue",
+    speedGain: "boost-speedGain",
+    slowDuration: "boost-slowDuration",
+    multiplierDuration: "boost-multiplierDuration",
+    tripleDuration: "boost-tripleDuration"
+  };
+
+  if (prestigeShopTokensEl) {
+    prestigeShopTokensEl.textContent = prestigeTokens;
+  }
+
+  Object.entries(boostFields).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = getBoostDisplay(key);
+    }
+  });
+}
+
+function renderPrestigeShop() {
+  if (!prestigeShopList) return;
+
+  prestigeShopList.innerHTML = "";
+
+  prestigeShopItems.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "prestige-shop-item";
+
+    const header = document.createElement("div");
+    header.className = "prestige-shop-item-header";
+
+    const label = document.createElement("div");
+    label.className = "prestige-shop-item-label";
+    label.textContent = item.label;
+
+    const button = document.createElement("button");
+    button.className = "prestige-shop-buy-btn";
+    button.textContent = "Buy 1 Token";
+    button.disabled = prestigeTokens <= 0;
+    button.addEventListener("click", () => {
+      if (prestigeTokens <= 0) {
+        showToast("Need at least 1 Prestige Token.");
+        return;
+      }
+      prestigeTokens -= 1;
+      prestigeBoosts[item.id] = (prestigeBoosts[item.id] || 0) + 1;
+      authState.prestigeTokens = prestigeTokens;
+      authState.prestigeBoosts = { ...prestigeBoosts };
+      saveGame();
+      renderPrestigeShop();
+      updatePrestigeShopSummary();
+      updateHomeStats();
+      const boostLabel = item.id.endsWith("Duration") ? "+1s" : "+5%";
+      showToast(`Purchased ${item.label} ${boostLabel}`);
+    });
+
+    header.appendChild(label);
+    header.appendChild(button);
+
+    const desc = document.createElement("div");
+    desc.className = "prestige-shop-item-desc";
+    desc.textContent = item.description;
+
+    const current = document.createElement("div");
+    current.className = "prestige-shop-item-current";
+    current.textContent = `Current: ${getBoostDisplay(item.id)}`;
+
+    card.appendChild(header);
+    card.appendChild(desc);
+    card.appendChild(current);
+
+    prestigeShopList.appendChild(card);
+  });
+}
+
+function openPrestigeShopOverlay() {
+  renderPrestigeShop();
+  updatePrestigeShopSummary();
+  prestigeShopOverlay?.classList.add("show");
+}
+
+function closePrestigeShopOverlay() {
+  prestigeShopOverlay?.classList.remove("show");
 }
 
 /* PLAYER MOVEMENT AND WRAPPING */
@@ -1924,6 +2403,13 @@ function spawnObstacle() {
 
   gameContainer.appendChild(obstacle);
 
+  const base = 2 + Math.random() * (2 + speedLevel * 0.7);
+  obstacle.dataset.baseSpeed = String(base);
+  // keep legacy `speed` for compatibility
+  obstacle.dataset.speed = String(base);
+
+  gameContainer.appendChild(obstacle);
+
   obstacles.push(obstacle);
 }
 
@@ -1936,10 +2422,13 @@ function updateObstacles(delta) {
     const o = obstacles[i];
 
     // BASE SPEED
-    const baseSpeed = parseFloat(o.dataset.speed) || 0;
+      const baseSpeed = parseFloat(o.dataset.baseSpeed) || parseFloat(o.dataset.speed) || 0;
 
-    // CHAOS MODE MULTIPLIER
-    const finalSpeed = chaosMode ? baseSpeed * 2 : baseSpeed;
+      // Apply slow time multiplier at runtime
+      const slowMultiplier = slowActive ? 0.2 : 1;
+
+      // CHAOS MODE MULTIPLIER
+      const finalSpeed = chaosMode ? baseSpeed * slowMultiplier * 2 : baseSpeed * slowMultiplier;
 
     // MOVEMENT
     const top =
@@ -2006,7 +2495,9 @@ function spawnCoin() {
 
   c.style.top = "-40px";
 
-  c.dataset.speed = 3;
+  const cSpeed = 3;
+  c.dataset.baseSpeed = String(cSpeed);
+  c.dataset.speed = String(cSpeed);
 
   gameContainer.appendChild(c);
 
@@ -2032,7 +2523,9 @@ function spawnMoneyBag() {
 
   bag.style.top = "-40px";
 
-  bag.dataset.speed = 2.5;
+  const bagSpeed = 2.5;
+  bag.dataset.baseSpeed = String(bagSpeed);
+  bag.dataset.speed = String(bagSpeed);
 
   gameContainer.appendChild(bag);
 
@@ -2048,12 +2541,13 @@ function updateMoneyBags(delta) {
     const bag = moneyBags[i];
 
     // BASE MONEY BAG SPEED
-    const bagSpeed = parseFloat(bag.dataset.speed) || 1.4;
+    const bagBase = parseFloat(bag.dataset.baseSpeed) || parseFloat(bag.dataset.speed) || 1.4;
+    const bagSlowMult = slowActive ? 0.2 : 1;
 
     // MOVEMENT
     const top =
       (parseFloat(bag.style.top || "-40") || -40)
-      + bagSpeed * (delta / 16.67);
+      + bagBase * bagSlowMult * (delta / 16.67);
 
     bag.style.top = `${top}px`;
 
@@ -2068,16 +2562,17 @@ function updateMoneyBags(delta) {
       checkCollision(playerWrap, bag)
     ) {
 
-      const reward = Math.floor(Math.random() * 18) + 8;
+      const reward = getMoneyBagReward(Math.floor(Math.random() * 18) + 8);
 
       coinCount += reward;
+      authState.coins = coinCount;
       saveGame();
 
       localStorage.setItem("neonChaosCoins", coinCount.toString());
       coinCountEl.textContent = coinCount;
 
-      rollResult.textContent = `+${reward} BONUS COINS!`;
-      resetRollResult();
+          // Show a toast for money bag pickups (more visible than roll-result)
+          showToast(`💰 +${reward} Coins`, 3000);
 
       bag.remove();
       moneyBags.splice(i, 1);
@@ -2094,12 +2589,13 @@ function updateCoins(delta) {
     const c = coins[i];
 
     // BASE COIN SPEED
-    const coinSpeed = parseFloat(c.dataset.speed) || 1.2;
+    const coinBase = parseFloat(c.dataset.baseSpeed) || parseFloat(c.dataset.speed) || 1.2;
+    const coinSlowMult = slowActive ? 0.2 : 1;
 
     // MOVEMENT
     const top =
       (parseFloat(c.style.top || "-40") || -40)
-      + coinSpeed * (delta / 16.67);
+      + coinBase * coinSlowMult * (delta / 16.67);
 
     c.style.top = `${top}px`;
 
@@ -2119,7 +2615,9 @@ function updateCoins(delta) {
       if (multiplierActive) reward *= 2;
       if (tripleActive) reward *= 3;
 
+      reward = getCoinValueReward(reward);
       coinCount += reward;
+      authState.coins = coinCount;
       saveGame();
 
       localStorage.setItem("neonChaosCoins", coinCount.toString());
@@ -2224,9 +2722,11 @@ function updatePowerUps(delta) {
     const speed =
       parseFloat(p.dataset.speed);
 
+    const slowMult = slowActive ? 0.2 : 1;
+
     const top =
       (parseFloat(p.style.top || "-40") || -40)
-      + speed * (delta / 16.67);
+      + speed * slowMult * (delta / 16.67);
 
     p.style.top = `${top}px`;
 
@@ -2340,41 +2840,21 @@ if (type === "shield") {
   /* SLOW */
 
   if (type === "slow") {
-
-    if (!slowActive) {
-
-      slowActive = true;
-
-      spawnInterval *= 1.8;
-
-      obstacles.forEach((o) => {
-
-        o.dataset.speed =
-          parseFloat(o.dataset.speed) / 1.8;
-      });
-    }
+    // Enable slow mode; movement code uses `dataset.baseSpeed` and
+    // applies the slow multiplier at runtime so we don't mutate speeds.
+    slowActive = true;
 
     slowEndTime =
-      Math.max(slowEndTime, now) + 5000;
+      Math.max(slowEndTime, now) +
+      (5000 + (prestigeBoosts.slowDuration || 0) * 1000);
 
     slowIndicator.classList.add("active");
 
     clearTimeout(slowTimeout);
 
     slowTimeout = setTimeout(() => {
-
       slowActive = false;
-
       slowIndicator.classList.remove("active");
-
-      spawnInterval /= 1.8;
-
-      obstacles.forEach((o) => {
-
-        o.dataset.speed =
-          parseFloat(o.dataset.speed) * 1.8;
-      });
-
     }, slowEndTime - now);
   }
   
@@ -2385,7 +2865,8 @@ if (type === "shield") {
     multiplierActive = true;
 
     multiplierEndTime =
-      Math.max(multiplierEndTime, now) + 8000;
+      Math.max(multiplierEndTime, now) +
+      (8000 + (prestigeBoosts.multiplierDuration || 0) * 1000);
 
     multiplierIndicator.classList.add("active");
 
@@ -2407,7 +2888,8 @@ if (type === "shield") {
     tripleActive = true;
 
     tripleEndTime =
-      Math.max(tripleEndTime, now) + 8000;
+      Math.max(tripleEndTime, now) +
+      (8000 + (prestigeBoosts.tripleDuration || 0) * 1000);
 
     tripleIndicator.classList.add("active");
 
@@ -2681,6 +3163,7 @@ localStorage.setItem(
 
 totalDeathsEl.textContent =
   totalDeaths;
+authState.totalDeaths = totalDeaths;
 
   flash.classList.add("show");
 
@@ -2694,6 +3177,7 @@ totalDeathsEl.textContent =
   if (score > bestScore) {
 
     bestScore = Math.floor(score);
+    authState.bestScore = bestScore;
 
     localStorage.setItem(
       "neonChaosBest",
@@ -2914,6 +3398,8 @@ function performReset() {
   localStorage.removeItem("claim_zero_damage_run");
   localStorage.removeItem("claim_clutch_save");
   localStorage.removeItem("neonChaosUsedPowerups");
+  localStorage.removeItem("neonChaosPrestige")
+  
 
   ownedSkins = [];
   equippedSkin = "default";
@@ -2925,6 +3411,26 @@ function performReset() {
   totalPlaySeconds = 0;
   speedLevel = 1;
   score = 0;
+  prestigeLevel = 0;
+  prestigeTokens = 0;
+  prestigeBoosts = {
+    coinSpawnRate: 0,
+    coinValue: 0,
+    scoreGain: 0,
+    moneyBagValue: 0,
+    speedGain: 0,
+    slowDuration: 0,
+    multiplierDuration: 0,
+    tripleDuration: 0
+  };
+  authState.coins = coinCount;
+  authState.bestScore = bestScore;
+  authState.totalDeaths = totalDeaths;
+  authState.highestSpeed = highestSpeed;
+  authState.totalRolls = totalRolls;
+  authState.prestigeLevel = prestigeLevel;
+  authState.prestigeTokens = prestigeTokens;
+  authState.prestigeBoosts = prestigeBoosts;
 
   localStorage.setItem(
     "neonChaosSkins",
@@ -2963,6 +3469,12 @@ function performReset() {
   applySkin(equippedSkin);
 
   updateHomeStats();
+
+  localStorage.removeItem("neonChaosDailyDate");
+  localStorage.removeItem("neonChaosDailyChallenges");
+  localStorage.removeItem("neonChaosDailyCompleted");
+  localStorage.removeItem("neonChaosDailyClaimed");
+
   location.reload();
 }
 
@@ -3049,9 +3561,11 @@ rollBtn.addEventListener("click", () => {
     }
 
     coinCount -= 15;
+    authState.coins = coinCount;
     saveGame();
 
     totalRolls++;
+    authState.totalRolls = totalRolls;
     checkAchievements();
 
 
@@ -3129,6 +3643,8 @@ if (wonSkin) {
 
   rollResult.textContent =
     `YOU WON THE ${wonSkin.toUpperCase()} SKIN!`;
+    // Also show a toast for visibility
+    showToast(`🎉 YOU WON THE ${wonSkin.toUpperCase()} SKIN!`, 4000);
     resetRollResult();
 
   updateSkinButtons();
@@ -3248,6 +3764,8 @@ window.addEventListener("load", () => {
   bgMusic.volume = 0.22;
   tryPlayBackgroundMusic().catch(() => {
     enableAutoplayOnInteraction();
+    // Notify user to interact to enable music if autoplay blocked
+    showToast("Tap/click to enable music", 3500);
   });
   if (musicToggleLabel) {
     musicToggleLabel.textContent = "MUSIC: ON";
@@ -3256,7 +3774,8 @@ window.addEventListener("load", () => {
 
 const nextTrackBtn = document.getElementById("next-track-btn");
 
-nextTrackBtn.addEventListener("click", (event) => {
+if (nextTrackBtn) {
+  nextTrackBtn.addEventListener("click", (event) => {
   event.stopPropagation();
   currentTrackIndex = (currentTrackIndex + 1) % soundtracks.length;
 
@@ -3265,11 +3784,13 @@ nextTrackBtn.addEventListener("click", (event) => {
   if (musicEnabled) {
     bgMusic.play();
   }
-});
+  });
+}
 
 
 /* MUSIC TOGGLE */
-musicToggleBtn.addEventListener("click", () => {
+if (musicToggleBtn) {
+  musicToggleBtn.addEventListener("click", () => {
   musicEnabled = !musicEnabled;
 
   if (musicEnabled) {
@@ -3284,7 +3805,8 @@ musicToggleBtn.addEventListener("click", () => {
       musicToggleLabel.textContent = "MUSIC: OFF";
     }
   }
-});
+  });
+}
 
 /* SETTINGS OPTIONS */
 
@@ -3308,6 +3830,13 @@ if (chaosToggle) {
 /* HOME SCREEN */
 
 updateHomeStats();
+
+// Show prestige success toast if we just reloaded from a prestige
+if (localStorage.getItem("neonChaosPrestigeToast") === "1") {
+  localStorage.removeItem("neonChaosPrestigeToast");
+  // Small delay so the page is visible before the toast appears
+  setTimeout(() => showToast("⭐ Prestige successful!"), 600);
+}
 
 fullscreenBtn.addEventListener(
   "click",
@@ -3851,14 +4380,18 @@ if (equippedSkin === "celestial") {
       tripleIndicator.classList.remove("active");
     }
 
+    if (!multiplierActive) {
+      multiplierIndicator.classList.remove("active");
+    }
+
     updatePlayer();
     updateObstacles(delta);
     updatePowerUps(delta);
     updateCoins(delta);
     updateMoneyBags(delta);
 
-    let gain = delta * (chaosMode ? 0.02 : 0.01);
-
+    let gain = getScoreGain(delta);
+    
     if (multiplierActive) {
       gain *= 2;
     }
@@ -3871,21 +4404,22 @@ if (equippedSkin === "celestial") {
     scoreEl.textContent =
       Math.floor(score);
 
-    if (score > speedLevel * 50) {
+    if (score > getSpeedThreshold(speedLevel)) {
       speedLevel++;
       checkAchievements();
       speedLevelEl.textContent =
         speedLevel;
 
-      if (speedLevel > highestSpeed) {
-        highestSpeed = speedLevel;
-        localStorage.setItem(
-          "neonChaosHighestSpeed",
-          highestSpeed
-        );
-        highestSpeedEl.textContent =
-          highestSpeed;
-      }
+        if (speedLevel > highestSpeed) {
+          highestSpeed = speedLevel;
+          authState.highestSpeed = highestSpeed;
+          localStorage.setItem(
+            "neonChaosHighestSpeed",
+            highestSpeed
+          );
+          highestSpeedEl.textContent =
+            highestSpeed;
+        }
 
       spawnInterval =
         Math.max(
@@ -3907,7 +4441,7 @@ if (equippedSkin === "celestial") {
     const currentCoinInterval =
         (equippedSkin === "celestial" && celestialSurgeActive)
           ? 1000   // 1000 = 1s
-          : coinInterval;
+          : getCoinSpawnInterval();
 
 
       if (timestamp - lastCoin > (chaosMode ? currentCoinInterval * 0.7 : currentCoinInterval)) {
@@ -3984,6 +4518,241 @@ window.addEventListener("load", async () => {
     );
   }
 });
+
+/* ==============================
+   DAILY CHALLENGES SYSTEM
+   ============================== */
+
+const CHALLENGE_POOL = [
+  { id: "dc_score500",   label: "Score 500 points in one run",   type: "score",   target: 500 },
+  { id: "dc_score1000",  label: "Score 1000 points in one run",  type: "score",   target: 1000 },
+  { id: "dc_score2000",  label: "Score 2000 points in one run",  type: "score",   target: 2000 },
+  { id: "dc_coins10",    label: "Collect 10 coins today",        type: "coins",   target: 10 },
+  { id: "dc_coins25",    label: "Collect 25 coins today",        type: "coins",   target: 25 },
+  { id: "dc_coins50",    label: "Collect 50 coins today",        type: "coins",   target: 50 },
+  { id: "dc_speed5",     label: "Reach Speed 5",                 type: "speed",   target: 5 },
+  { id: "dc_speed8",     label: "Reach Speed 8",                 type: "speed",   target: 8 },
+  { id: "dc_speed12",    label: "Reach Speed 12",                type: "speed",   target: 12 },
+  { id: "dc_play60",     label: "Survive 60 seconds total today",type: "playtime",target: 60 },
+  { id: "dc_play120",    label: "Survive 2 minutes total today", type: "playtime",target: 120 },
+  { id: "dc_play180",    label: "Survive 3 minutes total today", type: "playtime",target: 180 },
+  { id: "dc_roll1",      label: "Roll for a rare skin once",     type: "rolls",   target: 1 },
+  { id: "dc_roll3",      label: "Roll for a rare skin 3 times",  type: "rolls",   target: 3 },
+  { id: "dc_die3",       label: "Die 3 times (get back up!)",    type: "deaths",  target: 3 },
+  { id: "dc_die5",       label: "Die 5 times",                   type: "deaths",  target: 5 },
+];
+
+function getTodayDateString() {
+  const now = new Date();
+  return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+}
+
+function pickDailyChallenges(dateStr) {
+  // Seeded shuffle based on date so every device picks same 3
+  function seededRand(seed) {
+    let x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  }
+  // Convert dateStr to numeric seed
+  const seed = dateStr.split("-").reduce((acc, v, i) => acc + parseInt(v) * (i + 1) * 31, 0);
+  const pool = [...CHALLENGE_POOL];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(seededRand(seed + i) * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 3);
+}
+
+let dailyDate = "";
+let dailyChallenges = [];
+let dailyCompleted = [false, false, false];
+let dailyClaimed = false;
+
+// Baseline stats captured at start of each day for delta-based tracking
+let dailyBaseCoins = 0;
+let dailyBaseRolls = 0;
+let dailyBaseDeaths = 0;
+let dailyBasePlaySeconds = 0;
+
+function initDailyChallenges() {
+  const today = getTodayDateString();
+  const storedDate = localStorage.getItem("neonChaosDailyDate");
+
+  if (storedDate !== today) {
+    // New day — generate fresh challenges
+    dailyDate = today;
+    dailyChallenges = pickDailyChallenges(today);
+    dailyCompleted = [false, false, false];
+    dailyClaimed = false;
+
+    // Capture today's baselines from current save
+    dailyBaseCoins = coinCount;
+    dailyBaseRolls = totalRolls;
+    dailyBaseDeaths = totalDeaths;
+    dailyBasePlaySeconds = totalPlaySeconds;
+
+    localStorage.setItem("neonChaosDailyDate", today);
+    localStorage.setItem("neonChaosDailyChallenges", JSON.stringify(dailyChallenges));
+    localStorage.setItem("neonChaosDailyCompleted", JSON.stringify(dailyCompleted));
+    localStorage.setItem("neonChaosDailyClaimed", "false");
+    localStorage.setItem("neonChaosDailyBaseCoins", coinCount);
+    localStorage.setItem("neonChaosDailyBaseRolls", totalRolls);
+    localStorage.setItem("neonChaosDailyBaseDeaths", totalDeaths);
+    localStorage.setItem("neonChaosDailyBasePlaySeconds", totalPlaySeconds);
+
+  } else {
+    // Same day — load stored state
+    dailyDate = today;
+    dailyChallenges = JSON.parse(localStorage.getItem("neonChaosDailyChallenges") || "[]");
+    dailyCompleted = JSON.parse(localStorage.getItem("neonChaosDailyCompleted") || "[false,false,false]");
+    dailyClaimed = localStorage.getItem("neonChaosDailyClaimed") === "true";
+
+    dailyBaseCoins       = parseInt(localStorage.getItem("neonChaosDailyBaseCoins") || "0");
+    dailyBaseRolls       = parseInt(localStorage.getItem("neonChaosDailyBaseRolls") || "0");
+    dailyBaseDeaths      = parseInt(localStorage.getItem("neonChaosDailyBaseDeaths") || "0");
+    dailyBasePlaySeconds = parseInt(localStorage.getItem("neonChaosDailyBasePlaySeconds") || "0");
+
+    // If no challenges stored, regenerate
+    if (!dailyChallenges.length) {
+      dailyChallenges = pickDailyChallenges(today);
+      localStorage.setItem("neonChaosDailyChallenges", JSON.stringify(dailyChallenges));
+    }
+  }
+}
+
+function getDailyChallengeProgress(challenge) {
+  switch (challenge.type) {
+    case "score":
+      return { current: Math.floor(bestScore), target: challenge.target };
+    case "coins":
+      return { current: Math.max(0, coinCount - dailyBaseCoins), target: challenge.target };
+    case "speed":
+      return { current: highestSpeed, target: challenge.target };
+    case "playtime":
+      return { current: Math.max(0, totalPlaySeconds - dailyBasePlaySeconds), target: challenge.target };
+    case "rolls":
+      return { current: Math.max(0, totalRolls - dailyBaseRolls), target: challenge.target };
+    case "deaths":
+      return { current: Math.max(0, totalDeaths - dailyBaseDeaths), target: challenge.target };
+    default:
+      return { current: 0, target: challenge.target };
+  }
+}
+
+function checkDailyChallengeProgress() {
+  if (dailyClaimed) return;
+  let changed = false;
+  dailyChallenges.forEach((ch, i) => {
+    if (dailyCompleted[i]) return;
+    const { current, target } = getDailyChallengeProgress(ch);
+    if (current >= target) {
+      dailyCompleted[i] = true;
+      changed = true;
+    }
+  });
+  if (changed) {
+    localStorage.setItem("neonChaosDailyCompleted", JSON.stringify(dailyCompleted));
+    renderDailyChallenges();
+  }
+}
+
+function getMidnightCountdown() {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const ms = midnight - now;
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}h`;
+}
+
+function renderDailyChallenges() {
+  const list = document.getElementById("daily-challenges-list");
+  const claimBtn = document.getElementById("daily-claim-btn");
+  const countdown = document.getElementById("daily-countdown");
+  if (!list || !claimBtn) return
+  list.innerHTML = "";
+
+  const allDone = dailyCompleted.every(Boolean);
+
+  dailyChallenges.forEach((ch, i) => {
+    const done = dailyCompleted[i];
+    const { current, target } = getDailyChallengeProgress(ch);
+    const capped = Math.min(current, target);
+
+    const item = document.createElement("div");
+    item.className = "daily-challenge-item" +
+      (done ? " dc-complete" : "") +
+      (dailyClaimed ? " dc-dimmed" : "");
+
+    item.innerHTML = `
+      <div class="dc-tick">${done ? "✔" : "○"}</div>
+      <div class="dc-text">
+        <div>${ch.label}</div>
+        <div class="dc-progress">${capped} / ${target}</div>
+      </div>
+    `;
+
+    list.appendChild(item);
+  });
+
+  if (dailyClaimed) {
+    claimBtn.disabled = true;
+    claimBtn.classList.remove("active");
+    claimBtn.textContent = "";
+    if (countdown) {
+      countdown.style.display = "block";
+      countdown.textContent = `New challenges in ${getMidnightCountdown()}`;
+    }
+  } else if (allDone) {
+    claimBtn.disabled = false;
+    claimBtn.classList.add("active");
+    claimBtn.textContent = "Claim +50 Coins";
+    if (countdown) countdown.style.display = "none";
+  } else {
+    claimBtn.disabled = true;
+    claimBtn.classList.remove("active");
+    claimBtn.textContent = "Claim +50 Coins";
+    if (countdown) countdown.style.display = "none";
+  }
+}
+
+// Wire up claim button
+document.getElementById("daily-claim-btn")?.addEventListener("click", () => {
+  if (!dailyCompleted.every(Boolean) || dailyClaimed) return;
+  dailyClaimed = true;
+  coinCount += 50;
+  authState.coins = coinCount;
+  localStorage.setItem("neonChaosDailyClaimed", "true");
+  localStorage.setItem("neonChaosCoins", coinCount.toString());
+  saveGame();
+  coinCountEl.textContent = coinCount;
+  updateHomeStats();
+  renderDailyChallenges();
+  showToast("🎉 +50 Coins claimed!");
+});
+
+// Countdown timer — updates every minute
+setInterval(() => {
+  const today = getTodayDateString();
+  if (today !== dailyDate) {
+    // Day rolled over — regenerate
+    initDailyChallenges();
+    renderDailyChallenges();
+  } else if (dailyClaimed) {
+    const countdown = document.getElementById("daily-countdown");
+    if (countdown) countdown.textContent = `New challenges in ${getMidnightCountdown()}`;
+  }
+}, 60000);
+
+// Check challenge progress every 2 seconds during gameplay
+setInterval(() => {
+  checkDailyChallengeProgress();
+}, 2000);
+
+// Init on load
+initDailyChallenges();
+renderDailyChallenges();
 
 /* INIT */
 
