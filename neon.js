@@ -123,6 +123,7 @@ function updatePrestigeRequirementsUI() {
 
   const hasEnoughCoins = coinCount >= 1000;
   const typed = (document.getElementById("prestige-confirm-input")?.value || "") === "PRESTIGE";
+  const hasEnoughPlayTime = totalPlaySeconds >= 1800;
 
   const reqSkins = document.getElementById("req-skins");
   const reqCoins = document.getElementById("req-coins");
@@ -130,14 +131,19 @@ function updatePrestigeRequirementsUI() {
   const statusSkins = document.getElementById("req-skins-status");
   const statusCoins = document.getElementById("req-coins-status");
   const statusType  = document.getElementById("req-type-status");
+  const reqPlay = document.getElementById("req-playtime");
+  const statusPlay = document.getElementById("req-playtime-status");
+  
 
   if (reqSkins) reqSkins.classList.toggle("req-met", allSkinsUnlocked);
   if (reqCoins) reqCoins.classList.toggle("req-met", hasEnoughCoins);
   if (reqType)  reqType.classList.toggle("req-met", typed);
+  if (reqPlay) reqPlay.classList.toggle("req-met", hasEnoughPlayTime);
 
   if (statusSkins) statusSkins.textContent = allSkinsUnlocked ? "✓" : "✗";
   if (statusCoins) statusCoins.textContent = hasEnoughCoins  ? "✓" : "✗";
   if (statusType)  statusType.textContent  = typed           ? "✓" : "✗";
+  if (statusPlay)  statusPlay.textContent = hasEnoughPlayTime ? "✓" : "✗";
 }
 
 document.getElementById("prestige-confirm-input")?.addEventListener("input", updatePrestigeRequirementsUI);
@@ -155,7 +161,11 @@ prestigeConfirmBtn?.addEventListener("click", () => {
   // REQUIREMENT 3 — Type PRESTIGE
   const typedCorrectly = prestigeConfirmInput.value === "PRESTIGE";
 
-  if (!allSkinsUnlocked || !hasEnoughCoins || !typedCorrectly) {
+  // REQUIREMENT 4 - Play for 30 minutes
+  const hasEnoughPlayTime = totalPlaySeconds >= 1800;
+
+  if (
+  !allSkinsUnlocked || !hasEnoughCoins || !hasEnoughPlayTime || !typedCorrectly) {
 
     if (!allSkinsUnlocked) {
       const row = document.getElementById("req-skins");
@@ -175,6 +185,11 @@ prestigeConfirmBtn?.addEventListener("click", () => {
       setTimeout(() => prestigeConfirmInput.classList.remove("prestige-input-error"), 600);
     }
 
+    if (!hasEnoughPlayTime) {
+      const row = document.getElementById("req-playtime");
+      row?.classList.add("req-error");
+      setTimeout(() => row?.classList.remove("req-error"), 600);
+    }
     return;
   }
 
@@ -184,8 +199,6 @@ prestigeConfirmBtn?.addEventListener("click", () => {
   score = 0;
   bestScore = 0;
   authState.bestScore = bestScore;
-  totalDeaths = 0;
-  authState.totalDeaths = totalDeaths;
   highestSpeed = 1;
   authState.highestSpeed = highestSpeed;
   totalRolls = 0;
@@ -416,6 +429,7 @@ function loadGame() {
     authState.totalDeaths = totalDeaths;
     authState.highestSpeed = highestSpeed;
     authState.totalRolls = totalRolls;
+    authState.totalPlaySeconds = totalPlaySeconds;
     authState.prestigeLevel = prestigeLevel;
     authState.prestigeTokens = prestigeTokens;
     authState.prestigeBoosts = prestigeBoosts;
@@ -1031,7 +1045,7 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-/* DEVTOOLS SHORTCUT BLOCKER — MUST BE LAST */
+/* DEVTOOLS SHORTCUT BLOCKER */
 window.addEventListener("keydown", (e) => {
 
   if (e.key === "F12") {
@@ -1609,7 +1623,7 @@ function fluxUnlockEverything() {
   );
 
   updateSkinButtons();
-
+  updateRollButton();
   saveGame();
 }
 
@@ -1628,7 +1642,6 @@ function fluxMaxStats() {
   authState.highestSpeed = highestSpeed;
   authState.totalRolls = totalRolls;
   authState.totalDeaths = totalDeaths;
-  saveGame();
 
   bestScoreEl.textContent =
     bestScore;
@@ -1836,7 +1849,9 @@ window.addEventListener("keydown", (e) => {
         case "playtime":
         case "time":
           totalPlaySeconds = value;
+          authState.totalPlaySeconds = totalPlaySeconds;
           timePlayedEl.textContent = formatTime(totalPlaySeconds);
+          updatePrestigeRequirementsUI();
           saveGame();
           rollResult.textContent = `Play Time set to ${value}s`;
           break;
@@ -4527,7 +4542,6 @@ window.addEventListener("load", async () => {
 const CHALLENGE_POOL = [
   { id: "dc_score500",   label: "Score 500 points in one run",   type: "score",   target: 500 },
   { id: "dc_score1000",  label: "Score 1000 points in one run",  type: "score",   target: 1000 },
-  { id: "dc_score2000",  label: "Score 2000 points in one run",  type: "score",   target: 2000 },
   { id: "dc_coins10",    label: "Collect 10 coins today",        type: "coins",   target: 10 },
   { id: "dc_coins25",    label: "Collect 25 coins today",        type: "coins",   target: 25 },
   { id: "dc_coins50",    label: "Collect 50 coins today",        type: "coins",   target: 50 },
