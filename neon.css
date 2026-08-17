@@ -2695,9 +2695,10 @@ body {
 /* RIGHT SIDE OF CARD */
 .achievement-right {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 /* REWARD TEXT (no border, no button look) */
@@ -2740,6 +2741,48 @@ body {
   color: rgba(255,255,255,0.4);
   cursor: default;
   box-shadow: none;
+}
+
+/* ACHIEVEMENT SUBHEADINGS */
+.achievement-subheading {
+  font-size: 13px;
+  font-weight: bold;
+  color: #ff6600;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px #ff6600;
+  padding: 12px 18px 8px 18px;
+  border-bottom: 1px solid rgba(255,102,0,0.3);
+  margin-top: 6px;
+}
+
+/* ACHIEVEMENT PROGRESS DISPLAY - on left of reward/button */
+.achievement-progress {
+  font-size: 13px;
+  font-weight: bold;
+  color: #ff9900;
+  text-shadow: 0 0 6px #ff9900;
+  min-width: 55px;
+  text-align: center;
+  margin-right: 12px;
+  align-self: center;
+}
+
+/* ACTIONS WRAPPER - keeps reward and button stacked vertically */
+.achievement-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* PROGRESS ON LEFT SIDE (for locked achievements) */
+.achievement-progress-left {
+  font-size: 13px;
+  font-weight: bold;
+  color: #ff9900;
+  text-shadow: 0 0 6px #ff9900;
+  margin-bottom: 8px;
+  text-align: left;
 }
 
 /* REMOVE DUPLICATE EFFECT CLASSES */
@@ -3687,6 +3730,7 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
   border-color: rgba(255,80,100,0.6) !important;
   background: rgba(255,80,100,0.08) !important;
 }
+
 /* ==============================
    DAILY CHALLENGES CARD
    ============================== */
@@ -3920,4 +3964,13 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
 .neon-toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+}
+
+/* GUMMY BOOST GLOW */
+.gummy-boost {
+    box-shadow:
+        0 0 15px #ff69b4,
+        0 0 30px #ff69b4,
+        0 0 50px #6fdcff,
+        0 0 80px #6fdcff !important;
 }

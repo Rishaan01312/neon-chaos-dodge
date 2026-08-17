@@ -41,6 +41,8 @@ const phantomIndicator = getSafe("phantom-indicator");
 const phantomTimer = getSafe("phantom-timer");
 const celestialIndicator = getSafe("celestial-indicator");
 const celestialTimer = getSafe("celestial-timer");
+const gummyIndicator = getSafe("gummy-indicator");
+const gummyTimer = getSafe("gummy-timer");
 const tripleIndicator = getSafe("triple-indicator");
 const tripleTimer = getSafe("triple-timer");
 const homeScreen = document.getElementById("home-screen");
@@ -118,7 +120,7 @@ prestigeShopOverlay?.addEventListener("click", (event) => {
 
 function updatePrestigeRequirementsUI() {
   const allSkinsUnlocked =
-    ownedSkins.length >= 10 &&
+    ownedSkins.length >= 11 &&
     ["void","phantom","celestial"].every(s => localStorage.getItem(`${s}Verified`) === "true");
 
   const hasEnoughCoins = coinCount >= 1000;
@@ -152,7 +154,7 @@ prestigeConfirmBtn?.addEventListener("click", () => {
 
   // REQUIREMENT 1 — All skins unlocked
   const allSkinsUnlocked =
-    ownedSkins.length >= 10 &&
+    1 &&
     ["void","phantom","celestial"].every(s => localStorage.getItem(`${s}Verified`) === "true");
 
   // REQUIREMENT 2 — 1000 coins
@@ -546,6 +548,14 @@ let celestialReady = true;
 let celestialEndTime = 0;
 let celestialCooldownEndTime = 0;
 
+/* GUMMY */
+
+let gummyBoostActive = false;
+let gummyCooldown = false;
+let gummyReady = true;
+let gummyEndTime = 0;
+let gummyCooldownEndTime = 0;
+
 let slowEndTime = 0;
 let multiplierEndTime = 0;
 let shieldStacks = 0;
@@ -568,6 +578,12 @@ let lastHitTime = 0;
 let shieldDamageTaken = false;
 let narrowEscapeCount = 0;
 
+let totalPowerupsCollected =
+  parseInt(
+    localStorage.getItem("neonChaosPowerupsCollected") || "0",
+    10
+  );
+
 let totalDeaths =
   parseInt(
     localStorage.getItem("neonChaosDeaths") || "0",
@@ -588,6 +604,33 @@ let totalPlaySeconds =
   parseInt(
     localStorage.getItem("neonChaosPlayTime") || "0"
   );
+
+// Powerup activation tracking for achievements
+let totalGummyBoosts =
+  parseInt(
+    localStorage.getItem("neonChaosGummyBoosts") || "0",
+    10
+  );
+
+let totalVoidBlasts =
+  parseInt(
+    localStorage.getItem("neonChaosVoidBlasts") || "0",
+    10
+  );
+
+let totalPhantomShifts =
+  parseInt(
+    localStorage.getItem("neonChaosPhantomShifts") || "0",
+    10
+  );
+
+let totalCelestialSurges =
+  parseInt(
+    localStorage.getItem("neonChaosCelestialSurges") || "0",
+    10
+  );
+
+let coinsInCurrentRun = 0;
 
 let prestigeLevel = parseInt(localStorage.getItem("neonChaosPrestige") || "0", 10);
 let prestigeTokens = 0;
@@ -797,6 +840,13 @@ const achievements = [
 },
 
 {
+  id: "gummy_owner",
+  title: "Bubble Trouble",
+  desc: "Purchase the Gummy Skin",
+  reward: 100
+},
+
+{
   id: "survive_5",
   title: "Unbreakable",
   desc: "Survive 5 Minutes",
@@ -836,6 +886,61 @@ const achievements = [
   title: "Zero Damage Run",
   desc: "Reach Speed 10 without taking shield damage",
   reward: 60
+},
+
+{
+  id: "money_machine",
+  title: "Money Machine",
+  desc: "Collect 500 Coins in a single run",
+  reward: 100
+},
+
+
+{
+  id: "power_hungry",
+  title: "Power Hungry",
+  desc: "Collect 100 Powerups",
+  reward: 75
+},
+
+
+{
+  id: "sweet_escape",
+  title: "Sweet Escape",
+  desc: "Activate Gummy Boost 200 times",
+  reward: 200
+},
+
+
+{
+  id: "void_walker",
+  title: "Void Walker",
+  desc: "Activate Void Blast 200 times",
+  reward: 200
+},
+
+
+{
+  id: "shadow_walker",
+  title: "Shadow Walker",
+  desc: "Activate Phantom Shift 200 times",
+  reward: 200
+},
+
+
+{
+  id: "celestial_being",
+  title: "Celestial Being",
+  desc: "Activate Celestial Surge 200 times",
+  reward: 200
+},
+
+
+{
+  id: "mythical_collector",
+  title: "Mythical Collector",
+  desc: "Own all 3 Mythical Skins",
+  reward: 250
 },
 
 {
@@ -1042,6 +1147,9 @@ window.addEventListener("keydown", (e) => {
     if (equippedSkin === "celestial" && !celestialCooldown) {
       activateCelestialSurge();
     }
+    if (equippedSkin === "gummy" && !gummyCooldown) {
+      activateGummyBoost();
+    }
   }
 });
 
@@ -1124,7 +1232,7 @@ const skinCosts = {
   lava: 150,
   matrix: 180,
   rainbow: 220,
-  
+  gummy: 500,
 };
 
 function applySkin(skin) {
@@ -1189,6 +1297,15 @@ function applySkin(skin) {
       "linear-gradient(135deg, red, orange, yellow, green, cyan, blue, violet)";
 
     player.classList.add("rainbow-skin");
+  }
+
+  else if (skin === "gummy") {
+
+    player.style.background =
+      "linear-gradient(135deg, #ff4fa3, #ff8fcf, #6fdcff, #8ee8ff)";
+
+    player.style.boxShadow =
+      "0 0 20px #ff69b4, 0 0 40px #6fdcff";
   }
 
   else if (skin === "void") {
@@ -1283,6 +1400,12 @@ function updateSkinButtons() {
 
       skinEl.style.background =
         "linear-gradient(135deg, red, orange, yellow, green, cyan, blue, violet)";
+    }
+
+    if (skin === "gummy") {
+
+      skinEl.style.background =
+        "linear-gradient(135deg, #ff4fa355, #ff8fcf55, #6fdcff55, #8ee8ff55)";
     }
 
     if (skin === "void") {
@@ -1474,6 +1597,10 @@ updateRollButton();
         authState.coins = coinCount;
 
         ownedSkins.push(skin);
+      
+      if (skin === "gummy") {
+          unlockAchievement("gummy_owner");
+        }
 
         saveGame();
 
@@ -1528,6 +1655,7 @@ function fluxCoins(amount) {
 
   if (!internalState) return;
   coinCount += amount;
+  coinsInCurrentRun += amount;
   authState.coins = coinCount;
   checkAchievements();
 
@@ -1588,7 +1716,7 @@ function fluxUnlockEverything() {
     "lava",
     "matrix",
     "rainbow",
-
+    "gummy",
     "void",
     "phantom",
     "celestial"
@@ -2035,6 +2163,34 @@ function checkAchievements() {
   }
 }
 
+function getAchievementProgress(achievementId) {
+  // Returns { current, target, hasProgress } for achievements that track progress
+  switch (achievementId) {
+    case "roll_25":
+      return { current: totalRolls, target: 25, hasProgress: true };
+    case "coins_50":
+      return { current: coinCount, target: 50, hasProgress: true };
+    case "coins_500":
+      return { current: coinCount, target: 500, hasProgress: true };
+    case "coins_10000":
+      return { current: coinCount, target: 10000, hasProgress: true };
+    case "power_hungry":
+      return { current: totalPowerupsCollected, target: 100, hasProgress: true };
+    case "sweet_escape":
+      return { current: totalGummyBoosts, target: 200, hasProgress: true };
+    case "void_walker":
+      return { current: totalVoidBlasts, target: 200, hasProgress: true };
+    case "shadow_walker":
+      return { current: totalPhantomShifts, target: 200, hasProgress: true };
+    case "celestial_being":
+      return { current: totalCelestialSurges, target: 200, hasProgress: true };
+    case "money_machine":
+      return { current: coinsInCurrentRun, target: 500, hasProgress: true };
+    default:
+      return { current: 0, target: 0, hasProgress: false };
+  }
+}
+
 function renderAchievements() {
   achievementsList.innerHTML = "";
 
@@ -2060,15 +2216,55 @@ function renderAchievements() {
     return 0;
   });
 
+  // Separate achievements into categories
+  let currentCategory = null;
+  
   sorted.forEach((a) => {
     const unlocked = unlockedAchievements.includes(a.id);
     const claimed = localStorage.getItem("claim_" + a.id) === "true";
+    
+    // Determine current category
+    let category;
+    if (claimed) {
+      category = "claimed";
+    } else if (unlocked) {
+      category = "available";
+    } else {
+      category = "locked";
+    }
+    
+    // Add subheading if category changed
+    if (category !== currentCategory) {
+      currentCategory = category;
+      
+      if (category === "locked") {
+        const heading = document.createElement("div");
+        heading.className = "achievement-subheading";
+        heading.textContent = "LOCKED";
+        achievementsList.appendChild(heading);
+      } else if (category === "claimed") {
+        const heading = document.createElement("div");
+        heading.className = "achievement-subheading";
+        heading.textContent = "CLAIMED";
+        achievementsList.appendChild(heading);
+      }
+      // No subheading for "available" category (top of list)
+    }
 
     const card = document.createElement("div");
     card.className = "achievement";
 
     if (!unlocked) card.classList.add("locked");
     if (claimed) card.classList.add("claimed");
+
+    // Get progress info if available - show for locked and available (not claimed) achievements
+    let progressText = "";
+    if (!claimed) {
+      const progress = getAchievementProgress(a.id);
+      progressText = progress.hasProgress 
+        ? `<div class="achievement-progress">${progress.current}/${progress.target}</div>`
+        : "";
+    }
 
     card.innerHTML = `
     <div class="achievement-left">
@@ -2086,11 +2282,14 @@ function renderAchievements() {
     </div>
 
     <div class="achievement-right">
-      <div class="achievement-reward-text">+${a.reward}</div>
+      ${progressText}
+      <div class="achievement-actions">
+        <div class="achievement-reward-text">+${a.reward}</div>
 
-      <button class="claim-btn" ${unlocked && !claimed ? "" : "disabled"}>
-        ${claimed ? "CLAIMED" : "CLAIM"}
-      </button>
+        <button class="claim-btn" ${unlocked && !claimed ? "" : "disabled"}>
+          ${claimed ? "CLAIMED" : "CLAIM"}
+        </button>
+      </div>
     </div>
   `;
 
@@ -2580,11 +2779,17 @@ function updateMoneyBags(delta) {
       const reward = getMoneyBagReward(Math.floor(Math.random() * 18) + 8);
 
       coinCount += reward;
+      coinsInCurrentRun += reward;
       authState.coins = coinCount;
       saveGame();
 
       localStorage.setItem("neonChaosCoins", coinCount.toString());
       coinCountEl.textContent = coinCount;
+
+      // Check for money_machine achievement
+      if (coinsInCurrentRun >= 500) {
+        unlockAchievement("money_machine");
+      }
 
           // Show a toast for money bag pickups (more visible than roll-result)
           showToast(`💰 +${reward} Coins`, 3000);
@@ -2632,11 +2837,17 @@ function updateCoins(delta) {
 
       reward = getCoinValueReward(reward);
       coinCount += reward;
+      coinsInCurrentRun += reward;
       authState.coins = coinCount;
       saveGame();
 
       localStorage.setItem("neonChaosCoins", coinCount.toString());
       coinCountEl.textContent = coinCount;
+
+      // Check for money_machine achievement
+      if (coinsInCurrentRun >= 500) {
+        unlockAchievement("money_machine");
+      }
 
       c.remove();
       coins.splice(i, 1);
@@ -2826,6 +3037,17 @@ function activatePowerUp(type) {
 
   const now = Date.now();
 
+  totalPowerupsCollected++;
+
+  localStorage.setItem(
+    "neonChaosPowerupsCollected",
+    totalPowerupsCollected.toString()
+  );
+
+  if (totalPowerupsCollected >= 100) {
+    unlockAchievement("power_hungry");
+  }
+
   // Check for Clutch Save achievement
   if (lastHitTime > 0 && (now - lastHitTime) <= 200) {
     unlockAchievement("clutch_save");
@@ -2928,6 +3150,14 @@ function activateVoidBlast() {
 
   voidBlastActive = true;
 
+  // Track activation for achievement
+  totalVoidBlasts++;
+  localStorage.setItem("neonChaosVoidBlasts", totalVoidBlasts.toString());
+
+  if (totalVoidBlasts >= 200) {
+    unlockAchievement("void_walker");
+  }
+
   voidBlastEndTime =
     Date.now() + 3000;
 
@@ -2979,6 +3209,14 @@ function activatePhantomShift() {
 
   phantomShiftActive = true;
 
+  // Track activation for achievement
+  totalPhantomShifts++;
+  localStorage.setItem("neonChaosPhantomShifts", totalPhantomShifts.toString());
+
+  if (totalPhantomShifts >= 200) {
+    unlockAchievement("shadow_walker");
+  }
+
   phantomEndTime =
     Date.now() + 10000;
 
@@ -3026,6 +3264,14 @@ function activateCelestialSurge() {
   celestialReady = false;
 
   celestialSurgeActive = true;
+
+  // Track activation for achievement
+  totalCelestialSurges++;
+  localStorage.setItem("neonChaosCelestialSurges", totalCelestialSurges.toString());
+
+  if (totalCelestialSurges >= 200) {
+    unlockAchievement("celestial_being");
+  }
 
   celestialEndTime =
     Date.now() + 10000;
@@ -3096,6 +3342,60 @@ function activateCelestialSurge() {
   }, 20000);
 }
 
+function activateGummyBoost() {
+
+  gummyCooldown = true;
+  gummyReady = false;
+  gummyBoostActive = true;
+
+  // Track activation for achievement
+  totalGummyBoosts++;
+  localStorage.setItem("neonChaosGummyBoosts", totalGummyBoosts.toString());
+
+  if (totalGummyBoosts >= 200) {
+    unlockAchievement("sweet_escape");
+  }
+
+  gummyEndTime =
+    Date.now() + 10000;
+
+  gummyIndicator.classList.add("active");
+
+  player.classList.add("gummy-boost");
+
+  rollResult.textContent =
+    "🍬 GUMMY BOOST ACTIVATED";
+
+  resetRollResult();
+
+  /* END ACTIVE STATE */
+
+  setTimeout(() => {
+
+    gummyBoostActive = false;
+
+    player.classList.remove(
+      "gummy-boost"
+    );
+
+    gummyCooldownEndTime =
+      Date.now() + 10000;
+
+  }, 10000);
+
+  /* END COOLDOWN */
+
+  setTimeout(() => {
+
+    gummyCooldown = false;
+    gummyReady = true;
+
+    gummyTimer.textContent =
+      "READY";
+
+  }, 20000);
+}
+
 /* COLLISION */
 
 function checkCollision(a, b) {
@@ -3137,10 +3437,12 @@ celestialSurgeActive = false;
 phantomCooldown = false;
 celestialCooldown = false;
 voidBlastCooldown = false;
+gummyCooldown = false;
 
 phantomReady = true;
 celestialReady = true;
 voidBlastReady = true;
+gummyReady = true;
 
 /* RESET EFFECT TIMERS */
 
@@ -3229,6 +3531,8 @@ restartBtn.addEventListener("click", () => {
 
   scoreEl.textContent = score;
 
+  coinsInCurrentRun = 0;
+
   speedLevel = 1;
 
   speedLevelEl.textContent =
@@ -3256,6 +3560,10 @@ restartBtn.addEventListener("click", () => {
   player.classList.remove(
     "shielded",
     "multiplier"
+  );
+
+  player.classList.remove(
+    "gummy-boost"
   );
 
   shieldDamageTaken = false;
@@ -3414,6 +3722,7 @@ function performReset() {
   localStorage.removeItem("claim_clutch_save");
   localStorage.removeItem("neonChaosUsedPowerups");
   localStorage.removeItem("neonChaosPrestige")
+  localStorage.removeItem("neonChaosPowerupsCollected");
   
 
   ownedSkins = [];
@@ -4067,6 +4376,16 @@ if (pauseBtn) {
         celestialCooldownEndTime += pausedDuration;
       }
 
+      /* GUMMY */
+
+      if (gummyBoostActive) {
+        gummyEndTime += pausedDuration;
+      }
+
+      if (gummyCooldown) {
+        gummyCooldownEndTime += pausedDuration;
+      }
+
       /* POWERUPS */
 
       if (slowActive) {
@@ -4280,6 +4599,44 @@ if (
         );
     }
 
+    /* GUMMY INDICATOR */
+
+if (equippedSkin === "gummy") {
+
+  gummyIndicator.classList.add("active");
+
+  if (gummyBoostActive) {
+
+    gummyTimer.textContent =
+      "ACTIVE: " +
+      Math.ceil(
+        (gummyEndTime - now) / 1000
+      ) + "s";
+
+  }
+
+  else if (gummyCooldown) {
+
+    gummyTimer.textContent =
+      "COOLING DOWN: " +
+      Math.ceil(
+        (gummyCooldownEndTime - now) / 1000
+      ) + "s";
+
+  }
+
+  else {
+
+    gummyTimer.textContent =
+      "READY";
+
+  }
+}
+
+else {
+  gummyIndicator.classList.remove("active");
+}
+
 /* VOID INDICATOR */
 
 if (equippedSkin === "void") {
@@ -4413,6 +4770,10 @@ if (equippedSkin === "celestial") {
 
     if (tripleActive) {
       gain *= 3;
+    }
+
+    if (gummyBoostActive) {
+      gain *= 1.5;
     }
 
     score += gain;
