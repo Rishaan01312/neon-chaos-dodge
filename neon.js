@@ -4773,7 +4773,7 @@ if (equippedSkin === "celestial") {
     }
 
     if (gummyBoostActive) {
-      gain *= 1.5;
+      gain *= 2;
     }
 
     score += gain;
