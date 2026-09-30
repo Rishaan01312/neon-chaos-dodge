@@ -279,6 +279,10 @@ settingsOverlay?.addEventListener("click", (event) => {
   }
 });
 
+if (typeof window.showNameOverlay === "function" && !localStorage.getItem("playerName")) {
+  window.showNameOverlay();
+}
+
 if (musicVolumeSlider) {
   musicVolumeSlider.value = String(musicVolume);
   musicVolumeSlider.addEventListener("input", (event) => {
@@ -1028,6 +1032,7 @@ if (savedVoidVersion !== VOID_VERSION) {
 }
 
 loadGame();
+window.getBestScore = () => bestScore;
 // SAFETY FIX: Ensure rare skins are always verified if owned
 ["void", "phantom", "celestial"].forEach(skin => {
   if (ownedSkins.includes(skin)) {
@@ -2379,6 +2384,8 @@ function showToast(message, duration = 2800) {
   setTimeout(() => toast.classList.remove("show"), duration);
 }
 
+window.showToast = showToast;
+
 /* HOME SCREEN STATS */
 
 function updateHomeStats() {
@@ -3509,6 +3516,11 @@ authState.totalDeaths = totalDeaths;
     bestScore;
 
   gameOverScreen.classList.add("show");
+
+  if (typeof window.uploadScore === "function") {
+    window.uploadScore(Math.floor(score));
+  }
+
   saveGame();
 }
 
@@ -4874,27 +4886,6 @@ setInterval(() => {
   }
 
 }, 1000);
-
-/* AUTO FULLSCREEN */
-
-window.addEventListener("load", async () => {
-
-  try {
-
-    if (!document.fullscreenElement) {
-
-      await document.documentElement.requestFullscreen();
-    }
-
-  }
-
-  catch (err) {
-
-    console.log(
-      "Fullscreen blocked until user interaction."
-    );
-  }
-});
 
 /* ==============================
    DAILY CHALLENGES SYSTEM

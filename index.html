@@ -678,7 +678,7 @@
         <p><strong>Started:</strong> January 16 2026</p>
         <p><strong>Finished:</strong> Always Updating!</p>
         <p><strong>Total dev time:</strong> ~270 hours</p>
-        <p><strong>Code written:</strong> 9,768 lines altogether</p>
+        <p><strong>Code written:</strong> 11,278 lines across HTML, CSS, and JavaScript</p>
         <p><strong>Bugs fixed:</strong> ~278</p>
         <p><strong>Bugs caused by fixing other bugs:</strong> ~343</p>
         <p><strong>Hours lost to one dumb semicolon:</strong> 10 hours</p>
@@ -760,6 +760,11 @@
     <div id="home-bottom-left-buttons">
       <button id="settings-btn" class="home-small-btn" title="Settings">⚙️</button>
       <button id="home-help-btn" class="home-small-btn" title="Help">❓</button>
+      <button id="update-log-btn" class="home-small-btn update-log-btn" title="Update log" aria-label="Update log">
+        📰
+        <span id="update-log-badge" class="update-log-badge" aria-label="New update">NEW</span>
+      </button>
+      <button id="leaderboard-btn" class="home-small-btn" title="Leaderboard">📊</button>
     </div>
 
     <!-- MIDDLE -->
@@ -862,6 +867,45 @@
   <audio id="bg-music" loop>
     <source src="assets/music/All I Need.mp3" type="audio/mpeg">
   </audio>
+
+  <!-- NAME POPUP -->
+  <div id="name-overlay" class="reset-overlay">
+    <div class="reset-card info-card">
+      <h3>ENTER YOUR NAME</h3>
+      <p>Choose a display name for the leaderboard.</p>
+      <div class="name-form">
+        <input id="name-input" class="name-input" type="text" maxlength="16" placeholder="Your name" autocomplete="off">
+        <div id="name-status" class="name-status"></div>
+        <div class="reset-actions">
+          <button id="name-submit-btn" class="ghost-btn" type="button">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD OVERLAY -->
+  <div id="leaderboard-overlay" class="reset-overlay">
+    <div class="reset-card info-card leaderboard-card">
+      <h3>LEADERBOARD</h3>
+      <div id="leaderboard-list" class="leaderboard-list"></div>
+      <div class="reset-actions">
+        <button id="leaderboard-close-btn" class="ghost-btn" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="update-log-overlay" class="reset-overlay" aria-hidden="true">
+    <div class="reset-card info-card update-log-card" role="dialog" aria-modal="true" aria-labelledby="update-log-title">
+      <div class="update-log-header">
+        <div>
+          <p class="update-log-kicker">GAME NEWS</p>
+          <h3 id="update-log-title">UPDATE LOG</h3>
+        </div>
+        <button id="update-log-close-btn" class="update-log-close-btn" type="button" aria-label="Close update log">✕</button>
+      </div>
+      <div id="update-log-list" class="update-log-list"></div>
+    </div>
+  </div>
 
   <!-- SETTINGS OVERLAY -->
   <div id="settings-overlay" class="reset-overlay">
@@ -1073,6 +1117,8 @@
 
   <div id="neon-toast" class="neon-toast"></div>
 
+  <script src="leaderboard.js"></script>
+  <script src="updates.js"></script>
   <script src="neon.js"></script>
 
 </body>
