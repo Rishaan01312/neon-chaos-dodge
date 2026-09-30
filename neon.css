@@ -1006,6 +1006,18 @@ body {
   opacity: 0.9;
 }
 
+.lb-rank--gold {
+  color: #ffd166;
+}
+
+.lb-rank--silver {
+  color: #c5d0dc;
+}
+
+.lb-rank--bronze {
+  color: #cf8a55;
+}
+
 .lb-name {
   flex: 1;
   color: #edf7ff;

@@ -4,10 +4,12 @@
   const API_URL = window.LEADERBOARD_API_URL || "https://script.google.com/macros/s/AKfycbwAHiofvrs4NnWyLTIPwId24PqH-A4Vffq394gC1u2Kqm0sur0oMkNSaU4dfR6C7dDGZg/exec";
 
   const STORAGE_KEY = "playerName";
+  const PLAYER_ID_KEY = "neonChaosPlayerId";
   const LEGACY_BEST_KEY = "neonChaosBest";
   const LEGACY_BEST_MIGRATED_KEY = "leaderboardLegacyBestMigrated";
   const MAX_NAME_LENGTH = 16;
   const MAX_SCORE = 1000000;
+  let cachedPlayerId = "";
   const PROFANITY_LIST = [
   "2 girls 1 cup",
   "2g1c",
@@ -2754,6 +2756,22 @@
     }
   }
 
+  function createIdentifier() {
+    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  }
+
+  function getPlayerId() {
+    if (cachedPlayerId) return cachedPlayerId;
+
+    cachedPlayerId = safeLocalStorageGet(PLAYER_ID_KEY);
+    if (!cachedPlayerId) {
+      cachedPlayerId = createIdentifier();
+      safeLocalStorageSet(PLAYER_ID_KEY, cachedPlayerId);
+    }
+    return cachedPlayerId;
+  }
+
   function sanitizeName(rawName) {
     const trimmed = String(rawName ?? "").trim().replace(/\s+/g, " ");
     return trimmed.slice(0, MAX_NAME_LENGTH);
@@ -2781,6 +2799,13 @@
     if (!cleaned) return false;
     safeLocalStorageSet(STORAGE_KEY, cleaned);
     return true;
+  }
+
+  function syncSavedPlaytime() {
+    const seconds = Number(window.getLifetimePlaytimeSeconds?.());
+    if (Number.isFinite(seconds) && seconds > 0) {
+      void uploadPlaytime(seconds);
+    }
   }
 
   async function submitLegacyBestScore(playerName) {
@@ -3112,6 +3137,7 @@
     hideNameOverlay();
     if (status) status.textContent = "";
     void submitLegacyBestScore(cleanedName);
+    syncSavedPlaytime();
   }
 
   function openLeaderboard() {
@@ -3252,6 +3278,49 @@
     }
   }
 
+  async function uploadPlaytime(totalSeconds, options = {}) {
+    const numericSeconds = Number(totalSeconds);
+    const playerName = getPlayerName();
+
+    if (!Number.isFinite(numericSeconds) || numericSeconds <= 0) {
+      return { ok: false, reason: "invalid-playtime" };
+    }
+    if (!playerName) {
+      return { ok: false, reason: "missing-player-name" };
+    }
+
+    const payload = JSON.stringify({
+      action: "playtime",
+      playerId: getPlayerId(),
+      name: playerName,
+      seconds: Math.floor(numericSeconds)
+    });
+
+    if (options.beacon && navigator.sendBeacon) {
+      const body = new Blob([payload], { type: "text/plain;charset=UTF-8" });
+      return { ok: navigator.sendBeacon(API_URL, body) };
+    }
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: payload,
+        keepalive: Boolean(options.keepalive)
+      });
+      if (!response.ok) {
+        throw new Error(`Playtime upload failed: ${response.status}`);
+      }
+      const message = await response.text();
+      if (message !== "OK") {
+        throw new Error(message || "Playtime upload was rejected.");
+      }
+      return { ok: true };
+    } catch (error) {
+      console.warn("Playtime upload failed:", error);
+      return { ok: false, reason: "request-error" };
+    }
+  }
+
   function attachEvents() {
     const leaderboardBtn = document.getElementById("leaderboard-btn");
     const leaderboardCloseBtn = document.getElementById("leaderboard-close-btn");
@@ -3297,10 +3366,12 @@
     } else {
       hideNameOverlay();
       void submitLegacyBestScore(storedName);
+      syncSavedPlaytime();
     }
   }
 
   window.uploadScore = uploadScore;
+  window.uploadPlaytime = uploadPlaytime;
   window.loadLeaderboard = loadLeaderboard;
   window.openLeaderboard = openLeaderboard;
   window.closeLeaderboard = closeLeaderboard;

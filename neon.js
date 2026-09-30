@@ -608,6 +608,8 @@ let totalPlaySeconds =
   parseInt(
     localStorage.getItem("neonChaosPlayTime") || "0"
   );
+let activePlaytimeSessionSeconds = 0;
+let lifetimePlaytimeSeconds = 0;
 
 // Powerup activation tracking for achievements
 let totalGummyBoosts =
@@ -1032,6 +1034,16 @@ if (savedVoidVersion !== VOID_VERSION) {
 }
 
 loadGame();
+const savedLifetimePlaytimeSeconds = parseInt(
+  localStorage.getItem("neonChaosLifetimePlayTime") || "0",
+  10
+);
+lifetimePlaytimeSeconds = Math.max(
+  totalPlaySeconds || 0,
+  savedLifetimePlaytimeSeconds || 0
+);
+localStorage.setItem("neonChaosLifetimePlayTime", String(lifetimePlaytimeSeconds));
+window.getLifetimePlaytimeSeconds = () => lifetimePlaytimeSeconds;
 window.getBestScore = () => bestScore;
 // SAFETY FIX: Ensure rare skins are always verified if owned
 ["void", "phantom", "celestial"].forEach(skin => {
@@ -3521,6 +3533,10 @@ authState.totalDeaths = totalDeaths;
     window.uploadScore(Math.floor(score));
   }
 
+  if (activePlaytimeSessionSeconds > 0) {
+    void window.uploadPlaytime?.(lifetimePlaytimeSeconds, { keepalive: true });
+  }
+
   saveGame();
 }
 
@@ -4874,18 +4890,34 @@ setInterval(() => {
   if (gameRunning) {
 
     totalPlaySeconds++;
+    activePlaytimeSessionSeconds++;
+    lifetimePlaytimeSeconds++;
     checkAchievements();
 
     localStorage.setItem(
       "neonChaosPlayTime",
       totalPlaySeconds
     );
+    localStorage.setItem(
+      "neonChaosLifetimePlayTime",
+      String(lifetimePlaytimeSeconds)
+    );
 
     timePlayedEl.textContent =
       formatPlayTime(totalPlaySeconds);
+
+    if (activePlaytimeSessionSeconds % 30 === 0) {
+      void window.uploadPlaytime?.(lifetimePlaytimeSeconds);
+    }
   }
 
 }, 1000);
+
+window.addEventListener("pagehide", () => {
+  if (activePlaytimeSessionSeconds > 0) {
+    void window.uploadPlaytime?.(lifetimePlaytimeSeconds, { beacon: true });
+  }
+});
 
 /* ==============================
    DAILY CHALLENGES SYSTEM
