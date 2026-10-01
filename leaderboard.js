@@ -3201,7 +3201,8 @@
         row.className = "lb-row";
 
         const rank = document.createElement("span");
-        rank.className = "lb-rank";
+        const podiumClass = ["lb-rank--gold", "lb-rank--silver", "lb-rank--bronze"][index];
+        rank.className = podiumClass ? `lb-rank ${podiumClass}` : "lb-rank";
         rank.textContent = formatRankLabel(index + 1);
 
         const name = document.createElement("span");
