@@ -4248,7 +4248,7 @@ removeOption.addEventListener("click", () => {
   menu.style.display = "none";
 });
 
-/* MUSIC SYSTEM — MULTIPLE TRACKS + DEFAULT ON */
+/* MUSIC SYSTEM — MULTIPLE TRACKS + SAVED PREFERENCE */
 
 const soundtracks = [
   "assets/music/All I Need.mp3",
@@ -4256,12 +4256,13 @@ const soundtracks = [
 ];
 
 let currentTrackIndex = 0;
-let musicEnabled = true;
+const MUSIC_STORAGE_KEY = "neonChaosMusicEnabled";
+let musicEnabled = localStorage.getItem(MUSIC_STORAGE_KEY) === "true";
 
 let bgMusic = new Audio(soundtracks[currentTrackIndex]);
 bgMusic.loop = true;
 bgMusic.volume = 0.22;
-bgMusic.autoplay = true;
+bgMusic.autoplay = false;
 
 function tryPlayBackgroundMusic() {
   bgMusic.muted = false;
@@ -4272,6 +4273,7 @@ function tryPlayBackgroundMusic() {
 
 function enableAutoplayOnInteraction() {
   const resumeAudio = () => {
+    if (!musicEnabled) return;
     bgMusic.muted = false;
     bgMusic.play().catch(() => {
       // Still blocked, but user interaction has been attempted.
@@ -4283,16 +4285,21 @@ function enableAutoplayOnInteraction() {
   window.addEventListener("touchstart", resumeAudio, { once: true, capture: true });
 }
 
-/* AUTO-PLAY ON LOAD */
+/* RESTORE SAVED MUSIC PREFERENCE */
 window.addEventListener("load", () => {
   bgMusic.volume = 0.22;
-  tryPlayBackgroundMusic().catch(() => {
-    enableAutoplayOnInteraction();
-    // Notify user to interact to enable music if autoplay blocked
-    showToast("Tap/click to enable music", 3500);
-  });
   if (musicToggleLabel) {
-    musicToggleLabel.textContent = "MUSIC: ON";
+    musicToggleLabel.textContent = musicEnabled ? "MUSIC: ON" : "MUSIC: OFF";
+  }
+  if (musicEnabled) {
+    tryPlayBackgroundMusic().catch(() => {
+      enableAutoplayOnInteraction();
+      window.setTimeout(() => {
+        if (musicEnabled) showToast("Tap/click to enable music", 3500);
+      }, 0);
+    });
+  } else {
+    bgMusic.pause();
   }
 });
 
@@ -4316,6 +4323,7 @@ if (nextTrackBtn) {
 if (musicToggleBtn) {
   musicToggleBtn.addEventListener("click", () => {
   musicEnabled = !musicEnabled;
+  localStorage.setItem(MUSIC_STORAGE_KEY, String(musicEnabled));
 
   if (musicEnabled) {
     bgMusic.volume = 0.22;
