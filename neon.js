@@ -2473,11 +2473,15 @@ function renderAchievements() {
 
     if (unlocked && !claimed) {
       claimBtn.addEventListener("click", () => {
+        const claimKey = "claim_" + a.id;
+        if (localStorage.getItem(claimKey) === "true") return;
+
+        localStorage.setItem(claimKey, "true");
         coinCount += a.reward;
         coinCountEl.textContent = coinCount;
         authState.coins = coinCount;
+        lastCoinCount = coinCount;
 
-        localStorage.setItem("claim_" + a.id, "true");
         saveGame();
         renderAchievements();
         updateAchievementBadge();
@@ -4415,7 +4419,11 @@ startGameBtn.addEventListener(
         "none";
 
       gameRunning = true;
+      paused = false;
+      pauseBtn.innerHTML = "<span>⏸</span>";
+      gameContainer.classList.remove("paused");
       pauseOverlay.classList.remove("show");
+      lastTime = performance.now();
 
     }, 1000);
   }
@@ -4516,11 +4524,20 @@ const triggerCheatDetection = Object.freeze(
     clearTimeout(multiplierTimeout);
     clearTimeout(tripleTimeout);
 
+    const savedAchievementIds = Array.isArray(unlockedAchievements)
+      ? [...unlockedAchievements]
+      : [];
+    const claimedAchievementIds = achievements
+      .filter(achievement => localStorage.getItem(`claim_${achievement.id}`) === "true")
+      .map(achievement => achievement.id);
+
     alert(
-      `CHEATING DETECTED\n\n${reason}\n\nSave data reset.`
+      `CHEATING DETECTED\n\n${reason}\n\nGame save reset. Claimed achievements remain claimed.`
     );
 
     localStorage.clear();
+    localStorage.setItem("neonChaosAchievements", JSON.stringify(savedAchievementIds));
+    claimedAchievementIds.forEach(id => localStorage.setItem(`claim_${id}`, "true"));
 
     location.reload();
   }
@@ -4733,6 +4750,8 @@ if (homeBtn) {
       paused = false;
 
       gameRunning = false;
+      gameContainer.classList.remove("paused");
+      pauseOverlay.classList.remove("show");
 
       pauseBtn.textContent = "⏸";
 
