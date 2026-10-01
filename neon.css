@@ -411,6 +411,7 @@ body {
 
 #player {
   position: absolute;
+  z-index: 3;
   bottom: 40px;
   left: 50%;
   width: 40px;
@@ -427,6 +428,7 @@ body {
 
 #player-wrap {
   position: absolute;
+  z-index: 3;
   width: 40px;
   height: 40px;
   border-radius: 10px;
@@ -1201,14 +1203,16 @@ body {
 
 #skins {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   margin-top: 15px;
 }
 
 .skin {
-  padding: 10px;
-  height: 65px;
+  min-width: 0;
+  padding: 6px 4px;
+  height: 56px;
+  box-sizing: border-box;
   border: 1px solid #00ffff;
   border-radius: 10px;
   cursor: pointer;
@@ -1223,11 +1227,15 @@ body {
 
 .skin:hover {
   background: rgba(0, 255, 255, 0.1);
-  transform: scale(1.04);
+  transform: translateY(-2px);
 }
 
 .skin-name {
-  font-size: 14px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -1246,8 +1254,12 @@ body {
 }
 
 .skin-status {
-  margin-top: 6px;
-  font-size: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 3px;
+  font-size: 9px;
   opacity: 0.9;
 }
 
@@ -1815,6 +1827,161 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.trail-shop-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 135, 91, 0.6);
+  border-radius: 10px;
+  background: linear-gradient(110deg, rgba(255, 111, 70, 0.26), rgba(245, 66, 130, 0.2));
+  color: #ffe7dc;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.trail-shop-btn:hover {
+  transform: translateY(-2px);
+  border-color: #ff9e76;
+  background: linear-gradient(110deg, rgba(255, 111, 70, 0.38), rgba(245, 66, 130, 0.3));
+}
+
+.trail-shop-card {
+  width: min(92vw, 500px);
+  max-height: 82vh;
+  overflow-y: auto;
+}
+
+.trail-shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.trail-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 62px;
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #edf7ff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.trail-option:hover,
+.trail-option.selected {
+  border-color: var(--trail-color, #00f0ff);
+  box-shadow: 0 0 12px var(--trail-color, rgba(0, 240, 255, 0.18));
+}
+
+.trail-option-preview {
+  display: grid;
+  flex: 0 0 34px;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--trail-color, #00f0ff);
+  border-radius: 50%;
+  color: var(--trail-color, #00f0ff);
+  box-shadow: 0 0 12px var(--trail-color, rgba(0, 240, 255, 0.22));
+}
+
+.trail-option-preview--off {
+  border-style: dashed;
+  background: transparent;
+  box-shadow: none;
+  opacity: 0.45;
+}
+
+.trail-option[data-trail="comet"] .trail-option-preview {
+  width: 22px;
+  height: 8px;
+  flex-basis: 34px;
+  border-radius: 50%;
+  background: var(--trail-color, #00f0ff);
+}
+
+.trail-option[data-trail="orbit"] .trail-option-preview {
+  border-width: 2px;
+  background: transparent;
+  box-shadow: inset 0 0 7px var(--trail-color, rgba(0, 240, 255, 0.2)), 0 0 12px var(--trail-color, rgba(0, 240, 255, 0.22));
+}
+
+.trail-option-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.trail-option-name {
+  font-weight: 800;
+}
+
+.trail-option-description,
+.trail-option-status {
+  color: rgba(237, 247, 255, 0.68);
+  font-size: 12px;
+}
+
+.trail-shop-status {
+  min-height: 18px;
+  margin-top: 12px !important;
+  color: #ffbd9f !important;
+  font-size: 12px;
+}
+
+.player-trail-particle {
+  position: absolute;
+  z-index: 1;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--trail-color);
+  box-shadow: 0 0 8px var(--trail-color), 0 0 16px var(--trail-color);
+  pointer-events: none;
+  animation: trailFade 560ms ease-out forwards;
+}
+
+.player-trail-particle--comet {
+  width: 18px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.player-trail-particle--orbit {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--trail-color);
+  background: transparent;
+}
+
+@keyframes trailFade {
+  from {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-trail-particle {
+    animation-duration: 250ms;
+  }
 }
 
 #roll-btn {

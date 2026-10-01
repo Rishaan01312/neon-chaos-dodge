@@ -209,9 +209,13 @@ prestigeConfirmBtn?.addEventListener("click", () => {
   // RESET SKINS
   ownedSkins = [];
   equippedSkin = "default";
+  ownedTrails = ["off"];
+  equippedTrail = "off";
 
   localStorage.setItem("neonChaosSkins", "[]");
   localStorage.setItem("neonChaosSkin", "default");
+  localStorage.setItem("neonChaosTrails", JSON.stringify(ownedTrails));
+  localStorage.setItem("neonChaosTrail", equippedTrail);
 
   ["void","phantom","celestial"].forEach(s => {
     localStorage.removeItem(`${s}Verified`);
@@ -355,6 +359,8 @@ function saveGame() {
     totalPlaySeconds,
     ownedSkins,
     equippedSkin,
+    ownedTrails,
+    equippedTrail,
     prestigeLevel,
     prestigeTokens,
     prestigeBoosts,
@@ -448,6 +454,11 @@ function loadGame() {
 
     equippedSkin =
       save.data.equippedSkin || "default";
+
+    ownedTrails = Array.isArray(save.data.ownedTrails)
+      ? save.data.ownedTrails
+      : ownedTrails;
+    equippedTrail = save.data.equippedTrail || equippedTrail;
 
     if (save.data.voidVerified) {
 
@@ -719,6 +730,22 @@ function formatTime(sec) {
 let ownedSkins = JSON.parse(
   localStorage.getItem("neonChaosSkins") || "[]"
 );
+
+const TRAIL_OPTIONS = [
+  { id: "spark", name: "Spark", cost: 100, description: "Soft neon particles." },
+  { id: "comet", name: "Comet", cost: 200, description: "A bright streak behind you." },
+  { id: "orbit", name: "Orbit", cost: 350, description: "Glowing rings fade as you move." }
+];
+
+let ownedTrails = JSON.parse(
+  localStorage.getItem("neonChaosTrails") || '["off"]'
+);
+if (!ownedTrails.includes("off")) ownedTrails.unshift("off");
+
+let equippedTrail = localStorage.getItem("neonChaosTrail") || "off";
+let lastTrailParticleTime = 0;
+let lastTrailDirection = 1;
+let playerMovingThisFrame = false;
 
 let equippedSkin =
   localStorage.getItem("neonChaosSkin") || "default";
@@ -1507,6 +1534,124 @@ else {
   });
 }
 
+function getTrailColorForSkin(skin = equippedSkin) {
+  const colors = {
+    cyan: "#00eaff",
+    pink: "#ff4fd8",
+    gold: "#ffd447",
+    galaxy: "#b77aff",
+    lava: "#ff542e",
+    matrix: "#32ff83",
+    rainbow: "#ff4bc8",
+    gummy: "#ff70bb",
+    celestial: "#ffe58a",
+    phantom: "#00ffee",
+    void: "#00eaff"
+  };
+  return colors[skin] || "#a8b2c0";
+}
+
+function selectTrail(trailId) {
+  const status = document.getElementById("trail-shop-status");
+  const trail = TRAIL_OPTIONS.find(option => option.id === trailId);
+
+  if (trailId === "off") {
+    equippedTrail = "off";
+  } else if (!trail) {
+    return;
+  } else if (!ownedTrails.includes(trailId)) {
+    if (coinCount < trail.cost) {
+      if (status) status.textContent = `You need ${trail.cost - coinCount} more coins.`;
+      return;
+    }
+
+    coinCount -= trail.cost;
+    authState.coins = coinCount;
+    ownedTrails.push(trailId);
+    localStorage.setItem("neonChaosCoins", String(coinCount));
+    localStorage.setItem("neonChaosTrails", JSON.stringify(ownedTrails));
+    equippedTrail = trailId;
+  } else {
+    equippedTrail = trailId;
+  }
+
+  localStorage.setItem("neonChaosTrail", equippedTrail);
+  saveGame();
+  coinCountEl.textContent = coinCount;
+  updateHomeStats();
+  updateRollButton();
+  renderTrailShop();
+  if (trailId !== "off" && trail && ownedTrails.includes(trailId)) {
+    window.showToast?.(`${trail.name} equipped!`);
+  }
+}
+
+function renderTrailShop() {
+  const list = document.getElementById("trail-shop-list");
+  const status = document.getElementById("trail-shop-status");
+  if (!list) return;
+
+  if (status) status.textContent = "";
+  list.replaceChildren();
+
+  const options = [
+    { id: "off", name: "No Trail", cost: 0, description: "Turn off your trail." },
+    ...TRAIL_OPTIONS
+  ];
+  const trailColor = getTrailColorForSkin();
+
+  options.forEach(trail => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `trail-option${equippedTrail === trail.id ? " selected" : ""}`;
+    button.dataset.trail = trail.id;
+    button.style.setProperty("--trail-color", trailColor);
+
+    const preview = document.createElement("span");
+    preview.className = `trail-option-preview${trail.id === "off" ? " trail-option-preview--off" : ""}`;
+    preview.setAttribute("aria-hidden", "true");
+
+    const copy = document.createElement("span");
+    copy.className = "trail-option-copy";
+
+    const name = document.createElement("span");
+    name.className = "trail-option-name";
+    name.textContent = trail.name;
+
+    const description = document.createElement("span");
+    description.className = "trail-option-description";
+    description.textContent = trail.description;
+
+    const itemStatus = document.createElement("span");
+    itemStatus.className = "trail-option-status";
+    itemStatus.textContent = equippedTrail === trail.id
+      ? "Equipped"
+      : trail.id === "off" || ownedTrails.includes(trail.id)
+        ? "Equip"
+        : `${trail.cost} Coins`;
+
+    copy.append(name, description, itemStatus);
+    button.append(preview, copy);
+    button.addEventListener("click", () => selectTrail(trail.id));
+    list.appendChild(button);
+  });
+}
+
+function openTrailShop() {
+  renderTrailShop();
+  const overlay = document.getElementById("trail-shop-overlay");
+  overlay?.classList.add("show");
+  overlay?.setAttribute("aria-hidden", "false");
+  document.getElementById("trail-shop-close-btn")?.focus();
+}
+
+function closeTrailShop() {
+  const overlay = document.getElementById("trail-shop-overlay");
+  overlay?.classList.remove("show");
+  overlay?.setAttribute("aria-hidden", "true");
+  document.getElementById("trail-shop-btn")?.focus();
+}
+
 if (
   equippedSkin === "void" &&
   localStorage.getItem("voidVerified") !== "true"
@@ -1664,6 +1809,20 @@ updateRollButton();
 
   });
 
+});
+
+document.getElementById("trail-shop-btn")?.addEventListener("click", openTrailShop);
+document.getElementById("trail-shop-close-btn")?.addEventListener("click", closeTrailShop);
+document.getElementById("trail-shop-overlay")?.addEventListener("click", (event) => {
+  if (event.target === event.currentTarget) closeTrailShop();
+});
+document.addEventListener("keydown", (event) => {
+  if (
+    event.key === "Escape" &&
+    document.getElementById("trail-shop-overlay")?.classList.contains("show")
+  ) {
+    closeTrailShop();
+  }
 });
 
 /*  internalState FUNCTIONS */
@@ -2556,17 +2715,23 @@ function updatePlayer() {
 
   if (!gameRunning) return;
 
+  playerMovingThisFrame = Boolean(
+    keys["arrowleft"] || keys.a || keys["arrowright"] || keys.d
+  );
+
   const rect = gameContainer.getBoundingClientRect();
   const playerWidth = player.offsetWidth;
 
   // MOVEMENT
   if (keys["arrowleft"] || keys["a"]) {
     playerX -= playerSpeed;
+    lastTrailDirection = -1;
     lastHorizontalMoveTime = Date.now();
   }
 
   if (keys["arrowright"] || keys["d"]) {
     playerX += playerSpeed;
+    lastTrailDirection = 1;
     lastHorizontalMoveTime = Date.now();
   }
 
@@ -3720,6 +3885,8 @@ function performReset() {
   localStorage.removeItem("neonChaosCoins");
   localStorage.removeItem("neonChaosSkins");
   localStorage.removeItem("neonChaosSkin");
+  localStorage.removeItem("neonChaosTrails");
+  localStorage.removeItem("neonChaosTrail");
   localStorage.removeItem("neonChaosDeaths");
   localStorage.removeItem("neonChaosHighestSpeed");
   localStorage.removeItem("neonChaosRolls");
@@ -3755,6 +3922,8 @@ function performReset() {
 
   ownedSkins = [];
   equippedSkin = "default";
+  ownedTrails = ["off"];
+  equippedTrail = "off";
   bestScore = 0;
   coinCount = 0;
   totalDeaths = 0;
@@ -3793,6 +3962,9 @@ function performReset() {
     "neonChaosSkin",
     equippedSkin
   );
+
+  localStorage.setItem("neonChaosTrails", JSON.stringify(ownedTrails));
+  localStorage.setItem("neonChaosTrail", equippedTrail);
 
   bestScoreEl.textContent =
     bestScore;
@@ -4575,6 +4747,23 @@ if (homeBtn) {
 
 /* GAME LOOP */
 
+function emitPlayerTrail(timestamp) {
+  if (
+    equippedTrail === "off" ||
+    !playerMovingThisFrame ||
+    timestamp - lastTrailParticleTime < 70
+  ) return;
+
+  const particle = document.createElement("span");
+  particle.className = `player-trail-particle player-trail-particle--${equippedTrail}`;
+  particle.style.setProperty("--trail-color", getTrailColorForSkin());
+  particle.style.left = `${player.offsetLeft + player.offsetWidth / 2 - lastTrailDirection * 9}px`;
+  particle.style.top = `${player.offsetTop + player.offsetHeight / 2}px`;
+  gameContainer.appendChild(particle);
+  particle.addEventListener("animationend", () => particle.remove(), { once: true });
+  lastTrailParticleTime = timestamp;
+}
+
 function gameLoop(timestamp) {
 
   if (!lastTime) {
@@ -4785,6 +4974,7 @@ if (equippedSkin === "celestial") {
     }
 
     updatePlayer();
+    emitPlayerTrail(timestamp);
     updateObstacles(delta);
     updatePowerUps(delta);
     updateCoins(delta);

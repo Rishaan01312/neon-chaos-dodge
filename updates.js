@@ -4,6 +4,16 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "trail-shop-update-2026-10-01",
+      date: "1 October 2026",
+      title: "Trail Shop and Skin Shop Update",
+      changes: [
+        "Added the Trail Shop with Spark, Comet, and Orbit trails.",
+        "Trail colors match your equipped skin, and trails follow you while moving.",
+        "Reorganised the skin shop into three columns and renamed Lava Core to Lava Skin."
+      ]
+    },
+    {
       id: "gameplay-update-2026-09",
       date: "30 September 2026",
       title: "Update Log and Leaderboard Update",
