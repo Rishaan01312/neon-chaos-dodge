@@ -544,7 +544,6 @@ let voidBlastReady = true;
 
 let voidBlastActive = false;
 
-let voidBlastEndTime = 0;
 let voidBlastCooldownEndTime = 0;
 
 /* PHANTOM */
@@ -1510,17 +1509,17 @@ function updateSkinButtons() {
 
     if (skin === "void") {
       status.textContent =
-        "0.1% Roll Chance";
+        "0.3% Roll Chance";
     }
 
     if (skin === "phantom") {
       status.textContent =
-        "0.2% Roll Chance";
+        "0.1% Roll Chance";
     }
 
     if (skin === "celestial") {
       status.textContent =
-        "0.3% Roll Chance";
+        "0.2% Roll Chance";
     }
   }
 }
@@ -3337,6 +3336,7 @@ function activateVoidBlast() {
   voidBlastReady = false;
 
   voidBlastActive = true;
+  voidTimer.textContent = "BOOM!";
 
   // Track activation for achievement
   totalVoidBlasts++;
@@ -3345,9 +3345,6 @@ function activateVoidBlast() {
   if (totalVoidBlasts >= 200) {
     unlockAchievement("void_walker");
   }
-
-  voidBlastEndTime =
-    Date.now() + 3000;
 
   /* DESTROY ALL OBSTACLES */
 
@@ -3364,29 +3361,18 @@ function activateVoidBlast() {
 
   obstacles = [];
 
-  /* END ACTIVE */
-
   setTimeout(() => {
-
     voidBlastActive = false;
-
-    voidBlastCooldownEndTime =
-      Date.now() + 10000;
-
-  }, 3000);
-
-  /* END COOLDOWN */
+    voidBlastCooldownEndTime = Date.now() + 5000;
+    voidTimer.textContent = "COOLING DOWN: 5s";
+  }, 650);
 
   setTimeout(() => {
-
     voidBlastCooldown = false;
-
     voidBlastReady = true;
-
     voidTimer.textContent =
       "READY";
-
-  }, 13000);
+  }, 5650);
 }
 
 function activatePhantomShift() {
@@ -3637,7 +3623,6 @@ gummyReady = true;
 slowEndTime = 0;
 multiplierEndTime = 0;
 tripleEndTime = 0;
-voidBlastEndTime = 0;
 phantomEndTime = 0;
 celestialEndTime = 0;
 
@@ -4124,7 +4109,7 @@ if (!ownsVerifiedRareSkin("void")) {
 
   availableRareSkins.push({
     skin: "void",
-    chance: 0.001
+    chance: 0.003
   });
 }
 
@@ -4132,7 +4117,7 @@ if (!ownsVerifiedRareSkin("phantom")) {
 
   availableRareSkins.push({
     skin: "phantom",
-    chance: 0.002
+    chance: 0.001
   });
 }
 
@@ -4140,7 +4125,7 @@ if (!ownsVerifiedRareSkin("celestial")) {
 
   availableRareSkins.push({
     skin: "celestial",
-    chance: 0.003
+    chance: 0.002
   });
 }
 
@@ -4578,10 +4563,6 @@ if (pauseBtn) {
 
       /* VOID */
 
-      if (voidBlastActive) {
-        voidBlastEndTime += pausedDuration;
-      }
-
       if (voidBlastCooldown) {
         voidBlastCooldownEndTime += pausedDuration;
       }
@@ -4894,11 +4875,7 @@ if (equippedSkin === "void") {
 
   if (voidBlastActive) {
 
-    voidTimer.textContent =
-      "ACTIVE: " +
-      Math.ceil(
-        (voidBlastEndTime - now) / 1000
-      ) + "s";
+    voidTimer.textContent = "BOOM!";
 
   }
 
@@ -5073,26 +5050,6 @@ if (equippedSkin === "celestial") {
 
       if (timestamp - lastCoin > (chaosMode ? currentCoinInterval * 0.7 : currentCoinInterval)) {
       spawnCoin();
-
-      if (equippedSkin === "void") {
-        voidIndicator.classList.add("active");
-
-        if (voidBlastCooldown) {
-          const remaining =
-            Math.max(
-              0,
-              ((voidBlastEndTime - Date.now()) / 1000)
-            );
-
-          voidTimer.textContent =
-            `${remaining.toFixed(1)}s`;
-        } else {
-          voidTimer.textContent =
-            "READY";
-        }
-      } else {
-        voidIndicator.classList.remove("active");
-      }
 
       if (Math.random() < 0.05) {
         spawnMoneyBag();

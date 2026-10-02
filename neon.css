@@ -3820,15 +3820,15 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
   margin-bottom: 8px;
 }
 
-.prestige-shop-card {
+.prestige-card.prestige-shop-card {
   max-width: 96vw;
-  width: min(96vw, 980px);
+  width: min(96vw, 880px);
   max-height: 90vh;
   height: min(90vh, 760px);
   text-align: left;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   gap: 16px 24px;
   align-items: start;
   padding: 18px;
@@ -3856,7 +3856,8 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
   gap: 14px;
   margin-bottom: 0;
   text-align: left;
-  max-height: calc(90vh - 240px);
+  min-height: 0;
+  max-height: 100%;
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: thin;
@@ -3957,6 +3958,7 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
 .prestige-shop-summary {
   margin: 0;
   padding: 16px;
+  min-height: 0;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -4018,12 +4020,12 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
 }
 
 @media (max-width: 920px) {
-  .prestige-shop-card {
+  .prestige-card.prestige-shop-card {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto 1fr auto;
+    grid-template-rows: auto auto auto minmax(120px, 1fr) auto auto;
     max-width: 94vw;
     width: min(94vw, 620px);
-    height: auto;
+    height: min(90vh, 760px);
   }
 
   .prestige-shop-list,

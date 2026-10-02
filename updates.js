@@ -4,6 +4,15 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "void-skin-update-2026-10-02",
+      date: "2 October 2026",
+      title: "Void Skin Ability and Rare Roll Update",
+      changes: [
+        "Void blasts now clear visible obstacles without affecting coins or power-ups.",
+        "Updated rare skin roll chances: Void 0.3%, Celestial 0.2%, and Phantom 0.1%."
+      ]
+    },
+    {
       id: "trail-shop-update-2026-10-01",
       date: "1 October 2026",
       title: "Trail Shop and Skin Shop Update",
