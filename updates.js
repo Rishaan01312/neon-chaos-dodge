@@ -9,7 +9,7 @@
       title: "Trail Shop and Skin Shop Update",
       changes: [
         "Added the Trail Shop with Spark, Comet, and Orbit trails.",
-        "Trail colors match your equipped skin, and trails follow you while moving.",
+        "Trail colours match your equipped skin, and trails follow you while moving.",
         "Reorganised the skin shop into three columns and renamed Lava Core to Lava Skin."
       ]
     },

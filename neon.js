@@ -3805,7 +3805,10 @@ const closeDevBtn =
   document.getElementById("close-dev-btn");
 
 function openInfoOverlay() {
+  if (!infoOverlay) return;
   infoOverlay.classList.add("show");
+  infoOverlay.setAttribute("aria-hidden", "false");
+  closeInfoBtn?.focus();
 }
 
 function openDevOverlay() {
@@ -3821,8 +3824,10 @@ if (homeHelpBtn) {
   homeHelpBtn.addEventListener("click", openDevOverlay);
 }
 
-closeInfoBtn.addEventListener("click", () => {
-  infoOverlay.classList.remove("show");
+closeInfoBtn?.addEventListener("click", () => {
+  infoOverlay?.classList.remove("show");
+  infoOverlay?.setAttribute("aria-hidden", "true");
+  infoBtn?.focus();
 });
 
 if (closeDevBtn) {

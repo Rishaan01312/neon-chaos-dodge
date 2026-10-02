@@ -443,7 +443,7 @@
           >
 
             <span class="skin-name">
-              Rainbow Pulse
+              Rainbow Skin
             </span>
 
             <span class="skin-status">
@@ -585,81 +585,80 @@
 
  <!-- INFO OVERLAY -->
 
-<div id="info-overlay" class="reset-overlay">
-  <div class="reset-card info-card info-landscape">
-    <h3>MORE INFO</h3>
+<div id="info-overlay" class="reset-overlay" aria-hidden="true">
+  <div class="reset-card info-card info-landscape" role="dialog" aria-modal="true" aria-labelledby="info-title">
+    <div class="info-guide-header">
+      <div>
+        <p class="info-guide-kicker">QUICK FIELD GUIDE</p>
+        <h3 id="info-title">MORE INFO</h3>
+      </div>
+      <p class="info-guide-intro">Run smarter, earn rewards, and make the most of every unlock.</p>
+    </div>
 
     <div class="info-sections info-grid">
-
       <section class="info-column">
-        <h4>Powerups</h4>
-        <div class="info-block">
-          <p><strong>🛡 Shield</strong><br>Grants invulnerability when collected, and is stackable. Use to survive tight windows and avoid death penalties. Drop chance: 50%.</p>
-        </div>
-        <div class="info-block">
-          <p><strong>⏱ Slow Time</strong><br>Temporarily reduces obstacle speed and spawn rate for smoother navigation. Useful for recovery. Drop chance: 50%.</p>
-        </div>
-        <div class="info-block">
-          <p><strong>×2 Multiplier</strong><br>Doubles score & coin gains while active. Stacking multipliers increases pacing for high-score runs. Drop chance: 50%.</p>
-        </div>
-        <div class="info-block">
-          <p><strong>×3 Multiplier</strong><br>Triples score & coin gains for a short burst — rarer but high payoff. Drop chance: 15%.</p>
-        </div>
-        <div class="info-block">
-          <p><strong>Coin Bag</strong><br>Instant coin payout. Best when near a shop purchase or to meet prestige requirements. Drop chance: 5%.</p>
-        </div>
+        <h4><span class="info-section-number">01</span> Run Basics</h4>
+        <ul>
+          <li>Move with the <strong>← / →</strong> arrow keys or <strong>A / D</strong>.</li>
+          <li>Dodge obstacles and collect coins. Your score increases the game speed as you survive.</li>
+          <li>A collision ends the run unless a shield or an active ability protects you.</li>
+        </ul>
       </section>
 
       <section class="info-column">
-        <h4>Skins</h4>
-        <div class="info-block">
-          <p><strong>Celestial</strong><br>Passive: score boost + coin magnet on pick-up. Rare (0.3%).</p>
-        </div>
-        <div class="info-block">
-          <p><strong>Phantom</strong><br>Active: temporary invulnerability to obstacles while ability is used. Rare (0.2%).</p>
-        </div>
-        <div class="info-block">
-          <p><strong>Void</strong><br>Active: clears visible obstacles on activation. Ultra-rare (0.1%).</p>
-        </div>
+        <h4><span class="info-section-number">02</span> Power-Ups</h4>
+        <ul>
+          <li><strong>Shield:</strong> stores a charge that absorbs one obstacle hit. Charges stack.</li>
+          <li><strong>Slow Time:</strong> slows hazards and gives you more room to react.</li>
+          <li><strong>×2 / ×3:</strong> multiplies score and coin gains while active.</li>
+          <li>Collect another timed power-up of the same type to extend its effect.</li>
+        </ul>
       </section>
 
       <section class="info-column">
-        <h4>Prestige Boosts</h4>
-        <div class="info-block">
-          <p><strong>Coin Spawn Rate</strong><br>Each +5% reduces the interval between coin spawns (minimum cap), increasing the number of coins you can collect per run. Stacks additively.</p>
-        </div>
-        <div class="info-block">
-          <p><strong>Coin Value</strong><br>Each +5% increases the value of every coin. Since coin rewards are integers, values are rounded up to preserve meaningful gains.</p>
-        </div>
-        <div class="info-block">
-          <p><strong>Score Gain</strong><br>Each +5% multiplies per-action score gain, helping you reach higher scores faster.</p>
-        </div>
-        <div class="info-block">
-          <p><strong>Money Bag Reward</strong><br>Each +5% increases the payout from money bag drops, making rare bag drops more impactful.</p>
-        </div>
-        <div class="info-block">
-          <p><strong>Speed Progress</strong><br>Each +5% reduces the score required to reach the next speed level, accelerating progression to higher difficulty and reward tiers.</p>
-        </div>
+        <h4><span class="info-section-number">03</span> Skins &amp; Abilities</h4>
+        <ul>
+          <li>Buy standard skins with coins. The <strong>15-coin roll</strong> can unlock Void (0.1%), Phantom (0.2%), or Celestial (0.3%).</li>
+          <li>While using an ability skin, press <strong>Space</strong> during a run to activate its power.</li>
+          <li><strong>Gummy:</strong> doubles score for 10 seconds. <strong>Void:</strong> clears current obstacles.</li>
+          <li><strong>Phantom:</strong> passes through obstacles for 10 seconds. <strong>Celestial:</strong> pulls coins toward you for 10 seconds.</li>
+          <li>Abilities have cooldowns. Their timers appear above the game window.</li>
+        </ul>
       </section>
 
       <section class="info-column">
-        <h4>Other</h4>
-        <div class="info-block">
-          <p><strong>Chaos Mode</strong><br>A harder mode that increases obstacle speed and spawn rate while boosting score gain — toggle in settings for challenge runs.</p>
-        </div>
-        <div class="info-block">
-          <p><strong>Prestige</strong><br>A full reset that grants prestige tokens when requirements are met. Tokens can be spent permanently on the Prestige Shop to buy +5% boosts that persist across resets (excluding hard resets).</p>
-        </div>
+        <h4><span class="info-section-number">04</span> Trails &amp; Style</h4>
+        <ul>
+          <li>Open <strong>Trail Shop</strong> to equip no trail or buy Spark (100 coins), Comet (200), and Orbit (350).</li>
+          <li>Trails follow you while moving, and their colour matches your equipped skin.</li>
+          <li>Choose a theme and adjust music, movement sensitivity, or Chaos Mode in Settings.</li>
+        </ul>
       </section>
 
+      <section class="info-column">
+        <h4><span class="info-section-number">05</span> Goals &amp; Records</h4>
+        <ul>
+          <li>Complete daily challenges to claim <strong>50 coins</strong>.</li>
+          <li>Achievements track milestones and award rewards as you play.</li>
+          <li>Your best score can be submitted to the global leaderboard.</li>
+          <li>Check the Update Log for recent additions and changes.</li>
+        </ul>
+      </section>
+
+      <section class="info-column">
+        <h4><span class="info-section-number">06</span> Prestige &amp; Chaos</h4>
+        <ul>
+          <li><strong>Chaos Mode</strong> makes hazards faster and more frequent, while increasing score gain.</li>
+          <li><strong>Prestige</strong> resets progress when its requirements are met and awards tokens for permanent shop boosts.</li>
+          <li><strong>Hard Reset</strong> erases all progress, including prestige tokens.</li>
+        </ul>
+      </section>
     </div>
 
-    <div class="reset-actions">
-      <button id="close-info-btn" class="ghost-btn">Close</button>
+    <div class="reset-actions info-guide-actions">
+      <button id="close-info-btn" class="ghost-btn" type="button">Close</button>
     </div>
-
   </div>
-
 </div>
 
 <!-- CREDITS AND INFO OVERLAY (SEPARATE) -->
@@ -901,7 +900,7 @@
   <div id="trail-shop-overlay" class="reset-overlay" aria-hidden="true">
     <div class="reset-card info-card trail-shop-card" role="dialog" aria-modal="true" aria-labelledby="trail-shop-title">
       <h3 id="trail-shop-title">TRAIL SHOP</h3>
-      <p>Trails match the color of your equipped skin.</p>
+      <p>Trails match the colour of your equipped skin.</p>
       <div id="trail-shop-list" class="trail-shop-list"></div>
       <p id="trail-shop-status" class="trail-shop-status" role="status" aria-live="polite"></p>
       <div class="reset-actions">
