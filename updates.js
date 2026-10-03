@@ -4,6 +4,15 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "leaderboard-feedback-update-2026-10-03",
+      date: "3 October 2026",
+      title: "Leaderboard Feedback Update",
+      changes: [
+        "The leaderboard button now stays visible on the home screen and during gameplay.",
+        "A toast confirms when a new best score is successfully added to the leaderboard."
+      ]
+    },
+    {
       id: "void-skin-update-2026-10-02",
       date: "2 October 2026",
       title: "Void Skin Ability and Rare Roll Update",

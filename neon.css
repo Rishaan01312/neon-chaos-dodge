@@ -3555,6 +3555,7 @@ body {
 }
 
 #leaderboard-btn {
+  z-index: 10000;
   background: rgba(16, 22, 40, 0.9);
   color: #f9fbff;
   border-color: rgba(0, 255, 255, 0.28);

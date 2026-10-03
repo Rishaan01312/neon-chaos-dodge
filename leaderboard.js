@@ -3000,7 +3000,7 @@
         position: fixed;
         bottom: 20px;
         right: 20px;
-        z-index: 996;
+        z-index: 10000;
         width: 52px;
         height: 52px;
         border-radius: 50%;
@@ -3077,13 +3077,13 @@
     }
 
     if (!document.getElementById("leaderboard-btn")) {
-      const target = document.getElementById("home-bottom-left-buttons") || document.body;
       const btn = document.createElement("button");
       btn.id = "leaderboard-btn";
       btn.type = "button";
       btn.title = "Leaderboard";
+      btn.setAttribute("aria-label", "Leaderboard");
       btn.textContent = "🏆";
-      target.appendChild(btn);
+      document.body.appendChild(btn);
     }
 
     return overlay;

@@ -3664,9 +3664,12 @@ authState.totalDeaths = totalDeaths;
   finalScoreEl.textContent =
     Math.floor(score);
 
-  if (score > bestScore) {
+  const finalScore = Math.floor(score);
+  const isNewBest = finalScore > bestScore;
 
-    bestScore = Math.floor(score);
+  if (isNewBest) {
+
+    bestScore = finalScore;
     authState.bestScore = bestScore;
 
     localStorage.setItem(
@@ -3684,7 +3687,14 @@ authState.totalDeaths = totalDeaths;
   gameOverScreen.classList.add("show");
 
   if (typeof window.uploadScore === "function") {
-    window.uploadScore(Math.floor(score));
+    const uploadResult = window.uploadScore(finalScore);
+    if (isNewBest) {
+      void Promise.resolve(uploadResult).then((result) => {
+        if (result?.ok) {
+          showToast("Your new best score has been updated on the leaderboard!");
+        }
+      });
+    }
   }
 
   if (activePlaytimeSessionSeconds > 0) {
