@@ -4491,3 +4491,41 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
         0 0 50px #6fdcff,
         0 0 80px #6fdcff !important;
 }
+
+/* MOBILE GAME INPUT */
+#game-container {
+  touch-action: none;
+}
+
+#mobile-ability-btn {
+  display: none;
+}
+
+@media (max-width: 700px), (pointer: coarse) {
+  #game-container {
+    height: min(54vh, 400px);
+    min-height: 280px;
+  }
+
+  #mobile-ability-btn {
+    display: block;
+    position: absolute;
+    z-index: 60;
+    right: 12px;
+    bottom: 12px;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 2px solid rgba(0, 255, 255, 0.85);
+    border-radius: 999px;
+    background: rgba(4, 12, 30, 0.88);
+    color: #fff;
+    font: 700 12px/1 system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    box-shadow: 0 0 16px rgba(0, 255, 255, 0.35);
+    touch-action: manipulation;
+  }
+
+  #mobile-ability-btn:disabled {
+    opacity: 0.58;
+  }
+}
