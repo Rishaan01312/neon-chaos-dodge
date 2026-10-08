@@ -47,6 +47,7 @@ const tripleIndicator = getSafe("triple-indicator");
 const tripleTimer = getSafe("triple-timer");
 const homeScreen = document.getElementById("home-screen");
 const startGameBtn = document.getElementById("start-game-btn");
+const mobileAbilityBtn = document.getElementById("mobile-ability-btn");
 const homeBestScore = document.getElementById("home-best-score");
 const homeCoins = document.getElementById("home-coins");
 const homeHighestSpeed = document.getElementById("home-highest-speed");
@@ -1174,26 +1175,44 @@ window.addEventListener("keyup", (e) => {
   keys[e.key.toLowerCase()] = false;
 });
 
+function updateMobileAbilityButton() {
+  if (!mobileAbilityBtn) return;
+  const hasAbility = ["void", "phantom", "celestial", "gummy"].includes(equippedSkin);
+  mobileAbilityBtn.disabled = !hasAbility;
+  mobileAbilityBtn.textContent = hasAbility ? "⚡ USE ABILITY" : "⚡ NO ABILITY";
+  mobileAbilityBtn.setAttribute(
+    "aria-label",
+    hasAbility ? `Activate ${equippedSkin} ability` : "Equip an ability skin to use an ability"
+  );
+}
+
+function activateEquippedAbility() {
+  if (!gameRunning) return false;
+
+  if (equippedSkin === "void" && !voidBlastCooldown) {
+    activateVoidBlast();
+  } else if (equippedSkin === "phantom" && !phantomCooldown) {
+    activatePhantomShift();
+  } else if (equippedSkin === "celestial" && !celestialCooldown) {
+    activateCelestialSurge();
+  } else if (equippedSkin === "gummy" && !gummyCooldown) {
+    activateGummyBoost();
+  } else {
+    return false;
+  }
+  return true;
+}
+
+mobileAbilityBtn?.addEventListener("pointerdown", (event) => {
+  event.stopPropagation();
+});
+mobileAbilityBtn?.addEventListener("click", activateEquippedAbility);
+
 /* SPACE POWERUPS */
 window.addEventListener("keydown", (e) => {
-
-  if (e.code === "Space" && gameRunning) {
-
-    if (equippedSkin === "void" && !voidBlastCooldown) {
-      activateVoidBlast();
-    }
-
-    if (equippedSkin === "phantom" && !phantomCooldown) {
-      activatePhantomShift();
-    }
-
-    if (equippedSkin === "celestial" && !celestialCooldown) {
-      activateCelestialSurge();
-    }
-    if (equippedSkin === "gummy" && !gummyCooldown) {
-      activateGummyBoost();
-    }
-  }
+  if (e.code !== "Space" || !gameRunning) return;
+  e.preventDefault();
+  activateEquippedAbility();
 });
 
 /* DEVTOOLS SHORTCUT BLOCKER */
@@ -1292,6 +1311,7 @@ function applySkin(skin) {
 );
 
   player.style.boxShadow = "";
+  updateMobileAbilityButton();
 
   if (skin === "cyan") {
 
@@ -2713,6 +2733,48 @@ function closePrestigeShopOverlay() {
   prestigeShopOverlay?.classList.remove("show");
 }
 
+/* TOUCH STEERING */
+let touchPointerId = null;
+let touchSteering = false;
+
+gameContainer.addEventListener("pointerdown", (event) => {
+  if (!gameRunning || event.target.closest("button")) return;
+  if (event.pointerType !== "touch") return;
+
+  event.preventDefault();
+  touchPointerId = event.pointerId;
+  gameContainer.setPointerCapture(event.pointerId);
+  steerPlayerToPointer(event);
+});
+
+gameContainer.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== touchPointerId || !gameRunning) return;
+  event.preventDefault();
+  steerPlayerToPointer(event);
+});
+
+function steerPlayerToPointer(event) {
+  const rect = gameContainer.getBoundingClientRect();
+  const playerWidth = player.offsetWidth;
+  const nextX = Math.max(0, Math.min(rect.width - playerWidth, event.clientX - rect.left - playerWidth / 2));
+  if (Math.abs(nextX - playerX) > 0.5) {
+    lastTrailDirection = nextX < playerX ? -1 : 1;
+    playerX = nextX;
+    touchSteering = true;
+    lastHorizontalMoveTime = Date.now();
+  }
+}
+
+function stopTouchSteering(event) {
+  if (event.pointerId !== touchPointerId) return;
+  touchPointerId = null;
+  touchSteering = false;
+}
+
+gameContainer.addEventListener("pointerup", stopTouchSteering);
+gameContainer.addEventListener("pointercancel", stopTouchSteering);
+gameContainer.addEventListener("lostpointercapture", stopTouchSteering);
+
 /* PLAYER MOVEMENT AND WRAPPING */
 
 function updatePlayer() {
@@ -2720,7 +2782,7 @@ function updatePlayer() {
   if (!gameRunning) return;
 
   playerMovingThisFrame = Boolean(
-    keys["arrowleft"] || keys.a || keys["arrowright"] || keys.d
+    keys["arrowleft"] || keys.a || keys["arrowright"] || keys.d || touchSteering
   );
 
   const rect = gameContainer.getBoundingClientRect();
