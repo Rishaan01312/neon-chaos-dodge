@@ -76,7 +76,7 @@
   function renderUpdates() {
     if (!list) return;
 
-    list.replaceChildren();
+    while (list.firstChild) list.removeChild(list.firstChild);
     updates.forEach((update) => {
       const entry = document.createElement("article");
       entry.className = "update-log-entry";
@@ -101,9 +101,9 @@
   }
 
   function closeUpdateLog() {
-    overlay?.classList.remove("show");
-    overlay?.setAttribute("aria-hidden", "true");
-    button?.focus();
+    overlay && overlay.classList.remove("show");
+    overlay && overlay.setAttribute("aria-hidden", "true");
+    button && button.focus();
   }
 
   function openUpdateLog() {
@@ -112,7 +112,7 @@
     overlay.setAttribute("aria-hidden", "false");
     if (badge) badge.hidden = true;
     safeStorageSet(SEEN_UPDATE_KEY, latestUpdate.id);
-    closeButton?.focus();
+    closeButton && closeButton.focus();
   }
 
   function initUpdateLog() {
@@ -123,7 +123,7 @@
     if (badge) badge.hidden = !isUnread;
 
     button.addEventListener("click", openUpdateLog);
-    closeButton?.addEventListener("click", closeUpdateLog);
+    closeButton && closeButton.addEventListener("click", closeUpdateLog);
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay) closeUpdateLog();
     });
