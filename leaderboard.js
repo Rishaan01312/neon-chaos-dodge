@@ -2757,7 +2757,7 @@
   }
 
   function createIdentifier() {
-    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+    if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
     return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   }
 
@@ -2802,7 +2802,7 @@
   }
 
   function syncSavedPlaytime() {
-    const seconds = Number(window.getLifetimePlaytimeSeconds?.());
+    const seconds = Number(window.getLifetimePlaytimeSeconds && window.getLifetimePlaytimeSeconds());
     if (Number.isFinite(seconds) && seconds > 0) {
       void uploadPlaytime(seconds);
     }
@@ -2838,7 +2838,7 @@
 
       safeLocalStorageSet(LEGACY_BEST_MIGRATED_KEY, "1");
       await loadLeaderboard();
-      window.showToast?.("Your best score has been saved to the leaderboard!");
+      window.showToast && window.showToast("Your best score has been saved to the leaderboard!");
     } catch (error) {
       console.warn("Legacy best score upload failed:", error);
     }
@@ -3169,9 +3169,9 @@
 
       const cleanedEntries = entries
         .map((entry) => ({
-          name: sanitizeName(entry?.name || ""),
-          score: Number(entry?.score),
-          timestamp: entry?.timestamp || Date.now()
+          name: sanitizeName(entry && entry.name || ""),
+          score: Number(entry && entry.score),
+          timestamp: entry && entry.timestamp || Date.now()
         }))
         .filter((entry) => entry.name && Number.isFinite(entry.score) && entry.score > 0)
       const bestScoreByName = new Map();
@@ -3216,7 +3216,8 @@
         row.append(rank, name, score);
         return row;
       });
-      list.replaceChildren(...rows);
+      while (list.firstChild) list.removeChild(list.firstChild);
+      rows.forEach((row) => list.appendChild(row));
 
       return uniqueEntries;
     } catch (error) {
@@ -3328,27 +3329,27 @@
     const nameInput = document.getElementById("name-input");
     const nameSubmitBtn = document.getElementById("name-submit-btn");
 
-    leaderboardBtn?.addEventListener("click", openLeaderboard);
-    leaderboardCloseBtn?.addEventListener("click", closeLeaderboard);
+    leaderboardBtn && leaderboardBtn.addEventListener("click", openLeaderboard);
+    leaderboardCloseBtn && leaderboardCloseBtn.addEventListener("click", closeLeaderboard);
 
-    nameInput?.addEventListener("keydown", (event) => {
+    nameInput && nameInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
         submitPlayerName();
       }
     });
 
-    nameSubmitBtn?.addEventListener("click", submitPlayerName);
+    nameSubmitBtn && nameSubmitBtn.addEventListener("click", submitPlayerName);
 
     const nameOverlay = document.getElementById("name-overlay");
-    nameOverlay?.addEventListener("click", (event) => {
+    nameOverlay && nameOverlay.addEventListener("click", (event) => {
       if (event.target === nameOverlay) {
         hideNameOverlay();
       }
     });
 
     const leaderboardOverlay = document.getElementById("leaderboard-overlay");
-    leaderboardOverlay?.addEventListener("click", (event) => {
+    leaderboardOverlay && leaderboardOverlay.addEventListener("click", (event) => {
       if (event.target === leaderboardOverlay) {
         closeLeaderboard();
       }
