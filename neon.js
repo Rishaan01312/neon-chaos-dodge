@@ -90,30 +90,30 @@ let musicVolume = 0.22;
 let sfxVolume = 0.75;
 let graphicsMode = "high";
 
-prestigeBtn?.addEventListener("click", () => {
+prestigeBtn && prestigeBtn.addEventListener("click", () => {
   updatePrestigeRequirementsUI();
   prestigeOverlay.classList.add("show");
 });
 
-prestigeShopBtn?.addEventListener("click", () => {
+prestigeShopBtn && prestigeShopBtn.addEventListener("click", () => {
   prestigeOverlay.classList.remove("show");
   openPrestigeShopOverlay();
 });
 
-prestigeCloseBtn?.addEventListener("click", () => {
+prestigeCloseBtn && prestigeCloseBtn.addEventListener("click", () => {
   prestigeOverlay.classList.remove("show");
 });
 
-prestigeShopBackBtn?.addEventListener("click", () => {
+prestigeShopBackBtn && prestigeShopBackBtn.addEventListener("click", () => {
   closePrestigeShopOverlay();
   prestigeOverlay.classList.add("show");
 });
 
-prestigeShopCloseBtn?.addEventListener("click", () => {
+prestigeShopCloseBtn && prestigeShopCloseBtn.addEventListener("click", () => {
   closePrestigeShopOverlay();
 });
 
-prestigeShopOverlay?.addEventListener("click", (event) => {
+prestigeShopOverlay && prestigeShopOverlay.addEventListener("click", (event) => {
   if (event.target === prestigeShopOverlay) {
     closePrestigeShopOverlay();
   }
@@ -125,7 +125,7 @@ function updatePrestigeRequirementsUI() {
     ["void","phantom","celestial"].every(s => localStorage.getItem(`${s}Verified`) === "true");
 
   const hasEnoughCoins = coinCount >= 1000;
-  const typed = (document.getElementById("prestige-confirm-input")?.value || "") === "PRESTIGE";
+  const typed = (document.getElementById("prestige-confirm-input") && document.getElementById("prestige-confirm-input").value || "") === "PRESTIGE";
   const hasEnoughPlayTime = totalPlaySeconds >= 1800;
 
   const reqSkins = document.getElementById("req-skins");
@@ -149,9 +149,9 @@ function updatePrestigeRequirementsUI() {
   if (statusPlay)  statusPlay.textContent = hasEnoughPlayTime ? "✓" : "✗";
 }
 
-document.getElementById("prestige-confirm-input")?.addEventListener("input", updatePrestigeRequirementsUI);
+document.getElementById("prestige-confirm-input") && document.getElementById("prestige-confirm-input").addEventListener("input", updatePrestigeRequirementsUI);
 
-prestigeConfirmBtn?.addEventListener("click", () => {
+prestigeConfirmBtn && prestigeConfirmBtn.addEventListener("click", () => {
 
   // REQUIREMENT 1 — All skins unlocked
   const allSkinsUnlocked =
@@ -172,14 +172,14 @@ prestigeConfirmBtn?.addEventListener("click", () => {
 
     if (!allSkinsUnlocked) {
       const row = document.getElementById("req-skins");
-      row?.classList.add("req-error");
-      setTimeout(() => row?.classList.remove("req-error"), 600);
+      row && row.classList.add("req-error");
+      setTimeout(() => row && row.classList.remove("req-error"), 600);
     }
 
     if (!hasEnoughCoins) {
       const row = document.getElementById("req-coins");
-      row?.classList.add("req-error");
-      setTimeout(() => row?.classList.remove("req-error"), 600);
+      row && row.classList.add("req-error");
+      setTimeout(() => row && row.classList.remove("req-error"), 600);
     }
 
     if (!typedCorrectly) {
@@ -190,8 +190,8 @@ prestigeConfirmBtn?.addEventListener("click", () => {
 
     if (!hasEnoughPlayTime) {
       const row = document.getElementById("req-playtime");
-      row?.classList.add("req-error");
-      setTimeout(() => row?.classList.remove("req-error"), 600);
+      row && row.classList.add("req-error");
+      setTimeout(() => row && row.classList.remove("req-error"), 600);
     }
     return;
   }
@@ -246,12 +246,12 @@ prestigeConfirmBtn?.addEventListener("click", () => {
   location.reload();
 });
 
-themeBtn?.addEventListener("click", () => {
+themeBtn && themeBtn.addEventListener("click", () => {
   updateThemeMenuUI();
   themeMenu.classList.add("show");
 });
 
-closeThemeMenu?.addEventListener("click", () => {
+closeThemeMenu && closeThemeMenu.addEventListener("click", () => {
   themeMenu.classList.remove("show");
 });
 
@@ -270,15 +270,15 @@ document.querySelectorAll(".theme-option").forEach(btn => {
   });
 });
 
-settingsBtn?.addEventListener("click", () => {
-  settingsOverlay?.classList.add("show");
+settingsBtn && settingsBtn.addEventListener("click", () => {
+  settingsOverlay && settingsOverlay.classList.add("show");
 });
 
-closeSettingsBtn?.addEventListener("click", () => {
-  settingsOverlay?.classList.remove("show");
+closeSettingsBtn && closeSettingsBtn.addEventListener("click", () => {
+  settingsOverlay && settingsOverlay.classList.remove("show");
 });
 
-settingsOverlay?.addEventListener("click", (event) => {
+settingsOverlay && settingsOverlay.addEventListener("click", (event) => {
   if (event.target === settingsOverlay) {
     settingsOverlay.classList.remove("show");
   }
@@ -1203,10 +1203,10 @@ function activateEquippedAbility() {
   return true;
 }
 
-mobileAbilityBtn?.addEventListener("pointerdown", (event) => {
+mobileAbilityBtn && mobileAbilityBtn.addEventListener("pointerdown", (event) => {
   event.stopPropagation();
 });
-mobileAbilityBtn?.addEventListener("click", activateEquippedAbility);
+mobileAbilityBtn && mobileAbilityBtn.addEventListener("click", activateEquippedAbility);
 
 /* SPACE POWERUPS */
 window.addEventListener("keydown", (e) => {
@@ -1602,7 +1602,7 @@ function selectTrail(trailId) {
   updateRollButton();
   renderTrailShop();
   if (trailId !== "off" && trail && ownedTrails.includes(trailId)) {
-    window.showToast?.(`${trail.name} equipped!`);
+    window.showToast && window.showToast(`${trail.name} equipped!`);
   }
 }
 
@@ -1612,7 +1612,7 @@ function renderTrailShop() {
   if (!list) return;
 
   if (status) status.textContent = "";
-  list.replaceChildren();
+  while (list.firstChild) list.removeChild(list.firstChild);
 
   const options = [
     { id: "off", name: "No Trail", cost: 0, description: "Turn off your trail." },
@@ -1660,16 +1660,16 @@ function renderTrailShop() {
 function openTrailShop() {
   renderTrailShop();
   const overlay = document.getElementById("trail-shop-overlay");
-  overlay?.classList.add("show");
-  overlay?.setAttribute("aria-hidden", "false");
-  document.getElementById("trail-shop-close-btn")?.focus();
+  overlay && overlay.classList.add("show");
+  overlay && overlay.setAttribute("aria-hidden", "false");
+  document.getElementById("trail-shop-close-btn") && document.getElementById("trail-shop-close-btn").focus();
 }
 
 function closeTrailShop() {
   const overlay = document.getElementById("trail-shop-overlay");
-  overlay?.classList.remove("show");
-  overlay?.setAttribute("aria-hidden", "true");
-  document.getElementById("trail-shop-btn")?.focus();
+  overlay && overlay.classList.remove("show");
+  overlay && overlay.setAttribute("aria-hidden", "true");
+  document.getElementById("trail-shop-btn") && document.getElementById("trail-shop-btn").focus();
 }
 
 if (
@@ -1831,15 +1831,15 @@ updateRollButton();
 
 });
 
-document.getElementById("trail-shop-btn")?.addEventListener("click", openTrailShop);
-document.getElementById("trail-shop-close-btn")?.addEventListener("click", closeTrailShop);
-document.getElementById("trail-shop-overlay")?.addEventListener("click", (event) => {
+document.getElementById("trail-shop-btn") && document.getElementById("trail-shop-btn").addEventListener("click", openTrailShop);
+document.getElementById("trail-shop-close-btn") && document.getElementById("trail-shop-close-btn").addEventListener("click", closeTrailShop);
+document.getElementById("trail-shop-overlay") && document.getElementById("trail-shop-overlay").addEventListener("click", (event) => {
   if (event.target === event.currentTarget) closeTrailShop();
 });
 document.addEventListener("keydown", (event) => {
   if (
     event.key === "Escape" &&
-    document.getElementById("trail-shop-overlay")?.classList.contains("show")
+    document.getElementById("trail-shop-overlay") && document.getElementById("trail-shop-overlay").classList.contains("show")
   ) {
     closeTrailShop();
   }
@@ -2726,37 +2726,22 @@ function renderPrestigeShop() {
 function openPrestigeShopOverlay() {
   renderPrestigeShop();
   updatePrestigeShopSummary();
-  prestigeShopOverlay?.classList.add("show");
+  prestigeShopOverlay && prestigeShopOverlay.classList.add("show");
 }
 
 function closePrestigeShopOverlay() {
-  prestigeShopOverlay?.classList.remove("show");
+  prestigeShopOverlay && prestigeShopOverlay.classList.remove("show");
 }
 
 /* TOUCH STEERING */
 let touchPointerId = null;
+let touchIdentifier = null;
 let touchSteering = false;
 
-gameContainer.addEventListener("pointerdown", (event) => {
-  if (!gameRunning || event.target.closest("button")) return;
-  if (event.pointerType !== "touch") return;
-
-  event.preventDefault();
-  touchPointerId = event.pointerId;
-  gameContainer.setPointerCapture(event.pointerId);
-  steerPlayerToPointer(event);
-});
-
-gameContainer.addEventListener("pointermove", (event) => {
-  if (event.pointerId !== touchPointerId || !gameRunning) return;
-  event.preventDefault();
-  steerPlayerToPointer(event);
-});
-
-function steerPlayerToPointer(event) {
+function steerPlayerToX(clientX) {
   const rect = gameContainer.getBoundingClientRect();
   const playerWidth = player.offsetWidth;
-  const nextX = Math.max(0, Math.min(rect.width - playerWidth, event.clientX - rect.left - playerWidth / 2));
+  const nextX = Math.max(0, Math.min(rect.width - playerWidth, clientX - rect.left - playerWidth / 2));
   if (Math.abs(nextX - playerX) > 0.5) {
     lastTrailDirection = nextX < playerX ? -1 : 1;
     playerX = nextX;
@@ -2765,15 +2750,71 @@ function steerPlayerToPointer(event) {
   }
 }
 
+// Touch events are kept for older iOS Safari, which predates Pointer Events.
+gameContainer.addEventListener("touchstart", (event) => {
+  if (!gameRunning || (event.target.closest && event.target.closest("button"))) return;
+  const touch = event.changedTouches[0];
+  if (!touch) return;
+  event.preventDefault();
+  touchIdentifier = touch.identifier;
+  steerPlayerToX(touch.clientX);
+}, { passive: false });
+
+gameContainer.addEventListener("touchmove", (event) => {
+  if (touchIdentifier === null || !gameRunning) return;
+  for (let i = 0; i < event.touches.length; i++) {
+    const touch = event.touches[i];
+    if (touch.identifier === touchIdentifier) {
+      event.preventDefault();
+      steerPlayerToX(touch.clientX);
+      break;
+    }
+  }
+}, { passive: false });
+
 function stopTouchSteering(event) {
+  if (event.changedTouches) {
+    for (let i = 0; i < event.changedTouches.length; i++) {
+      if (event.changedTouches[i].identifier === touchIdentifier) {
+        touchIdentifier = null;
+        touchSteering = false;
+        return;
+      }
+    }
+  }
+  if (event.pointerId === touchPointerId) {
+    touchPointerId = null;
+    touchSteering = false;
+  }
+}
+
+gameContainer.addEventListener("touchend", stopTouchSteering);
+gameContainer.addEventListener("touchcancel", stopTouchSteering);
+
+// Pointer Events provide the same drag control on newer touch browsers.
+gameContainer.addEventListener("pointerdown", (event) => {
+  if (!gameRunning || event.pointerType !== "touch" || (event.target.closest && event.target.closest("button"))) return;
+  event.preventDefault();
+  touchPointerId = event.pointerId;
+  if (gameContainer.setPointerCapture) gameContainer.setPointerCapture(event.pointerId);
+  steerPlayerToX(event.clientX);
+});
+
+gameContainer.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== touchPointerId || !gameRunning) return;
+  event.preventDefault();
+  steerPlayerToX(event.clientX);
+});
+
+function stopPointerSteering(event) {
   if (event.pointerId !== touchPointerId) return;
   touchPointerId = null;
   touchSteering = false;
 }
 
-gameContainer.addEventListener("pointerup", stopTouchSteering);
-gameContainer.addEventListener("pointercancel", stopTouchSteering);
-gameContainer.addEventListener("lostpointercapture", stopTouchSteering);
+gameContainer.addEventListener("pointerup", stopPointerSteering);
+gameContainer.addEventListener("pointercancel", stopPointerSteering);
+gameContainer.addEventListener("lostpointercapture", stopPointerSteering);
 
 /* PLAYER MOVEMENT AND WRAPPING */
 
@@ -3753,7 +3794,7 @@ authState.totalDeaths = totalDeaths;
     const uploadResult = window.uploadScore(finalScore);
     if (isNewBest) {
       void Promise.resolve(uploadResult).then((result) => {
-        if (result?.ok) {
+        if (result && result.ok) {
           showToast("Your new best score has been updated on the leaderboard!");
         }
       });
@@ -3761,7 +3802,7 @@ authState.totalDeaths = totalDeaths;
   }
 
   if (activePlaytimeSessionSeconds > 0) {
-    void window.uploadPlaytime?.(lifetimePlaytimeSeconds, { keepalive: true });
+    if (typeof window.uploadPlaytime === "function") { void window.uploadPlaytime(lifetimePlaytimeSeconds, { keepalive: true }); }
   }
 
   saveGame();
@@ -3866,7 +3907,7 @@ function openInfoOverlay() {
   if (!infoOverlay) return;
   infoOverlay.classList.add("show");
   infoOverlay.setAttribute("aria-hidden", "false");
-  closeInfoBtn?.focus();
+  closeInfoBtn && closeInfoBtn.focus();
 }
 
 function openDevOverlay() {
@@ -3882,10 +3923,10 @@ if (homeHelpBtn) {
   homeHelpBtn.addEventListener("click", openDevOverlay);
 }
 
-closeInfoBtn?.addEventListener("click", () => {
-  infoOverlay?.classList.remove("show");
-  infoOverlay?.setAttribute("aria-hidden", "true");
-  infoBtn?.focus();
+closeInfoBtn && closeInfoBtn.addEventListener("click", () => {
+  infoOverlay && infoOverlay.classList.remove("show");
+  infoOverlay && infoOverlay.setAttribute("aria-hidden", "true");
+  infoBtn && infoBtn.focus();
 });
 
 if (closeDevBtn) {
@@ -5161,7 +5202,7 @@ setInterval(() => {
       formatPlayTime(totalPlaySeconds);
 
     if (activePlaytimeSessionSeconds % 30 === 0) {
-      void window.uploadPlaytime?.(lifetimePlaytimeSeconds);
+      if (typeof window.uploadPlaytime === "function") { void window.uploadPlaytime(lifetimePlaytimeSeconds); }
     }
   }
 
@@ -5169,7 +5210,7 @@ setInterval(() => {
 
 window.addEventListener("pagehide", () => {
   if (activePlaytimeSessionSeconds > 0) {
-    void window.uploadPlaytime?.(lifetimePlaytimeSeconds, { beacon: true });
+    if (typeof window.uploadPlaytime === "function") { void window.uploadPlaytime(lifetimePlaytimeSeconds, { beacon: true }); }
   }
 });
 
@@ -5371,7 +5412,7 @@ function renderDailyChallenges() {
 }
 
 // Wire up claim button
-document.getElementById("daily-claim-btn")?.addEventListener("click", () => {
+document.getElementById("daily-claim-btn") && document.getElementById("daily-claim-btn").addEventListener("click", () => {
   if (!dailyCompleted.every(Boolean) || dailyClaimed) return;
   dailyClaimed = true;
   coinCount += 50;
