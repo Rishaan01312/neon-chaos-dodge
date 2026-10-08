@@ -382,10 +382,6 @@ body {
   opacity 0.35s ease;
 }
 
-#game-container.paused {
-  filter: brightness(0.2);
-}
-
 /* HUD */
 
 #hud {
@@ -615,7 +611,8 @@ body {
   pointer-events: auto;
 }
 
-#game-over-screen h1 {
+#game-over-screen h1,
+#pause-overlay h1 {
   font-size: 48px;
   letter-spacing: 4px;
   text-shadow:
@@ -625,6 +622,17 @@ body {
 
 #game-over-screen p {
   font-size: 18px;
+}
+
+#pause-message {
+  margin: 0;
+  color: #fff;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 10px #00ffff,
+    0 0 20px #ff00ff;
 }
 
 /* RESTART BUTTON */
@@ -753,13 +761,16 @@ body {
 
   display: none;
 
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
 
-  background: rgba(0, 0, 0, 0.68);
-
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0.9),
+    rgba(0, 0, 0, 0.98)
+  );
 }
 
 #pause-overlay {
@@ -775,6 +786,23 @@ body {
 
 #pause-overlay.show {
   display: flex;
+}
+
+#pause-overlay::before,
+#pause-overlay::after {
+  content: "";
+  flex: 0 0 3px;
+  width: 65%;
+  max-width: 520px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(220, 235, 255, 0.65) 12%,
+    rgba(220, 235, 255, 0.65) 88%,
+    transparent
+  );
+  box-shadow: 0 0 8px rgba(100, 150, 255, 0.35);
 }
 
 #pause-text {

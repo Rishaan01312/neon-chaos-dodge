@@ -4,6 +4,14 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "pause-screen-update-2026-10-08",
+      date: "8 October 2026",
+      title: "Pause Screen Update",
+      changes: [
+        "Added a stylish PAUSED screen to go with the dimmed background."
+      ]
+    },
+    {
       id: "leaderboard-feedback-update-2026-10-03",
       date: "3 October 2026",
       title: "Leaderboard Feedback Update",

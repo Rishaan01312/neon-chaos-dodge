@@ -1242,6 +1242,7 @@ document.addEventListener("visibilitychange", () => {
       pauseBtn.innerHTML = "<span>▶</span>";
 
       gameContainer.classList.add("paused");
+      pauseOverlay.classList.add("show");
     }
   }
 
@@ -4563,6 +4564,7 @@ if (pauseBtn) {
       pauseBtn.innerHTML = "<span>▶</span>";
 
       gameContainer.classList.add("paused");
+      pauseOverlay.classList.add("show");
 
     } 
     
@@ -4626,6 +4628,7 @@ if (pauseBtn) {
       pauseBtn.innerHTML = "<span>⏸</span>";
 
       gameContainer.classList.remove("paused");
+      pauseOverlay.classList.remove("show");
 
       lastTime = performance.now();
     }
