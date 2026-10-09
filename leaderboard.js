@@ -2773,7 +2773,7 @@
   }
 
   function sanitizeName(rawName) {
-    const trimmed = String(rawName ?? "").trim().replace(/\s+/g, " ");
+    const trimmed = String(rawName == null ? "" : rawName).trim().replace(/\s+/g, " ");
     return trimmed.slice(0, MAX_NAME_LENGTH);
   }
 
