@@ -2283,6 +2283,8 @@ body {
 
   overflow: hidden;
 
+  background-color: #04040d;
+
   background:
     radial-gradient(circle at top, #101530, #04040d 72%);
 
@@ -4579,6 +4581,13 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
     height: 82vh;
     padding: 18px;
     gap: 0;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #home-content > * {
+    flex: 0 0 auto;
   }
 
   #home-content > * + * {
@@ -4596,7 +4605,9 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
 
   .home-card {
     min-width: 0;
+    min-height: 0;
     padding: 16px;
+    flex: 0 0 auto;
   }
 
   #home-buttons {
@@ -4613,6 +4624,14 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
     width: 92vw;
     height: 92vh;
     padding: 14px;
+  }
+
+  #home-middle {
+    display: block;
+  }
+
+  #home-middle > .home-card + .home-card {
+    margin-top: 14px;
   }
 
   #home-title {
