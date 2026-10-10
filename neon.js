@@ -19,6 +19,7 @@ const gameOverScreen = document.getElementById("game-over-screen");
 const finalScoreEl = document.getElementById("final-score");
 const finalBestScoreEl = document.getElementById("final-best-score");
 const restartBtn = document.getElementById("restart-btn");
+const pauseRestartBtn = document.getElementById("pause-restart-btn");
 const coinCountEl = document.getElementById("coin-count");
 const rollBtn = document.getElementById("roll-btn");
 const rollResult = document.getElementById("roll-result");
@@ -3810,8 +3811,9 @@ authState.totalDeaths = totalDeaths;
 
 /* RESTART */
 
-restartBtn.addEventListener("click", () => {
-  restartBtn.blur();
+function restartChaos() {
+  if (restartBtn) restartBtn.blur();
+  if (pauseRestartBtn) pauseRestartBtn.blur();
 
   obstacles.forEach((o) => o.remove());
   powerUps.forEach((p) => p.remove());
@@ -3824,16 +3826,10 @@ restartBtn.addEventListener("click", () => {
   moneyBags = [];
 
   score = 0;
-
   scoreEl.textContent = score;
-
   coinsInCurrentRun = 0;
-
   speedLevel = 1;
-
-  speedLevelEl.textContent =
-    speedLevel;
-
+  speedLevelEl.textContent = speedLevel;
   spawnInterval = 700;
 
   lastSpawn = 0;
@@ -3853,35 +3849,29 @@ restartBtn.addEventListener("click", () => {
   phantomShiftActive = false;
   celestialSurgeActive = false;
 
-  player.classList.remove(
-    "shielded",
-    "multiplier"
-  );
-
-  player.classList.remove(
-    "gummy-boost"
-  );
-
+  player.classList.remove("shielded", "multiplier", "gummy-boost");
   shieldDamageTaken = false;
+
   gameRunning = true;
-
+  paused = false;
   gameOverScreen.classList.remove("show");
-  if (equippedSkin === "void") {
+  pauseOverlay.classList.remove("show");
+  gameContainer.classList.remove("paused");
+  if (pauseBtn) pauseBtn.innerHTML = "<span>⏸</span>";
+  lastTime = performance.now();
 
-  rollResult.textContent =
-    "Press SPACE to fire a VOID BLAST";
+  if (equippedSkin === "void") {
+    rollResult.textContent = "Press SPACE to fire a VOID BLAST";
     resetRollResult();
+  }
+
+  const rect = gameContainer.getBoundingClientRect();
+  playerX = rect.width / 2 - player.offsetWidth / 2;
+  player.style.left = `${playerX}px`;
 }
 
-  const rect =
-    gameContainer.getBoundingClientRect();
-
-  playerX =
-    rect.width / 2
-    - player.offsetWidth / 2;
-
-  player.style.left = `${playerX}px`;
-});
+restartBtn.addEventListener("click", restartChaos);
+pauseRestartBtn && pauseRestartBtn.addEventListener("click", restartChaos);
 
 /* INFO OVERLAY */
 
