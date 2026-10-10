@@ -645,7 +645,8 @@ body {
 
 /* RESTART BUTTON */
 
-#restart-btn {
+#restart-btn,
+#pause-restart-btn {
   position: relative;
   z-index: 9998;
   margin-top: 10px;
@@ -667,7 +668,8 @@ body {
     background 0.15s ease;
 }
 
-#restart-btn:hover {
+#restart-btn:hover,
+#pause-restart-btn:hover {
   transform: scale(1.05);
   background: rgba(0, 255, 255, 0.1);
   box-shadow:
