@@ -561,6 +561,10 @@ body {
 
 #flash {
   position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   inset: 0;
   background: radial-gradient(
     circle at center,
@@ -589,6 +593,10 @@ body {
 
 #game-over-screen {
   position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   inset: 0;
   z-index: 20;
   background: radial-gradient(
@@ -637,7 +645,8 @@ body {
 
 /* RESTART BUTTON */
 
-#restart-btn {
+#restart-btn,
+#pause-restart-btn {
   position: relative;
   z-index: 9998;
   margin-top: 10px;
@@ -659,7 +668,8 @@ body {
     background 0.15s ease;
 }
 
-#restart-btn:hover {
+#restart-btn:hover,
+#pause-restart-btn:hover {
   transform: scale(1.05);
   background: rgba(0, 255, 255, 0.1);
   box-shadow:
@@ -755,6 +765,10 @@ body {
 
 #pause-overlay {
   position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   inset: 0;
 
   z-index: 500;
@@ -2259,9 +2273,19 @@ body {
 
   position: fixed;
 
+  top: 0;
+
+  right: 0;
+
+  bottom: 0;
+
+  left: 0;
+
   inset: 0;
 
   overflow: hidden;
+
+  background-color: #04040d;
 
   background:
     radial-gradient(circle at top, #101530, #04040d 72%);
@@ -2282,6 +2306,14 @@ body {
   content: "";
 
   position: absolute;
+
+  top: -50%;
+
+  right: -50%;
+
+  bottom: -50%;
+
+  left: -50%;
 
   inset: -50%;
 
@@ -2941,6 +2973,10 @@ body {
 /* ACHIEVEMENTS OVERLAY */
 #achievements-overlay {
   position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(6px);
@@ -4490,4 +4526,128 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
         0 0 30px #ff69b4,
         0 0 50px #6fdcff,
         0 0 80px #6fdcff !important;
+}
+
+/* MOBILE GAME INPUT */
+#game-container {
+  touch-action: none;
+}
+
+#mobile-ability-btn {
+  display: none;
+}
+
+@media (max-width: 700px), (pointer: coarse) {
+  #game-container {
+    height: min(54vh, 400px);
+    min-height: 280px;
+  }
+
+  #mobile-ability-btn {
+    display: block;
+    position: absolute;
+    z-index: 60;
+    right: 12px;
+    bottom: 12px;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 2px solid rgba(0, 255, 255, 0.85);
+    border-radius: 999px;
+    background: rgba(4, 12, 30, 0.88);
+    color: #fff;
+    font: 700 12px/1 system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    box-shadow: 0 0 16px rgba(0, 255, 255, 0.35);
+    touch-action: manipulation;
+  }
+
+  #mobile-ability-btn:disabled {
+    opacity: 0.58;
+  }
+}
+
+
+/* FALLBACKS FOR OLDER MOBILE SAFARI */
+@media (max-width: 1200px) {
+  #home-screen {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  #home-content {
+    width: 84vw;
+    height: 82vh;
+    padding: 18px;
+    gap: 0;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #home-content > * {
+    flex: 0 0 auto;
+  }
+
+  #home-content > * + * {
+    margin-top: 18px;
+  }
+
+  #home-middle {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  #home-middle .home-card + .home-card {
+    margin-top: 14px;
+  }
+
+  .home-card {
+    min-width: 0;
+    min-height: 0;
+    padding: 16px;
+    flex: 0 0 auto;
+  }
+
+  #home-buttons {
+    gap: 0;
+  }
+
+  #home-buttons > * + * {
+    margin-top: 14px;
+  }
+}
+
+@media (max-width: 700px) {
+  #home-content {
+    width: 92vw;
+    height: 92vh;
+    padding: 14px;
+  }
+
+  #home-middle {
+    display: block;
+  }
+
+  #home-middle > .home-card + .home-card {
+    margin-top: 14px;
+  }
+
+  #home-title {
+    font-size: 2rem;
+    letter-spacing: 2px;
+  }
+
+  #home-subtitle {
+    font-size: 1rem;
+  }
+
+  #game-container {
+    height: 54vh;
+    max-height: 400px;
+    min-height: 280px;
+  }
 }

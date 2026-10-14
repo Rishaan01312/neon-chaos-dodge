@@ -4,6 +4,16 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "mobile-support-update-2026-10-14",
+      date: "14 October 2026",
+      title: "Mobile Support and Pause Restart Update",
+      changes: [
+        "Added touch drag steering and an on-screen button for equipped abilities.",
+        "Improved the home screen layout for smaller screens and older Safari.",
+        "Added a restart button to the pause screen."
+      ]
+    },
+    {
       id: "pause-screen-update-2026-10-08",
       date: "8 October 2026",
       title: "Pause Screen Update",
@@ -76,7 +86,7 @@
   function renderUpdates() {
     if (!list) return;
 
-    list.replaceChildren();
+    while (list.firstChild) list.removeChild(list.firstChild);
     updates.forEach((update) => {
       const entry = document.createElement("article");
       entry.className = "update-log-entry";
@@ -101,9 +111,9 @@
   }
 
   function closeUpdateLog() {
-    overlay?.classList.remove("show");
-    overlay?.setAttribute("aria-hidden", "true");
-    button?.focus();
+    overlay && overlay.classList.remove("show");
+    overlay && overlay.setAttribute("aria-hidden", "true");
+    button && button.focus();
   }
 
   function openUpdateLog() {
@@ -112,7 +122,7 @@
     overlay.setAttribute("aria-hidden", "false");
     if (badge) badge.hidden = true;
     safeStorageSet(SEEN_UPDATE_KEY, latestUpdate.id);
-    closeButton?.focus();
+    closeButton && closeButton.focus();
   }
 
   function initUpdateLog() {
@@ -123,7 +133,7 @@
     if (badge) badge.hidden = !isUnread;
 
     button.addEventListener("click", openUpdateLog);
-    closeButton?.addEventListener("click", closeUpdateLog);
+    closeButton && closeButton.addEventListener("click", closeUpdateLog);
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay) closeUpdateLog();
     });
