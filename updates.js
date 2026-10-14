@@ -6,13 +6,10 @@
     {
       id: "mobile-support-update-2026-10-14",
       date: "14 October 2026",
-      title: "Mobile Support and Pause Restart Update",
+      title: "Mobile Gameplay and Interface Update",
       changes: [
-        "Added touch drag steering and an on-screen button for equipped abilities.",
-        "Improved the home screen layout for smaller screens and older Safari.",
-        "Added a restart button to the pause screen.",
-        "Fixed mobile HUD sizing and falling items resetting near the top.",
-        "Improved spacing and scrolling in the achievements menu on phones."
+        "Improved mobile layout, touch controls, and scrolling across the home, game, and achievements screens.",
+        "Improved gameplay on phones, including falling items and restarting from the pause screen."
       ]
     },
     {
