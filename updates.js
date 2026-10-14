@@ -11,6 +11,7 @@
         "Added touch drag steering and an on-screen button for equipped abilities.",
         "Improved the home screen layout for smaller screens and older Safari.",
         "Added a restart button to the pause screen."
+        "Fixed mobile HUD sizing and falling items resetting near the top."
       ]
     },
     {
