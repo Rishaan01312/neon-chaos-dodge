@@ -4651,3 +4651,29 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
     min-height: 280px;
   }
 }
+
+
+/* MOBILE GAME HUD AND GAME OVER LAYER */
+@media (max-width: 700px) {
+  #hud {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+  }
+
+  .hud-item {
+    min-width: 0;
+    padding: 6px 3px;
+    border-radius: 10px;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
+#game-over-screen {
+  z-index: 100;
+}
