@@ -2919,6 +2919,11 @@ function spawnObstacle() {
   obstacles.push(obstacle);
 }
 
+function getFallingObjectTop(element) {
+  const top = parseFloat(element.style.top);
+  return isFinite(top) ? top : -40;
+}
+
 function updateObstacles(delta) {
 
   const height = gameContainer.offsetHeight;
@@ -2938,7 +2943,7 @@ function updateObstacles(delta) {
 
     // MOVEMENT
     const top =
-      (parseFloat(o.style.top || "-40") || -40)
+      (getFallingObjectTop(o))
       + finalSpeed * (delta / 16.67);
 
     o.style.top = `${top}px`;
@@ -3052,7 +3057,7 @@ function updateMoneyBags(delta) {
 
     // MOVEMENT
     const top =
-      (parseFloat(bag.style.top || "-40") || -40)
+      (getFallingObjectTop(bag))
       + bagBase * bagSlowMult * (delta / 16.67);
 
     bag.style.top = `${top}px`;
@@ -3106,7 +3111,7 @@ function updateCoins(delta) {
 
     // MOVEMENT
     const top =
-      (parseFloat(c.style.top || "-40") || -40)
+      (getFallingObjectTop(c))
       + coinBase * coinSlowMult * (delta / 16.67);
 
     c.style.top = `${top}px`;
@@ -3243,7 +3248,7 @@ function updatePowerUps(delta) {
     const slowMult = slowActive ? 0.2 : 1;
 
     const top =
-      (parseFloat(p.style.top || "-40") || -40)
+      (getFallingObjectTop(p))
       + speed * slowMult * (delta / 16.67);
 
     p.style.top = `${top}px`;
