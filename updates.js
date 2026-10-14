@@ -4,6 +4,16 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "mobile-support-update-2026-10-14",
+      date: "14 October 2026",
+      title: "Mobile Support and Pause Restart Update",
+      changes: [
+        "Added touch drag steering and an on-screen button for equipped abilities.",
+        "Improved the home screen layout for smaller screens and older Safari.",
+        "Added a restart button to the pause screen."
+      ]
+    },
+    {
       id: "pause-screen-update-2026-10-08",
       date: "8 October 2026",
       title: "Pause Screen Update",
