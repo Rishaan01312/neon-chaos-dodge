@@ -4677,3 +4677,108 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
 #game-over-screen {
   z-index: 100;
 }
+
+
+/* MOBILE ACHIEVEMENTS LAYOUT */
+@media (max-width: 700px) {
+  #achievements-panel {
+    width: 92vw;
+    height: 88vh;
+    max-height: 88vh;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .achievements-header {
+    flex: 0 0 auto;
+    margin-bottom: 10px;
+  }
+
+  .achievements-header h2 {
+    font-size: 22px;
+    letter-spacing: 1px;
+  }
+
+  #close-achievements-btn {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    font-size: 16px;
+  }
+
+  #achievement-progress-wrapper {
+    flex: 0 0 auto;
+    margin-bottom: 10px;
+  }
+
+  #achievements-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 4px 4px 0;
+  }
+
+  #achievements-list > * {
+    flex: 0 0 auto;
+  }
+
+  #achievements-list > * + * {
+    margin-top: 10px;
+  }
+
+  .achievement {
+    min-height: 70px;
+    padding: 10px;
+    align-items: center;
+  }
+
+  .achievement-left {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .achievement-text {
+    min-width: 0;
+  }
+
+  .achievement-title {
+    font-size: 15px;
+    line-height: 1.15;
+  }
+
+  .achievement-desc {
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .achievement-right {
+    flex: 0 0 auto;
+    gap: 6px;
+  }
+
+  .achievement-progress {
+    min-width: 0;
+    margin-right: 0;
+    font-size: 11px;
+  }
+
+  .achievement-actions {
+    gap: 4px;
+  }
+
+  .achievement-reward-text {
+    font-size: 14px;
+  }
+
+  .claim-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .achievement-subheading {
+    margin-top: 0;
+    padding: 8px 10px 6px;
+    font-size: 11px;
+  }
+}
