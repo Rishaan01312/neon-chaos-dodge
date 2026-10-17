@@ -55,7 +55,6 @@ const mobileAbilityBtn = document.getElementById("mobile-ability-btn");
 const homeBestScore = document.getElementById("home-best-score");
 const homeCoins = document.getElementById("home-coins");
 const homeGems = document.getElementById("home-gems");
-const homeHighestSpeed = document.getElementById("home-highest-speed");
 const musicToggleBtn = document.getElementById("music-toggle-btn");
 const musicToggleLabel = document.querySelector("#music-toggle-btn .music-toggle-label");
 const fullscreenBtn = document.getElementById("fullscreen-btn");
@@ -2666,19 +2665,10 @@ function updateHomeStats() {
     homeGems.textContent = gemCount;
   }
 
-  homeHighestSpeed.textContent =
-    highestSpeed;
-
   const homePrestigeEl = document.getElementById("home-prestige-level");
-  const homePrestigeStat = document.getElementById("home-prestige-stat");
 
   if (homePrestigeEl) {
     homePrestigeEl.textContent = prestigeTokens;
-  }
-
-  if (homePrestigeStat) {
-    homePrestigeStat.style.display =
-      prestigeLevel > 0 || prestigeTokens > 0 ? "" : "none";
   }
 }
 
