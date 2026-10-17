@@ -19,6 +19,9 @@ const gameOverScreen = document.getElementById("game-over-screen");
 const finalScoreEl = document.getElementById("final-score");
 const finalBestScoreEl = document.getElementById("final-best-score");
 const restartBtn = document.getElementById("restart-btn");
+const reviveBtn = document.getElementById("revive-btn");
+const reviveCountdown = document.getElementById("revive-countdown");
+const reviveCountdownFill = document.getElementById("revive-countdown-fill");
 const pauseRestartBtn = document.getElementById("pause-restart-btn");
 const coinCountEl = document.getElementById("coin-count");
 const rollBtn = document.getElementById("roll-btn");
@@ -51,6 +54,7 @@ const startGameBtn = document.getElementById("start-game-btn");
 const mobileAbilityBtn = document.getElementById("mobile-ability-btn");
 const homeBestScore = document.getElementById("home-best-score");
 const homeCoins = document.getElementById("home-coins");
+const homeGems = document.getElementById("home-gems");
 const homeHighestSpeed = document.getElementById("home-highest-speed");
 const musicToggleBtn = document.getElementById("music-toggle-btn");
 const musicToggleLabel = document.querySelector("#music-toggle-btn .music-toggle-label");
@@ -328,6 +332,13 @@ let achievementShowing = false;
 
 let score = 0;
 let coinCount = 0;
+let gemCount = parseInt(localStorage.getItem("neonChaosGems") || "0", 10);
+if (!Number.isFinite(gemCount) || gemCount < 0) gemCount = 0;
+let reviveCost = 5;
+let reviveCountdownTimer = null;
+let reviveDeadline = 0;
+let reviveInvulnerableUntil = 0;
+let pendingBestScoreUpload = false;
 
 const SAVE_KEY = "neonChaosSecureSave";
 const SECRET_KEY = "NEON_SECRET_2026";
@@ -340,6 +351,7 @@ function saveGame() {
   // Tamper detection: ensure public variables match authoritative snapshot.
   if (
     coinCount !== authState.coins ||
+    gemCount !== authState.gems ||
     bestScore !== authState.bestScore ||
     totalDeaths !== authState.totalDeaths ||
     highestSpeed !== authState.highestSpeed ||
@@ -354,6 +366,7 @@ function saveGame() {
   }
   const data = {
     coins: coinCount,
+    gems: gemCount,
     bestScore,
     totalDeaths,
     highestSpeed,
@@ -406,6 +419,9 @@ function loadGame() {
 
     coinCount =
       save.data.coins || 0;
+    gemCount = Number.isFinite(Number(save.data.gems))
+      ? Math.max(0, Number(save.data.gems))
+      : gemCount;
 
     bestScore =
       save.data.bestScore || 0;
@@ -439,6 +455,7 @@ function loadGame() {
 
     // Sync authoritative snapshot after loading
     authState.coins = coinCount;
+    authState.gems = gemCount;
     authState.bestScore = bestScore;
     authState.totalDeaths = totalDeaths;
     authState.highestSpeed = highestSpeed;
@@ -666,6 +683,7 @@ let prestigeBoosts = {
 // Authoritative in-memory snapshot of critical fields to detect console tampering.
 const authState = {
   coins: coinCount,
+  gems: gemCount,
   bestScore: bestScore || 0,
   totalDeaths: totalDeaths || 0,
   highestSpeed: highestSpeed || 1,
@@ -847,16 +865,20 @@ const achievements = [
 
 {
   id: "speed_20",
-  title: "Extreme",
+  title: "Speed Runner III",
   desc: "Reach Speed 20",
-  reward: 90
+  reward: 90,
+  extreme: true,
+  gemReward: 1
 },
 
 {
   id: "speed_30",
   title: "Beyond Human",
   desc: "Reach Speed 30",
-  reward: 150
+  reward: 150,
+  extreme: true,
+  gemReward: 3
 },
 
 {
@@ -884,14 +906,18 @@ const achievements = [
   id: "survive_5",
   title: "Unbreakable",
   desc: "Survive 5 Minutes",
-  reward: 200
+  reward: 200,
+  extreme: true,
+  gemReward: 2
 },
 
 {
   id: "coins_10000",
   title: "Wealth God",
   desc: "Collect 10000 Coins",
-  reward: 350
+  reward: 350,
+  extreme: true,
+  gemReward: 2
 },
 
 {
@@ -905,28 +931,36 @@ const achievements = [
   id: "thread_needle",
   title: "Thread the Needle",
   desc: "Pass between two obstacles with less than 10px clearance",
-  reward: 40
+  reward: 40,
+  extreme: true,
+  gemReward: 1
 },
 
 {
   id: "clutch_save",
   title: "Clutch Save",
   desc: "Activate a powerup within 0.2 seconds of being hit",
-  reward: 50
+  reward: 50,
+  extreme: true,
+  gemReward: 1
 },
 
 {
   id: "zero_damage_run",
   title: "Zero Damage Run",
   desc: "Reach Speed 10 without taking shield damage",
-  reward: 60
+  reward: 60,
+  extreme: true,
+  gemReward: 1
 },
 
 {
   id: "money_machine",
   title: "Money Machine",
   desc: "Collect 500 Coins in a single run",
-  reward: 100
+  reward: 100,
+  extreme: true,
+  gemReward: 1
 },
 
 
@@ -934,7 +968,9 @@ const achievements = [
   id: "power_hungry",
   title: "Power Hungry",
   desc: "Collect 100 Powerups",
-  reward: 75
+  reward: 75,
+  extreme: true,
+  gemReward: 1
 },
 
 
@@ -942,7 +978,9 @@ const achievements = [
   id: "sweet_escape",
   title: "Sweet Escape",
   desc: "Activate Gummy Boost 200 times",
-  reward: 200
+  reward: 200,
+  extreme: true,
+  gemReward: 2
 },
 
 
@@ -950,7 +988,9 @@ const achievements = [
   id: "void_walker",
   title: "Void Walker",
   desc: "Activate Void Blast 200 times",
-  reward: 200
+  reward: 200,
+  extreme: true,
+  gemReward: 2
 },
 
 
@@ -958,7 +998,9 @@ const achievements = [
   id: "shadow_walker",
   title: "Shadow Walker",
   desc: "Activate Phantom Shift 200 times",
-  reward: 200
+  reward: 200,
+  extreme: true,
+  gemReward: 2
 },
 
 
@@ -966,7 +1008,9 @@ const achievements = [
   id: "celestial_being",
   title: "Celestial Being",
   desc: "Activate Celestial Surge 200 times",
-  reward: 200
+  reward: 200,
+  extreme: true,
+  gemReward: 2
 },
 
 
@@ -974,7 +1018,9 @@ const achievements = [
   id: "mythical_collector",
   title: "Mythical Collector",
   desc: "Own all 3 Mythical Skins",
-  reward: 250
+  reward: 250,
+  extreme: true,
+  gemReward: 3
 },
 
 {
@@ -982,6 +1028,8 @@ const achievements = [
   title: "???",
   desc: "Unlock condition unknown",
   reward: 300,
+  extreme: true,
+  gemReward: 3,
   hidden: true
 }
 
@@ -2131,6 +2179,15 @@ window.addEventListener("keydown", (e) => {
           rollResult.textContent = `💰 Coins set to ${value}`;
           break;
 
+        case "gems":
+          gemCount = value;
+          authState.gems = gemCount;
+          localStorage.setItem("neonChaosGems", String(gemCount));
+          updateHomeStats();
+          saveGame();
+          rollResult.textContent = `💎 Gems set to ${value}`;
+          break;
+
         case "score":
           score = value;
           scoreEl.textContent = score;
@@ -2235,7 +2292,11 @@ function unlockAchievement(id) {
   if (!achievement) return;
 
   // SHOW POPUP OF UNLOCKED ACHIEVEMENT
-  showAchievementPopup(achievement.title, achievement.reward);
+  showAchievementPopup(
+    achievement.title,
+    achievement.reward,
+    achievement.gemReward || 0
+  );
 
   renderAchievements();
   updateAchievementBadge();
@@ -2450,6 +2511,7 @@ function renderAchievements() {
 
     const card = document.createElement("div");
     card.className = "achievement";
+    if (a.extreme) card.classList.add("extreme");
 
     if (!unlocked) card.classList.add("locked");
     if (claimed) card.classList.add("claimed");
@@ -2470,6 +2532,7 @@ function renderAchievements() {
       <div class="achievement-text">
         <div class="achievement-title">
           ${unlocked || !a.hidden ? a.title : "???"}
+          ${a.extreme ? '<span class="extreme-achievement-label">EXTREME</span>' : ""}
         </div>
 
         <div class="achievement-desc">
@@ -2481,7 +2544,8 @@ function renderAchievements() {
     <div class="achievement-right">
       ${progressText}
       <div class="achievement-actions">
-        <div class="achievement-reward-text">+${a.reward}</div>
+        <div class="achievement-reward-text">+${a.reward} Coins</div>
+        ${a.gemReward ? `<div class="achievement-gem-reward">+${a.gemReward} Gems</div>` : ""}
 
         <button class="claim-btn" ${unlocked && !claimed ? "" : "disabled"}>
           ${claimed ? "CLAIMED" : "CLAIM"}
@@ -2502,8 +2566,14 @@ function renderAchievements() {
         coinCountEl.textContent = coinCount;
         authState.coins = coinCount;
         lastCoinCount = coinCount;
+        if (a.gemReward) {
+          gemCount += a.gemReward;
+          authState.gems = gemCount;
+          localStorage.setItem("neonChaosGems", String(gemCount));
+        }
 
         saveGame();
+        updateHomeStats();
         renderAchievements();
         updateAchievementBadge();
       });
@@ -2592,6 +2662,10 @@ function updateHomeStats() {
   homeCoins.textContent =
     coinCount;
 
+  if (homeGems) {
+    homeGems.textContent = gemCount;
+  }
+
   homeHighestSpeed.textContent =
     highestSpeed;
 
@@ -2606,6 +2680,19 @@ function updateHomeStats() {
     homePrestigeStat.style.display =
       prestigeLevel > 0 || prestigeTokens > 0 ? "" : "none";
   }
+}
+
+function changeGems(amount) {
+  if (!Number.isSafeInteger(amount) || gemCount + amount < 0) {
+    return false;
+  }
+
+  gemCount += amount;
+  authState.gems = gemCount;
+  localStorage.setItem("neonChaosGems", String(gemCount));
+  updateHomeStats();
+  saveGame();
+  return true;
 }
 
 function getBoostDisplay(id) {
@@ -2951,6 +3038,10 @@ function updateObstacles(delta) {
     if (top > height + 50) {
       o.remove();
       obstacles.splice(i, 1);
+      continue;
+    }
+
+    if (Date.now() < reviveInvulnerableUntil) {
       continue;
     }
 
@@ -3776,6 +3867,7 @@ authState.totalDeaths = totalDeaths;
 
   const finalScore = Math.floor(score);
   const isNewBest = finalScore > bestScore;
+  pendingBestScoreUpload = pendingBestScoreUpload || isNewBest;
 
   if (isNewBest) {
 
@@ -3794,11 +3886,52 @@ authState.totalDeaths = totalDeaths;
   bestScoreEl.textContent =
     bestScore;
 
+  gameOverScreen.classList.remove("final-state");
   gameOverScreen.classList.add("show");
+  startReviveCountdown();
+  saveGame();
+}
 
+function updateRevivePrompt() {
+  const remainingMs = Math.max(0, reviveDeadline - Date.now());
+  const remainingSeconds = Math.ceil(remainingMs / 1000);
+  if (reviveCountdown) {
+    reviveCountdown.textContent =
+      `Revive within ${remainingSeconds}s · costs ${reviveCost} gems · ${gemCount} available`;
+  }
+  if (reviveBtn) {
+    reviveBtn.textContent = `REVIVE - ${reviveCost} GEMS`;
+    reviveBtn.disabled = remainingMs <= 0 || gemCount < reviveCost;
+  }
+  if (reviveCountdownFill) {
+    reviveCountdownFill.style.width = `${(remainingMs / 5000) * 100}%`;
+  }
+  const progress = document.getElementById("revive-countdown-track");
+  if (progress) {
+    progress.setAttribute("aria-valuenow", String(remainingSeconds));
+  }
+  if (remainingMs <= 0) {
+    finishGameOver();
+  }
+}
+
+function startReviveCountdown() {
+  clearInterval(reviveCountdownTimer);
+  reviveDeadline = Date.now() + 5000;
+  updateRevivePrompt();
+  reviveCountdownTimer = setInterval(updateRevivePrompt, 100);
+}
+
+function finishGameOver() {
+  if (reviveCountdownTimer === null) return;
+  clearInterval(reviveCountdownTimer);
+  reviveCountdownTimer = null;
+  gameOverScreen.classList.add("final-state");
+
+  const finalScore = Math.floor(score);
   if (typeof window.uploadScore === "function") {
     const uploadResult = window.uploadScore(finalScore);
-    if (isNewBest) {
+    if (pendingBestScoreUpload) {
       void Promise.resolve(uploadResult).then((result) => {
         if (result && result.ok) {
           showToast("Your new best score has been updated on the leaderboard!");
@@ -3807,18 +3940,52 @@ authState.totalDeaths = totalDeaths;
     }
   }
 
-  if (activePlaytimeSessionSeconds > 0) {
-    if (typeof window.uploadPlaytime === "function") { void window.uploadPlaytime(lifetimePlaytimeSeconds, { keepalive: true }); }
+  if (activePlaytimeSessionSeconds > 0 && typeof window.uploadPlaytime === "function") {
+    void window.uploadPlaytime(lifetimePlaytimeSeconds, { keepalive: true });
   }
-
   saveGame();
 }
+
+function reviveRun() {
+  if (
+    !gameOverScreen.classList.contains("show") ||
+    gameOverScreen.classList.contains("final-state") ||
+    Date.now() >= reviveDeadline ||
+    gemCount < reviveCost
+  ) {
+    return;
+  }
+
+  if (!changeGems(-reviveCost)) return;
+  clearInterval(reviveCountdownTimer);
+  reviveCountdownTimer = null;
+  reviveCost += 5;
+  gameOverScreen.classList.remove("show");
+  gameRunning = true;
+  paused = false;
+  reviveInvulnerableUntil = Date.now() + 2500;
+  player.classList.add("revive-protected");
+  setTimeout(() => {
+    if (Date.now() >= reviveInvulnerableUntil) {
+      player.classList.remove("revive-protected");
+    }
+  }, 2500);
+  lastTime = performance.now();
+}
+
+reviveBtn && reviveBtn.addEventListener("click", reviveRun);
 
 /* RESTART */
 
 function restartChaos() {
   if (restartBtn) restartBtn.blur();
   if (pauseRestartBtn) pauseRestartBtn.blur();
+  clearInterval(reviveCountdownTimer);
+  reviveCountdownTimer = null;
+  reviveCost = 5;
+  pendingBestScoreUpload = false;
+  reviveInvulnerableUntil = 0;
+  player.classList.remove("revive-protected");
 
   obstacles.forEach((o) => o.remove());
   powerUps.forEach((p) => p.remove());
@@ -3859,6 +4026,7 @@ function restartChaos() {
 
   gameRunning = true;
   paused = false;
+  gameOverScreen.classList.remove("final-state");
   gameOverScreen.classList.remove("show");
   pauseOverlay.classList.remove("show");
   gameContainer.classList.remove("paused");
@@ -3986,6 +4154,7 @@ function performReset() {
 
   localStorage.removeItem("neonChaosBest");
   localStorage.removeItem("neonChaosCoins");
+  localStorage.removeItem("neonChaosGems");
   localStorage.removeItem("neonChaosSkins");
   localStorage.removeItem("neonChaosSkin");
   localStorage.removeItem("neonChaosTrails");
@@ -4029,6 +4198,7 @@ function performReset() {
   equippedTrail = "off";
   bestScore = 0;
   coinCount = 0;
+  gemCount = 0;
   totalDeaths = 0;
   highestSpeed = 1;
   totalRolls = 0;
@@ -4048,6 +4218,7 @@ function performReset() {
     tripleDuration: 0
   };
   authState.coins = coinCount;
+  authState.gems = gemCount;
   authState.bestScore = bestScore;
   authState.totalDeaths = totalDeaths;
   authState.highestSpeed = highestSpeed;
@@ -4276,6 +4447,7 @@ if (wonSkin) {
 
   updateSkinButtons();
   updateRollButton();
+  refreshDailyChallengesForOwnedSkins();
 }
 
       else {
@@ -4737,11 +4909,12 @@ if (pauseBtn) {
 
 /* ACHIEVEMENT POPUP */
 
-function showAchievementPopup(title, reward) {
+function showAchievementPopup(title, reward, gemReward = 0) {
 
   achievementQueue.push({
     title,
-    reward
+    reward,
+    gemReward
   });
 
   processAchievementQueue();
@@ -4761,7 +4934,9 @@ function processAchievementQueue() {
   const achievement = achievementQueue.shift();
 
 titleEl.textContent = `${achievement.title} Unlocked`;
-rewardEl.textContent = `+${achievement.reward} Coins Available`;
+rewardEl.textContent = achievement.gemReward
+  ? `+${achievement.reward} Coins and +${achievement.gemReward} Gems Available`
+  : `+${achievement.reward} Coins Available`;
 
   popup.classList.add("show");
 
@@ -5236,7 +5411,7 @@ function getTodayDateString() {
   return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 }
 
-function pickDailyChallenges(dateStr) {
+function pickDailyChallenges(dateStr, excludedIds = []) {
   // Seeded shuffle based on date so every device picks same 3
   function seededRand(seed) {
     let x = Math.sin(seed) * 10000;
@@ -5244,7 +5419,10 @@ function pickDailyChallenges(dateStr) {
   }
   // Convert dateStr to numeric seed
   const seed = dateStr.split("-").reduce((acc, v, i) => acc + parseInt(v) * (i + 1) * 31, 0);
-  const pool = [...CHALLENGE_POOL];
+  const pool = CHALLENGE_POOL.filter(challenge =>
+    !excludedIds.includes(challenge.id) &&
+    (remainingRareSkins().length > 0 || challenge.type !== "rolls")
+  );
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(seededRand(seed + i) * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -5262,6 +5440,32 @@ let dailyBaseCoins = 0;
 let dailyBaseRolls = 0;
 let dailyBaseDeaths = 0;
 let dailyBasePlaySeconds = 0;
+
+function refreshDailyChallengesForOwnedSkins() {
+  if (
+    remainingRareSkins().length > 0 ||
+    !dailyChallenges.some(challenge => challenge.type === "rolls")
+  ) {
+    return;
+  }
+
+  const completedById = new Map(
+    dailyChallenges.map((challenge, index) => [challenge.id, Boolean(dailyCompleted[index])])
+  );
+  const keptChallenges = dailyChallenges.filter(challenge => challenge.type !== "rolls");
+  const replacements = pickDailyChallenges(
+    dailyDate,
+    keptChallenges.map(challenge => challenge.id)
+  );
+  dailyChallenges = [...keptChallenges, ...replacements].slice(0, 3);
+  dailyCompleted = dailyChallenges.map(
+    challenge => completedById.get(challenge.id) || false
+  );
+
+  localStorage.setItem("neonChaosDailyChallenges", JSON.stringify(dailyChallenges));
+  localStorage.setItem("neonChaosDailyCompleted", JSON.stringify(dailyCompleted));
+  renderDailyChallenges();
+}
 
 function initDailyChallenges() {
   const today = getTodayDateString();
@@ -5307,6 +5511,8 @@ function initDailyChallenges() {
       localStorage.setItem("neonChaosDailyChallenges", JSON.stringify(dailyChallenges));
     }
   }
+
+  refreshDailyChallengesForOwnedSkins();
 }
 
 function getDailyChallengeProgress(challenge) {
@@ -5396,12 +5602,12 @@ function renderDailyChallenges() {
   } else if (allDone) {
     claimBtn.disabled = false;
     claimBtn.classList.add("active");
-    claimBtn.textContent = "Claim +50 Coins";
+    claimBtn.textContent = "Claim +3 Gems";
     if (countdown) countdown.style.display = "none";
   } else {
     claimBtn.disabled = true;
     claimBtn.classList.remove("active");
-    claimBtn.textContent = "Claim +50 Coins";
+    claimBtn.textContent = "Claim +3 Gems";
     if (countdown) countdown.style.display = "none";
   }
 }
@@ -5410,15 +5616,11 @@ function renderDailyChallenges() {
 document.getElementById("daily-claim-btn") && document.getElementById("daily-claim-btn").addEventListener("click", () => {
   if (!dailyCompleted.every(Boolean) || dailyClaimed) return;
   dailyClaimed = true;
-  coinCount += 50;
-  authState.coins = coinCount;
+  changeGems(3);
   localStorage.setItem("neonChaosDailyClaimed", "true");
-  localStorage.setItem("neonChaosCoins", coinCount.toString());
   saveGame();
-  coinCountEl.textContent = coinCount;
-  updateHomeStats();
   renderDailyChallenges();
-  showToast("🎉 +50 Coins claimed!");
+  showToast("🎉 +3 Gems claimed!");
 });
 
 // Countdown timer — updates every minute
@@ -5442,6 +5644,62 @@ setInterval(() => {
 // Init on load
 initDailyChallenges();
 renderDailyChallenges();
+
+let monthlyPodiumCheckRunning = false;
+
+async function checkPreviousMonthPodiumReward() {
+  if (monthlyPodiumCheckRunning || typeof window.getMonthlyPodiumReward !== "function") {
+    return;
+  }
+
+  const now = new Date();
+  const previousMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+  const processedMonth = localStorage.getItem("neonChaosPodiumRewardProcessedMonth");
+  if (!localStorage.getItem("playerName")) {
+    return;
+  }
+
+  let nextMonthToProcess = previousMonth;
+  if (processedMonth) {
+    const match = /^(\d{4})-(\d{2})$/.exec(processedMonth);
+    if (match) {
+      nextMonthToProcess = new Date(Date.UTC(Number(match[1]), Number(match[2]), 1));
+    }
+  }
+  if (nextMonthToProcess > previousMonth) return;
+
+  monthlyPodiumCheckRunning = true;
+  try {
+    while (nextMonthToProcess <= previousMonth) {
+      const monthKey = `${nextMonthToProcess.getUTCFullYear()}-${String(nextMonthToProcess.getUTCMonth() + 1).padStart(2, "0")}`;
+      const reward = await window.getMonthlyPodiumReward(monthKey);
+      if (!reward) return;
+
+      localStorage.setItem("neonChaosPodiumRewardProcessedMonth", monthKey);
+      if (reward.gems > 0) {
+        changeGems(reward.gems);
+        showToast(`Monthly podium: ${reward.rank}${["st", "nd", "rd"][reward.rank - 1] || "th"} place! +${reward.gems} gems`);
+      }
+      nextMonthToProcess = new Date(Date.UTC(
+        nextMonthToProcess.getUTCFullYear(),
+        nextMonthToProcess.getUTCMonth() + 1,
+        1
+      ));
+    }
+  } catch (error) {
+    console.warn("Monthly podium reward check failed:", error);
+  } finally {
+    monthlyPodiumCheckRunning = false;
+  }
+}
+
+window.addEventListener("neonChaosPlayerNameReady", () => {
+  void checkPreviousMonthPodiumReward();
+});
+setInterval(() => {
+  void checkPreviousMonthPodiumReward();
+}, 60 * 60 * 1000);
+void checkPreviousMonthPodiumReward();
 
 /* INIT */
 

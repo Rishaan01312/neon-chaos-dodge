@@ -211,23 +211,34 @@
         </div>
         <div id="game-over-screen">
 
-          <h1>
-            GAME OVER
-          </h1>
+          <div id="revive-prompt">
+            <h1>GAME OVER</h1>
+            <p id="revive-countdown">Revive window: 5s</p>
+            <div id="revive-countdown-track" role="progressbar" aria-label="Time remaining to revive" aria-valuemin="0" aria-valuemax="5" aria-valuenow="5">
+              <div id="revive-countdown-fill"></div>
+            </div>
+            <button id="revive-btn" type="button">REVIVE - 5 GEMS</button>
+          </div>
 
-          <p>
-            Your Score:
-            <span id="final-score">0</span>
-          </p>
+          <div id="final-game-over">
+            <h1>
+              GAME OVER
+            </h1>
 
-          <p>
-            Best Score:
-            <span id="final-best-score">0</span>
-          </p>
+            <p>
+              Your Score:
+              <span id="final-score">0</span>
+            </p>
 
-          <button id="restart-btn">
-            RESTART CHAOS
-          </button>
+            <p>
+              Best Score:
+              <span id="final-best-score">0</span>
+            </p>
+
+            <button id="restart-btn">
+              RESTART CHAOS
+            </button>
+          </div>
         </div>
 
       </div>
@@ -637,9 +648,9 @@
       <section class="info-column">
         <h4><span class="info-section-number">05</span> Goals &amp; Records</h4>
         <ul>
-          <li>Complete daily challenges to claim <strong>50 coins</strong>.</li>
-          <li>Achievements track milestones and award rewards as you play.</li>
-          <li>Your best score can be submitted to the global leaderboard.</li>
+          <li>Complete the daily set to claim <strong>3 gems</strong>. Spend 5 gems to revive within 5 seconds of a run ending; each revive in that run costs 5 more gems.</li>
+          <li>Achievements track milestones. Difficult achievements marked <strong>EXTREME</strong> also award gems.</li>
+          <li>Your best score can be submitted to the global leaderboard. The top three monthly scores earn 50, 30, and 15 gems.</li>
           <li>Check the Update Log for recent additions and changes.</li>
         </ul>
       </section>
@@ -783,7 +794,7 @@
         </div>
 
         <button id="daily-claim-btn" class="daily-claim-btn" disabled>
-          Claim +50 Coins
+          Claim +3 Gems
         </button>
 
         <div id="daily-countdown" class="daily-countdown" style="display:none;"></div>
@@ -831,6 +842,11 @@
           <div class="home-stat">
             Coins:
             <span id="home-coins">0</span>
+          </div>
+
+          <div class="home-stat">
+            Gems:
+            <span id="home-gems">0</span>
           </div>
 
           <div class="home-stat">
@@ -888,13 +904,7 @@
 
   <!-- LEADERBOARD OVERLAY -->
   <div id="leaderboard-overlay" class="reset-overlay">
-    <div class="reset-card info-card leaderboard-card">
-      <h3>LEADERBOARD</h3>
-      <div id="leaderboard-list" class="leaderboard-list"></div>
-      <div class="reset-actions">
-        <button id="leaderboard-close-btn" class="ghost-btn" type="button">Close</button>
-      </div>
-    </div>
+    <div class="reset-card info-card leaderboard-card" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title"></div>
   </div>
 
   <div id="trail-shop-overlay" class="reset-overlay" aria-hidden="true">

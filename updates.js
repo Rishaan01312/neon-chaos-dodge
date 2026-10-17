@@ -4,6 +4,18 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "gems-revival-update-2026-10-17",
+      date: "17 October 2026",
+      title: "Gems and Revival Update",
+      changes: [
+        "Added gems from daily sets, Extreme achievements, and monthly leaderboard podiums.",
+        "Spend gems to revive within five seconds after a run ends; each revive in the same run costs five more gems.",
+        "Monthly leaderboard prizes are 50 gems for first, 30 for second, and 15 for third; monthly standings use your best score submitted that month.",
+        "Gems are shown on the home stats card and are not displayed in the gameplay HUD.",
+        "Fixed bug where roll challenges appear in daily set despite all rare roll skins are unlocked."
+      ]
+    },
+    {
       id: "mobile-support-update-2026-10-14",
       date: "14 October 2026",
       title: "Mobile Support and Pause Restart Update",

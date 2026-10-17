@@ -2925,9 +2925,195 @@
         transform: translateY(-1px);
       }
 
-      #name-overlay .reset-card,
       #leaderboard-overlay .reset-card {
-        max-width: 560px;
+        max-width: 620px;
+      }
+
+      #leaderboard-overlay .reset-card {
+        width: min(92vw, 620px);
+        max-height: min(82vh, 780px);
+        padding: clamp(14px, 1.6vw, 20px);
+        border-color: rgba(0, 238, 255, 0.34);
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(0, 238, 255, 0.13), transparent 48%),
+          linear-gradient(145deg, rgba(13, 18, 42, 0.98), rgba(6, 8, 22, 0.99));
+        box-shadow: 0 0 34px rgba(0, 238, 255, 0.18), 0 0 70px rgba(152, 57, 255, 0.16);
+      }
+
+      #leaderboard-overlay .reset-card > h3 {
+        margin-bottom: 4px;
+        color: #f5fbff;
+        font-size: clamp(1.5rem, 3.2vw, 2rem);
+        text-shadow: 0 0 20px rgba(0, 238, 255, 0.45);
+      }
+
+      .lb-season {
+        margin: 0 auto 12px;
+        color: #97a9c9;
+        text-align: center;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .lb-monthly-hero {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(10px, 1.4vw, 14px);
+        border: 1px solid rgba(0, 238, 255, 0.34);
+        border-radius: 14px;
+        background:
+          radial-gradient(ellipse at 50% 115%, rgba(175, 66, 255, 0.2), transparent 56%),
+          linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(20, 23, 55, 0.9) 56%, rgba(88, 36, 130, 0.22));
+        box-shadow: inset 0 0 26px rgba(0, 238, 255, 0.04), 0 10px 32px rgba(0, 0, 0, 0.2);
+      }
+
+      .lb-monthly-kicker {
+        margin: 0 0 4px;
+        color: #72f5ff;
+        font-size: 0.64rem;
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .lb-monthly-title {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(0.96rem, 1.9vw, 1.2rem);
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-align: center;
+        text-shadow: 0 0 16px rgba(0, 238, 255, 0.34);
+        text-transform: uppercase;
+      }
+
+      .lb-monthly-copy {
+        max-width: 500px;
+        margin: 5px auto 9px;
+        color: #c6d3ed;
+        font-size: 0.76rem;
+        line-height: 1.35;
+        text-align: center;
+      }
+
+      .lb-prize-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .lb-prize {
+        display: flex;
+        min-height: 60px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        background: rgba(4, 8, 24, 0.55);
+        text-align: center;
+      }
+
+      .lb-prize--first {
+        border-color: rgba(255, 213, 79, 0.58);
+        background: linear-gradient(160deg, rgba(255, 196, 55, 0.15), rgba(4, 8, 24, 0.68));
+      }
+
+      .lb-prize--second { border-color: rgba(190, 211, 255, 0.38); }
+      .lb-prize--third { border-color: rgba(210, 129, 91, 0.38); }
+
+      .lb-prize-place {
+        color: #aab8d2;
+        font-size: 0.6rem;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+      }
+
+      .lb-prize-gems {
+        color: #7df9ff;
+        font-size: 1.08rem;
+        font-weight: 1000;
+        text-shadow: 0 0 12px rgba(0, 238, 255, 0.45);
+      }
+
+      .lb-prize--first .lb-prize-gems { color: #ffdf72; text-shadow: 0 0 12px rgba(255, 195, 53, 0.48); }
+
+      .lb-monthly-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 8px;
+        color: #9eacc8;
+        font-size: 0.64rem;
+      }
+
+      .lb-monthly-countdown {
+        color: #74f5ff;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-align: right;
+      }
+
+      .lb-board-section {
+        margin-top: 16px;
+      }
+
+      .lb-board-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0 0 8px;
+        color: #eef7ff;
+        font-size: 0.95rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .lb-board-heading span {
+        color: #7887a8;
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+      }
+
+      #leaderboard-list,
+      #monthly-leaderboard-list {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        max-height: 30vh;
+        margin-top: 8px;
+        overflow-y: auto;
+        padding-right: 5px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 238, 255, 0.55) rgba(255, 255, 255, 0.03);
+      }
+
+      #leaderboard-list .lb-row,
+      #leaderboard-list .lb-empty,
+      #monthly-leaderboard-list .lb-row,
+      #monthly-leaderboard-list .lb-empty {
+        box-sizing: border-box;
+        width: 92%;
+        margin-right: auto;
+        margin-left: auto;
+      }
+
+      #leaderboard-list::-webkit-scrollbar,
+      #monthly-leaderboard-list::-webkit-scrollbar {
+        width: 7px;
+      }
+
+      #leaderboard-list::-webkit-scrollbar-thumb,
+      #monthly-leaderboard-list::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: rgba(0, 238, 255, 0.55);
       }
 
       .name-form {
@@ -2960,35 +3146,75 @@
         text-align: center;
       }
 
-      #leaderboard-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin-top: 18px;
-      }
-
       .lb-row {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 12px;
-        padding: 10px 12px;
+        gap: 12px;
+        min-width: 0;
+        background: linear-gradient(100deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
+        border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 11px;
+        padding: 9px 12px;
+      }
+
+      .lb-row--podium {
+        border-color: rgba(0, 238, 255, 0.2);
+        background: linear-gradient(100deg, rgba(0, 238, 255, 0.07), rgba(255,255,255,0.025));
+      }
+
+      .lb-rank {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        flex: 0 0 34px;
+        place-items: center;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.06);
+        color: #9baac4;
+        font-size: 0.8rem;
+        font-weight: 900;
+      }
+
+      .lb-rank--gold { color: #ffdf72; background: rgba(255, 194, 48, 0.13); }
+      .lb-rank--silver { color: #d8e4ff; background: rgba(196, 213, 255, 0.12); }
+      .lb-rank--bronze { color: #ffad82; background: rgba(223, 121, 76, 0.12); }
+
+      .lb-entry-main {
+        display: flex;
+        min-width: 0;
+        flex: 1;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .lb-entry-main .lb-name {
+        flex: 0 0 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .lb-name {
         font-weight: 700;
         color: #f7fbff;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
       }
 
       .lb-score {
+        flex: 0 0 auto;
         color: #7ef9ff;
         font-weight: 800;
         letter-spacing: 0.06em;
+      }
+
+      .lb-reward {
+        min-width: 55px;
+        color: #73f7ff;
+        font-size: 0.72rem;
+        font-weight: 900;
+        text-align: right;
+        white-space: nowrap;
       }
 
       .lb-empty {
@@ -3027,6 +3253,15 @@
           width: 48px;
           height: 48px;
         }
+
+        .lb-prize-grid { gap: 6px; }
+        .lb-prize { min-height: 64px; }
+        .lb-prize-place { font-size: 0.55rem; }
+        .lb-prize-gems { font-size: 0.95rem; }
+        .lb-monthly-footer { align-items: flex-start; flex-direction: column; }
+        .lb-monthly-countdown { text-align: left; }
+        .lb-board-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
+        .lb-row { gap: 8px; padding: 8px; }
       }
     `;
 
@@ -3058,22 +3293,55 @@
     return overlay;
   }
 
+  function getLeaderboardCardMarkup() {
+    return `
+      <p class="lb-season">NEON CHAOS • SEASON RANKINGS</p>
+      <h3 id="leaderboard-title">LEADERBOARD</h3>
+      <section class="lb-monthly-hero" aria-labelledby="lb-monthly-title">
+        <p class="lb-monthly-kicker">Monthly Gem Championship</p>
+        <h4 class="lb-monthly-title" id="lb-monthly-title">Climb the ranks. Claim gems.</h4>
+        <p class="lb-monthly-copy">Submit a score this month to compete. Your highest monthly score sets your podium position; your all-time best stays saved below.</p>
+        <div class="lb-prize-grid" aria-label="Monthly gem podium rewards">
+          <div class="lb-prize lb-prize--first"><span class="lb-prize-place">1ST PLACE</span><span class="lb-prize-gems">💎 50 GEMS</span></div>
+          <div class="lb-prize lb-prize--second"><span class="lb-prize-place">2ND PLACE</span><span class="lb-prize-gems">💎 30 GEMS</span></div>
+          <div class="lb-prize lb-prize--third"><span class="lb-prize-place">3RD PLACE</span><span class="lb-prize-gems">💎 15 GEMS</span></div>
+        </div>
+        <div class="lb-monthly-footer">
+          <span>Monthly scores only • all-time records stay saved</span>
+          <span class="lb-monthly-countdown" id="lb-monthly-countdown"></span>
+        </div>
+      </section>
+      <section class="lb-board-section" aria-labelledby="lb-month-board-title">
+        <h4 class="lb-board-heading" id="lb-month-board-title">This Month <span>MONTHLY GEM RACE</span></h4>
+        <div id="monthly-leaderboard-list" class="leaderboard-list"></div>
+      </section>
+      <section class="lb-board-section" aria-labelledby="lb-alltime-board-title">
+        <h4 class="lb-board-heading" id="lb-alltime-board-title">All-Time Records <span>YOUR BEST SCORE STAYS SAVED</span></h4>
+        <div id="leaderboard-list" class="leaderboard-list"></div>
+      </section>
+      <div class="reset-actions">
+        <button id="leaderboard-close-btn" class="ghost-btn" type="button">Close</button>
+      </div>
+    `;
+  }
+
   function ensureLeaderboardOverlay() {
     let overlay = document.getElementById("leaderboard-overlay");
     if (!overlay) {
       overlay = document.createElement("div");
       overlay.id = "leaderboard-overlay";
       overlay.className = "reset-overlay";
-      overlay.innerHTML = `
-        <div class="reset-card">
-          <h3>Leaderboard</h3>
-          <div id="leaderboard-list"></div>
-          <div class="reset-actions">
-            <button id="leaderboard-close-btn" class="ghost-btn" type="button">Close</button>
-          </div>
-        </div>
-      `;
+      overlay.innerHTML = '<div class="reset-card info-card leaderboard-card" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title"></div>';
       document.body.appendChild(overlay);
+    }
+
+    const card = overlay.querySelector(".reset-card");
+    if (card && !card.querySelector("#monthly-leaderboard-list")) {
+      card.classList.add("info-card", "leaderboard-card");
+      card.setAttribute("role", "dialog");
+      card.setAttribute("aria-modal", "true");
+      card.setAttribute("aria-labelledby", "leaderboard-title");
+      card.innerHTML = getLeaderboardCardMarkup();
     }
 
     if (!document.getElementById("leaderboard-btn")) {
@@ -3135,6 +3403,7 @@
 
     setPlayerName(cleanedName);
     hideNameOverlay();
+    window.dispatchEvent(new Event("neonChaosPlayerNameReady"));
     if (status) status.textContent = "";
     void submitLegacyBestScore(cleanedName);
     syncSavedPlaytime();
@@ -3151,9 +3420,121 @@
     hideOverlay(overlay);
   }
 
+  function getUtcMonthKey(date = new Date()) {
+    return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+  }
+
+  function getScoreTimestamp(value) {
+    let timestamp = typeof value === "number" ? value : Date.parse(value);
+    if (typeof value === "string" && /^\d+$/.test(value)) {
+      timestamp = Number(value);
+    }
+    if (Number.isFinite(timestamp) && timestamp > 0 && timestamp < 1e12) {
+      timestamp *= 1000;
+    }
+    return timestamp;
+  }
+
+  function getMonthlyRankings(entries, monthKey) {
+    const monthMatch = /^(\d{4})-(\d{2})$/.exec(monthKey);
+    if (!monthMatch) throw new Error("Invalid monthly leaderboard period.");
+
+    const year = Number(monthMatch[1]);
+    const month = Number(monthMatch[2]);
+    if (month < 1 || month > 12) throw new Error("Invalid monthly leaderboard period.");
+
+    const monthStart = Date.UTC(year, month - 1, 1);
+    const nextMonthStart = Date.UTC(year, month, 1);
+    const bestScoreByName = new Map();
+
+    entries.forEach((entry) => {
+      const name = sanitizeName(entry && entry.name || "");
+      const score = Number(entry && entry.score);
+      const timestamp = getScoreTimestamp(entry && entry.timestamp);
+      if (
+        !name ||
+        !Number.isFinite(score) ||
+        score <= 0 ||
+        !Number.isFinite(timestamp) ||
+        timestamp < monthStart ||
+        timestamp >= nextMonthStart
+      ) {
+        return;
+      }
+
+      const key = name.toLowerCase();
+      const previousBest = bestScoreByName.get(key);
+      if (!previousBest || score > previousBest.score) {
+        bestScoreByName.set(key, { name, score });
+      }
+    });
+
+    return [...bestScoreByName.values()]
+      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+  }
+
+  function renderLeaderboardEntries(list, entries, options = {}) {
+    if (!list) return;
+    while (list.firstChild) list.removeChild(list.firstChild);
+
+    if (!entries.length) {
+      const empty = document.createElement("div");
+      empty.className = "lb-row lb-empty";
+      empty.textContent = options.emptyMessage || "No scores yet";
+      list.appendChild(empty);
+      return;
+    }
+
+    entries.slice(0, 10).forEach((entry, index) => {
+      const row = document.createElement("div");
+      row.className = "lb-row";
+      if (options.monthly && index < 3) row.classList.add("lb-row--podium");
+
+      const rank = document.createElement("span");
+      const podiumClass = ["lb-rank--gold", "lb-rank--silver", "lb-rank--bronze"][index];
+      rank.className = podiumClass ? `lb-rank ${podiumClass}` : "lb-rank";
+      rank.textContent = formatRankLabel(index + 1);
+
+      const main = document.createElement("span");
+      main.className = "lb-entry-main";
+      const name = document.createElement("span");
+      name.className = "lb-name";
+      name.textContent = entry.name;
+      main.appendChild(name);
+
+      const score = document.createElement("span");
+      score.className = "lb-score";
+      score.textContent = String(Math.floor(entry.score));
+
+      row.append(rank, main, score);
+      if (options.monthly && index < 3) {
+        const reward = document.createElement("span");
+        reward.className = "lb-reward";
+        reward.textContent = `💎 ${[50, 30, 15][index]}`;
+        reward.setAttribute("aria-label", `${[50, 30, 15][index]} gems at month end`);
+        row.appendChild(reward);
+      }
+      list.appendChild(row);
+    });
+  }
+
+  function updateMonthlyCountdown() {
+    const countdown = document.getElementById("lb-monthly-countdown");
+    if (!countdown) return;
+
+    const now = new Date();
+    const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    const remaining = Math.max(0, nextMonth.getTime() - now.getTime());
+    const days = Math.floor(remaining / 86400000);
+    const hours = Math.floor((remaining % 86400000) / 3600000);
+    const minutes = Math.floor((remaining % 3600000) / 60000);
+    countdown.textContent = `⏳ ${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m until rewards lock`;
+  }
+
   async function loadLeaderboard() {
     const list = document.getElementById("leaderboard-list");
-    if (!list) return [];
+    const monthlyList = document.getElementById("monthly-leaderboard-list");
+    if (!list || !monthlyList) return [];
 
     try {
       const response = await fetch(API_URL, {
@@ -3171,7 +3552,7 @@
         .map((entry) => ({
           name: sanitizeName(entry && entry.name || ""),
           score: Number(entry && entry.score),
-          timestamp: entry && entry.timestamp || Date.now()
+          timestamp: entry && entry.timestamp
         }))
         .filter((entry) => entry.name && Number.isFinite(entry.score) && entry.score > 0)
       const bestScoreByName = new Map();
@@ -3186,51 +3567,48 @@
       const uniqueEntries = [...bestScoreByName.values()]
         .sort((a, b) => b.score - a.score);
 
-      if (!uniqueEntries.length) {
-        list.innerHTML = `
-          <div class="lb-row lb-empty">
-            <span class="lb-name">No scores yet</span>
-            <span class="lb-score">-</span>
-          </div>
-        `;
-        return [];
-      }
-
-      const rows = uniqueEntries.slice(0, 10).map((entry, index) => {
-        const row = document.createElement("div");
-        row.className = "lb-row";
-
-        const rank = document.createElement("span");
-        const podiumClass = ["lb-rank--gold", "lb-rank--silver", "lb-rank--bronze"][index];
-        rank.className = podiumClass ? `lb-rank ${podiumClass}` : "lb-rank";
-        rank.textContent = formatRankLabel(index + 1);
-
-        const name = document.createElement("span");
-        name.className = "lb-name";
-        name.textContent = entry.name;
-
-        const score = document.createElement("span");
-        score.className = "lb-score";
-        score.textContent = String(Math.floor(entry.score));
-
-        row.append(rank, name, score);
-        return row;
+      renderLeaderboardEntries(list, uniqueEntries, {
+        emptyMessage: "No scores yet. Start a run and set your permanent record!"
       });
-      while (list.firstChild) list.removeChild(list.firstChild);
-      rows.forEach((row) => list.appendChild(row));
+      const monthlyRankings = getMonthlyRankings(entries, getUtcMonthKey());
+      renderLeaderboardEntries(monthlyList, monthlyRankings, {
+        monthly: true,
+        emptyMessage: "No scores submitted this month yet. Set the first monthly record!"
+      });
+      updateMonthlyCountdown();
 
       return uniqueEntries;
     } catch (error) {
       console.warn("Leaderboard load failed:", error);
-      list.innerHTML = `
-        <div class="lb-row lb-empty">
-          <span class="lb-name">Leaderboard unavailable</span>
-          <span class="lb-score">-</span>
-        </div>
-      `;
+      renderLeaderboardEntries(list, [], { emptyMessage: "Leaderboard unavailable" });
+      renderLeaderboardEntries(monthlyList, [], { emptyMessage: "Monthly standings unavailable" });
       return [];
     }
   }
+
+  async function getMonthlyPodiumReward(monthKey) {
+    const playerName = getPlayerName();
+    if (!playerName) return null;
+
+    const response = await fetch(API_URL, { method: "GET" });
+    if (!response.ok) {
+      throw new Error(`Monthly leaderboard request failed: ${response.status}`);
+    }
+
+    const payload = await response.json();
+    if (!Array.isArray(payload)) {
+      throw new Error("Monthly leaderboard response was not a score list.");
+    }
+
+    const monthlyRanking = getMonthlyRankings(payload, monthKey);
+    const rank = monthlyRanking.findIndex(
+      entry => entry.name.toLowerCase() === playerName.toLowerCase()
+    ) + 1;
+    const gems = [0, 50, 30, 15][rank] || 0;
+    return { month: monthKey, rank: rank || null, gems };
+  }
+
+  window.getMonthlyPodiumReward = getMonthlyPodiumReward;
 
   async function uploadScore(score) {
     const numericScore = Number(score);
