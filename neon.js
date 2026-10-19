@@ -20,6 +20,7 @@ const finalScoreEl = document.getElementById("final-score");
 const finalBestScoreEl = document.getElementById("final-best-score");
 const restartBtn = document.getElementById("restart-btn");
 const reviveBtn = document.getElementById("revive-btn");
+const skipReviveBtn = document.getElementById("skip-revive-btn");
 const reviveCountdown = document.getElementById("revive-countdown");
 const reviveCountdownFill = document.getElementById("revive-countdown-fill");
 const pauseRestartBtn = document.getElementById("pause-restart-btn");
@@ -3964,6 +3965,7 @@ function reviveRun() {
 }
 
 reviveBtn && reviveBtn.addEventListener("click", reviveRun);
+skipReviveBtn && skipReviveBtn.addEventListener("click", finishGameOver);
 
 /* RESTART */
 
