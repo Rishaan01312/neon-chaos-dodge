@@ -2751,8 +2751,9 @@
   function safeLocalStorageSet(key, value) {
     try {
       localStorage.setItem(key, value);
+      return true;
     } catch (error) {
-      // Ignore storage errors in restricted browser modes.
+      return false;
     }
   }
 
@@ -2797,8 +2798,7 @@
   function setPlayerName(name) {
     const cleaned = sanitizeName(name);
     if (!cleaned) return false;
-    safeLocalStorageSet(STORAGE_KEY, cleaned);
-    return true;
+    return safeLocalStorageSet(STORAGE_KEY, cleaned);
   }
 
   function syncSavedPlaytime() {
@@ -2827,6 +2827,7 @@
       const response = await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({
+          playerId: getPlayerId(),
           name: playerName,
           score: Math.floor(bestScore)
         })
@@ -3320,6 +3321,7 @@
         <div id="leaderboard-list" class="leaderboard-list"></div>
       </section>
       <div class="reset-actions">
+        <button id="leaderboard-change-name-btn" class="ghost-btn" type="button">Change display name</button>
         <button id="leaderboard-close-btn" class="ghost-btn" type="button">Close</button>
       </div>
     `;
@@ -3369,9 +3371,17 @@
     element.setAttribute("aria-hidden", "true");
   }
 
-  function showNameOverlay() {
+  function showNameOverlay(editing = false) {
     const overlay = ensureNameOverlay();
     const input = document.getElementById("name-input");
+    const heading = overlay.querySelector("h3");
+    const description = overlay.querySelector(".reset-card p");
+    if (heading) heading.textContent = editing ? "CHANGE DISPLAY NAME" : "ENTER YOUR NAME";
+    if (description) {
+      description.textContent = editing
+        ? "Choose a new name for the leaderboard."
+        : "Choose a display name for the leaderboard.";
+    }
     if (input) {
       input.value = getPlayerName();
       input.focus();
@@ -3384,7 +3394,7 @@
     hideOverlay(overlay);
   }
 
-  function submitPlayerName() {
+  async function submitPlayerName() {
     const input = document.getElementById("name-input");
     const status = document.getElementById("name-status");
     if (!input) return;
@@ -3401,7 +3411,43 @@
       return;
     }
 
-    setPlayerName(cleanedName);
+    const previousName = getPlayerName();
+    if (cleanedName === previousName) {
+      hideNameOverlay();
+      return;
+    }
+
+    if (!setPlayerName(cleanedName)) {
+      if (status) status.textContent = "Could not save your name in this browser.";
+      return;
+    }
+
+    if (previousName) {
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "rename",
+            playerId: getPlayerId(),
+            oldName: previousName,
+            name: cleanedName
+          })
+        });
+        if (!response.ok) {
+          throw new Error(`Name update failed: ${response.status}`);
+        }
+        const message = await response.text();
+        if (message !== "OK") {
+          throw new Error(message || "The leaderboard rejected the name update.");
+        }
+      } catch (error) {
+        safeLocalStorageSet(STORAGE_KEY, previousName);
+        console.warn("Player name update failed:", error);
+        if (status) status.textContent = "Could not update your leaderboard name. Please try again.";
+        return;
+      }
+    }
+
     hideNameOverlay();
     window.dispatchEvent(new Event("neonChaosPlayerNameReady"));
     if (status) status.textContent = "";
@@ -3640,6 +3686,7 @@
       const response = await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({
+          playerId: getPlayerId(),
           name: playerName,
           score: Math.floor(numericScore)
         })
@@ -3704,11 +3751,16 @@
   function attachEvents() {
     const leaderboardBtn = document.getElementById("leaderboard-btn");
     const leaderboardCloseBtn = document.getElementById("leaderboard-close-btn");
+    const leaderboardChangeNameBtn = document.getElementById("leaderboard-change-name-btn");
     const nameInput = document.getElementById("name-input");
     const nameSubmitBtn = document.getElementById("name-submit-btn");
 
     leaderboardBtn && leaderboardBtn.addEventListener("click", openLeaderboard);
     leaderboardCloseBtn && leaderboardCloseBtn.addEventListener("click", closeLeaderboard);
+    leaderboardChangeNameBtn && leaderboardChangeNameBtn.addEventListener("click", () => {
+      closeLeaderboard();
+      showNameOverlay(true);
+    });
 
     nameInput && nameInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
