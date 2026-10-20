@@ -3964,7 +3964,6 @@ function reviveRun() {
   lastTime = performance.now();
 }
 
-
 reviveBtn && reviveBtn.addEventListener("click", reviveRun);
 skipReviveBtn && skipReviveBtn.addEventListener("click", finishGameOver);
 
