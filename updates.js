@@ -4,6 +4,16 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "leaderboard-layout-loading-update-2026-10-23",
+      date: "23 October 2026",
+      title: "Leaderboard Layout and Loading Update",
+      changes: [
+        "Expanded the leaderboard into a landscape layout, with monthly and all-time rankings side by side on larger screens.",
+        "Improved leaderboard spacing and title styling, with responsive text and score rows for mobile screens.",
+        "Added an animated loading indicator while scores are being fetched, plus retry controls and error details when loading fails.",
+      ]
+    },
+    {
       id: "gems-revival-update-2026-10-17",
       date: "17 October 2026",
       title: "Gems and Revival Update",
