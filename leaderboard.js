@@ -2926,12 +2926,11 @@
       }
 
       #leaderboard-overlay .reset-card {
-        max-width: 620px;
-      }
-
-      #leaderboard-overlay .reset-card {
-        width: min(92vw, 620px);
-        max-height: min(82vh, 780px);
+        box-sizing: border-box;
+        width: min(94vw, 1120px);
+        max-width: 1120px;
+        max-height: 90vh;
+        overflow-y: auto;
         padding: clamp(14px, 1.6vw, 20px);
         border-color: rgba(0, 238, 255, 0.34);
         background:
@@ -2941,10 +2940,30 @@
       }
 
       #leaderboard-overlay .reset-card > h3 {
-        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 18px 0 14px;
+        padding: 12px 18px;
+        border: 1px solid rgba(0, 238, 255, 0.18);
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(0, 238, 255, 0.08), rgba(152, 57, 255, 0.08));
+        box-shadow: inset 0 0 18px rgba(0, 238, 255, 0.04);
         color: #f5fbff;
         font-size: clamp(1.5rem, 3.2vw, 2rem);
         text-shadow: 0 0 20px rgba(0, 238, 255, 0.45);
+      }
+
+      #leaderboard-overlay .reset-card > h3::before,
+      #leaderboard-overlay .reset-card > h3::after {
+        height: 1px;
+        flex: 1;
+        background: linear-gradient(90deg, transparent, rgba(0, 238, 255, 0.52));
+        content: "";
+      }
+
+      #leaderboard-overlay .reset-card > h3::after {
+        transform: rotate(180deg);
       }
 
       .lb-season {
@@ -2960,6 +2979,10 @@
       .lb-monthly-hero {
         position: relative;
         overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+        align-items: center;
+        column-gap: 18px;
         padding: clamp(10px, 1.4vw, 14px);
         border: 1px solid rgba(0, 238, 255, 0.34);
         border-radius: 14px;
@@ -2969,13 +2992,17 @@
         box-shadow: inset 0 0 26px rgba(0, 238, 255, 0.04), 0 10px 32px rgba(0, 0, 0, 0.2);
       }
 
+      .lb-monthly-intro {
+        min-width: 0;
+      }
+
       .lb-monthly-kicker {
         margin: 0 0 4px;
         color: #72f5ff;
         font-size: 0.64rem;
         font-weight: 900;
         letter-spacing: 0.2em;
-        text-align: center;
+        text-align: left;
         text-transform: uppercase;
       }
 
@@ -2985,24 +3012,25 @@
         font-size: clamp(0.96rem, 1.9vw, 1.2rem);
         font-weight: 900;
         letter-spacing: 0.08em;
-        text-align: center;
+        text-align: left;
         text-shadow: 0 0 16px rgba(0, 238, 255, 0.34);
         text-transform: uppercase;
       }
 
       .lb-monthly-copy {
         max-width: 500px;
-        margin: 5px auto 9px;
+        margin: 5px 0 0;
         color: #c6d3ed;
         font-size: 0.76rem;
         line-height: 1.35;
-        text-align: center;
+        text-align: left;
       }
 
       .lb-prize-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
+        min-width: 0;
       }
 
       .lb-prize {
@@ -3047,7 +3075,8 @@
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        margin-top: 8px;
+        grid-column: 1 / -1;
+        margin-top: 10px;
         color: #9eacc8;
         font-size: 0.64rem;
       }
@@ -3060,6 +3089,14 @@
       }
 
       .lb-board-section {
+        min-width: 0;
+        margin-top: 0;
+      }
+
+      .lb-boards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
         margin-top: 16px;
       }
 
@@ -3086,11 +3123,11 @@
       #monthly-leaderboard-list {
         display: flex;
         flex-direction: column;
-        gap: 7px;
-        max-height: 30vh;
+        gap: 6px;
+        max-height: min(56vh, 490px);
         margin-top: 8px;
         overflow-y: auto;
-        padding-right: 5px;
+        padding: 0 5px 0 0;
         scrollbar-width: thin;
         scrollbar-color: rgba(0, 238, 255, 0.55) rgba(255, 255, 255, 0.03);
       }
@@ -3103,6 +3140,12 @@
         width: 92%;
         margin-right: auto;
         margin-left: auto;
+      }
+
+      #leaderboard-list .lb-row,
+      #monthly-leaderboard-list .lb-row {
+        gap: 9px;
+        padding: 6px 9px;
       }
 
       #leaderboard-list::-webkit-scrollbar,
@@ -3164,9 +3207,9 @@
 
       .lb-rank {
         display: grid;
-        width: 34px;
-        height: 34px;
-        flex: 0 0 34px;
+        width: 30px;
+        height: 30px;
+        flex: 0 0 30px;
         place-items: center;
         border-radius: 10px;
         background: rgba(255,255,255,0.06);
@@ -3182,13 +3225,12 @@
       .lb-entry-main {
         display: flex;
         min-width: 0;
-        flex: 1;
-        flex-direction: column;
-        gap: 2px;
+        flex: 1 1 0%;
       }
 
       .lb-entry-main .lb-name {
-        flex: 0 0 auto;
+        min-width: 0;
+        flex: 1 1 0%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -3206,6 +3248,7 @@
         color: #7ef9ff;
         font-weight: 800;
         letter-spacing: 0.06em;
+        white-space: nowrap;
       }
 
       .lb-reward {
@@ -3220,6 +3263,130 @@
       .lb-empty {
         justify-content: center;
         color: rgba(237, 247, 255, 0.7);
+      }
+
+      .lb-error-state {
+        min-height: 48px;
+        flex-wrap: wrap;
+        gap: 8px;
+        color: rgba(237, 247, 255, 0.78);
+        font-size: clamp(0.68rem, 1.3vw, 0.82rem);
+      }
+
+      .lb-error-message {
+        min-width: 0;
+        text-align: center;
+      }
+
+      .lb-error-info,
+      .lb-error-retry {
+        display: inline-flex;
+        min-height: 30px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(0, 238, 255, 0.24);
+        border-radius: 999px;
+        background: rgba(0, 238, 255, 0.06);
+        color: #9cf8ff;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+
+      .lb-error-info {
+        width: 30px;
+        padding: 0;
+        font-family: Georgia, serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .lb-error-retry {
+        padding: 0 12px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .lb-error-info:hover,
+      .lb-error-info:focus-visible,
+      .lb-error-retry:hover,
+      .lb-error-retry:focus-visible {
+        border-color: rgba(0, 238, 255, 0.58);
+        background: rgba(0, 238, 255, 0.14);
+      }
+
+      .lb-loading {
+        display: flex;
+        min-height: 86px;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border: 1px solid rgba(0, 238, 255, 0.12);
+        border-radius: 11px;
+        background: linear-gradient(100deg, rgba(0, 238, 255, 0.035), rgba(255,255,255,0.02));
+        color: #a9bbd8;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .lb-loading-spinner {
+        position: relative;
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        flex: 0 0 22px;
+        border: 2px dotted #65f5ff;
+        border-radius: 50%;
+        animation: lb-spinner-rotate 1.2s linear infinite;
+        filter: drop-shadow(0 0 5px rgba(0, 238, 255, 0.48));
+      }
+
+      .lb-loading-spinner::after {
+        position: absolute;
+        inset: 5px;
+        border: 1px dotted rgba(202, 132, 255, 0.85);
+        border-radius: 50%;
+        content: "";
+      }
+
+      @keyframes lb-spinner-rotate {
+        to { transform: rotate(360deg); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .lb-loading-spinner {
+          animation-duration: 3s;
+        }
+      }
+
+      @media (max-width: 700px) {
+        #leaderboard-overlay .reset-card {
+          width: min(94vw, 620px);
+          max-height: 90vh;
+        }
+
+        .lb-monthly-hero {
+          grid-template-columns: 1fr;
+          row-gap: 10px;
+        }
+
+        .lb-monthly-kicker,
+        .lb-monthly-title {
+          text-align: center;
+        }
+
+        .lb-boards {
+          grid-template-columns: 1fr;
+          gap: 14px;
+        }
+
+        #leaderboard-list,
+        #monthly-leaderboard-list {
+          max-height: 30vh;
+        }
       }
 
       #leaderboard-btn {
@@ -3247,6 +3414,12 @@
           padding: 18px 16px 14px;
         }
 
+        #leaderboard-overlay .reset-card > h3 {
+          gap: 10px;
+          margin: 14px 0 12px;
+          padding: 10px 12px;
+        }
+
         #leaderboard-btn {
           bottom: 16px;
           right: 16px;
@@ -3262,6 +3435,27 @@
         .lb-monthly-countdown { text-align: left; }
         .lb-board-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
         .lb-row { gap: 8px; padding: 8px; }
+
+        #leaderboard-list .lb-row,
+        #monthly-leaderboard-list .lb-row {
+          gap: clamp(4px, 1.5vw, 8px);
+          padding: clamp(5px, 1.8vw, 8px);
+        }
+
+        .lb-entry-main .lb-name {
+          font-size: clamp(0.58rem, 3.2vw, 0.82rem);
+          letter-spacing: 0.025em;
+        }
+
+        .lb-score {
+          font-size: clamp(0.62rem, 3.4vw, 0.82rem);
+          letter-spacing: 0.02em;
+        }
+
+        .lb-reward {
+          min-width: 0;
+          font-size: clamp(0.58rem, 2.8vw, 0.72rem);
+        }
       }
     `;
 
@@ -3296,11 +3490,12 @@
   function getLeaderboardCardMarkup() {
     return `
       <p class="lb-season">NEON CHAOS • SEASON RANKINGS</p>
-      <h3 id="leaderboard-title">LEADERBOARD</h3>
       <section class="lb-monthly-hero" aria-labelledby="lb-monthly-title">
-        <p class="lb-monthly-kicker">Monthly Gem Championship</p>
-        <h4 class="lb-monthly-title" id="lb-monthly-title">Climb the ranks. Claim gems.</h4>
-        <p class="lb-monthly-copy">Submit a score this month to compete. Your highest monthly score sets your podium position; your all-time best stays saved below.</p>
+        <div class="lb-monthly-intro">
+          <p class="lb-monthly-kicker">Monthly Gem Championship</p>
+          <h4 class="lb-monthly-title" id="lb-monthly-title">Climb the ranks. Claim gems.</h4>
+          <p class="lb-monthly-copy">Submit a score this month to compete. Your highest monthly score sets your podium position; your all-time best stays saved below.</p>
+        </div>
         <div class="lb-prize-grid" aria-label="Monthly gem podium rewards">
           <div class="lb-prize lb-prize--first"><span class="lb-prize-place">1ST PLACE</span><span class="lb-prize-gems">💎 50 GEMS</span></div>
           <div class="lb-prize lb-prize--second"><span class="lb-prize-place">2ND PLACE</span><span class="lb-prize-gems">💎 30 GEMS</span></div>
@@ -3311,14 +3506,17 @@
           <span class="lb-monthly-countdown" id="lb-monthly-countdown"></span>
         </div>
       </section>
-      <section class="lb-board-section" aria-labelledby="lb-month-board-title">
-        <h4 class="lb-board-heading" id="lb-month-board-title">This Month <span>MONTHLY GEM RACE</span></h4>
-        <div id="monthly-leaderboard-list" class="leaderboard-list"></div>
-      </section>
-      <section class="lb-board-section" aria-labelledby="lb-alltime-board-title">
-        <h4 class="lb-board-heading" id="lb-alltime-board-title">All-Time Records <span>YOUR BEST SCORE STAYS SAVED</span></h4>
-        <div id="leaderboard-list" class="leaderboard-list"></div>
-      </section>
+      <h3 id="leaderboard-title">LEADERBOARD</h3>
+      <div class="lb-boards">
+        <section class="lb-board-section" aria-labelledby="lb-month-board-title">
+          <h4 class="lb-board-heading" id="lb-month-board-title">This Month <span>MONTHLY GEM RACE</span></h4>
+          <div id="monthly-leaderboard-list" class="leaderboard-list"></div>
+        </section>
+        <section class="lb-board-section" aria-labelledby="lb-alltime-board-title">
+          <h4 class="lb-board-heading" id="lb-alltime-board-title">All-Time Records <span>YOUR BEST SCORE STAYS SAVED</span></h4>
+          <div id="leaderboard-list" class="leaderboard-list"></div>
+        </section>
+      </div>
       <div class="reset-actions">
         <button id="leaderboard-close-btn" class="ghost-btn" type="button">Close</button>
       </div>
@@ -3518,6 +3716,57 @@
     });
   }
 
+  function renderLeaderboardLoading(list) {
+    if (!list) return;
+    const loading = document.createElement("div");
+    loading.className = "lb-loading";
+    loading.setAttribute("role", "status");
+    loading.setAttribute("aria-live", "polite");
+
+    const spinner = document.createElement("span");
+    spinner.className = "lb-loading-spinner";
+    spinner.setAttribute("aria-hidden", "true");
+
+    const label = document.createElement("span");
+    label.textContent = "Loading";
+    loading.append(spinner, label);
+    list.replaceChildren(loading);
+  }
+
+  function renderLeaderboardUnavailable(list, message, error) {
+    if (!list) return;
+    const details = error instanceof Error && error.message.trim()
+      ? error.message
+      : typeof error === "string" && error.trim()
+        ? error
+        : "An unknown error occurred while loading scores.";
+    const row = document.createElement("div");
+    row.className = "lb-row lb-empty lb-error-state";
+    row.setAttribute("role", "alert");
+
+    const messageElement = document.createElement("span");
+    messageElement.className = "lb-error-message";
+    messageElement.textContent = message;
+
+    const infoButton = document.createElement("button");
+    infoButton.className = "lb-error-info";
+    infoButton.type = "button";
+    infoButton.textContent = "i";
+    infoButton.title = `Error details: ${details}`;
+    infoButton.setAttribute("aria-label", `Error details: ${details}`);
+
+    const retryButton = document.createElement("button");
+    retryButton.className = "lb-error-retry";
+    retryButton.type = "button";
+    retryButton.textContent = "Retry";
+    retryButton.addEventListener("click", () => {
+      void loadLeaderboard();
+    });
+
+    row.append(messageElement, infoButton, retryButton);
+    list.replaceChildren(row);
+  }
+
   function updateMonthlyCountdown() {
     const countdown = document.getElementById("lb-monthly-countdown");
     if (!countdown) return;
@@ -3535,6 +3784,9 @@
     const list = document.getElementById("leaderboard-list");
     const monthlyList = document.getElementById("monthly-leaderboard-list");
     if (!list || !monthlyList) return [];
+
+    renderLeaderboardLoading(list);
+    renderLeaderboardLoading(monthlyList);
 
     try {
       const response = await fetch(API_URL, {
@@ -3580,8 +3832,8 @@
       return uniqueEntries;
     } catch (error) {
       console.warn("Leaderboard load failed:", error);
-      renderLeaderboardEntries(list, [], { emptyMessage: "Leaderboard unavailable" });
-      renderLeaderboardEntries(monthlyList, [], { emptyMessage: "Monthly standings unavailable" });
+      renderLeaderboardUnavailable(list, "Leaderboard unavailable", error);
+      renderLeaderboardUnavailable(monthlyList, "Monthly standings unavailable", error);
       return [];
     }
   }
