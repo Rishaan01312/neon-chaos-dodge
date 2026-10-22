@@ -2827,6 +2827,7 @@
       const response = await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({
+          playerId: getPlayerId(),
           name: playerName,
           score: Math.floor(bestScore)
         })
@@ -3892,6 +3893,7 @@
       const response = await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({
+          playerId: getPlayerId(),
           name: playerName,
           score: Math.floor(numericScore)
         })
