@@ -642,7 +642,7 @@
         <ul>
           <li>Open <strong>Trail Shop</strong> to equip no trail or buy Spark (100 coins), Comet (200), and Orbit (350).</li>
           <li>Trails follow you while moving, and their colour matches your equipped skin.</li>
-          <li>Choose a theme and adjust music, movement sensitivity, or Chaos Mode in Settings.</li>
+          <li>Choose a theme and adjust music and sound effects, movement sensitivity, graphics quality, reduced effects, or Chaos Mode in Settings.</li>
         </ul>
       </section>
 
@@ -938,12 +938,51 @@
 
         <div class="info-block">
           <p><strong>Music Volume</strong></p>
-          <input id="music-volume" type="range" min="0" max="1" step="0.01">
+          <label class="setting-control">
+            <span class="setting-control-label">Background music</span>
+            <input id="music-volume" type="range" min="0" max="1" step="0.01" aria-label="Music volume">
+            <output id="music-volume-value" for="music-volume"></output>
+          </label>
+        </div>
+
+        <div class="info-block">
+          <p><strong>Sound Effects Volume</strong></p>
+          <label class="setting-control">
+            <span class="setting-control-label">Game sound effects</span>
+            <input id="sfx-volume" type="range" min="0" max="1" step="0.01" aria-label="Sound effects volume">
+            <output id="sfx-volume-value" for="sfx-volume"></output>
+          </label>
+        </div>
+
+        <div class="info-block">
+          <p><strong>Graphics Quality</strong></p>
+          <label class="setting-control">
+            <span class="setting-control-label">Visual detail</span>
+            <select id="graphics-mode" aria-label="Graphics quality">
+              <option value="high">High</option>
+              <option value="low">Low (better performance)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="info-block">
+          <p><strong>Reduced Effects</strong></p>
+          <label class="toggle-row">
+            <span>Reduce flashes and motion</span>
+            <input id="reduced-effects" type="checkbox">
+          </label>
+          <p class="setting-description">
+            Turns off the hit flash and decorative movement effects.
+          </p>
         </div>
 
         <div class="info-block">
           <p><strong>Game Sensitivity</strong></p>
-          <input id="game-sensitivity" type="range" min="1" max="20" step="0.5" value="8">
+          <label class="setting-control">
+            <span class="setting-control-label">Movement speed</span>
+            <input id="game-sensitivity" type="range" min="1" max="20" step="0.5" value="8" aria-label="Game sensitivity">
+            <output id="game-sensitivity-value" for="game-sensitivity"></output>
+          </label>
         </div>
 
         <div class="info-block">
@@ -955,10 +994,6 @@
           <p class="setting-description">
             Doubles obstacle speed, increases spawn rate, and boosts score gain.
           </p>
-        </div>
-
-        <div class="info-block coming-soon-card">
-          <p>More settings coming soon!</p>
         </div>
 
       </div>

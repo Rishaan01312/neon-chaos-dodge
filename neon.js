@@ -75,6 +75,7 @@ const closeSettingsBtn = document.getElementById("close-settings-btn");
 const musicVolumeSlider = document.getElementById("music-volume");
 const sfxVolumeSlider = document.getElementById("sfx-volume");
 const graphicsModeSelect = document.getElementById("graphics-mode");
+const reducedEffectsToggle = document.getElementById("reduced-effects");
 const themeMenu = document.getElementById("theme-menu");
 const themeBtn = document.getElementById("theme-btn");
 const closeThemeMenu = document.getElementById("close-theme-menu");
@@ -91,9 +92,85 @@ const prestigeShopBackBtn = document.getElementById("prestige-shop-back-btn");
 const prestigeShopCloseBtn = document.getElementById("prestige-shop-close-btn");
 
 
-let musicVolume = 0.22;
-let sfxVolume = 0.75;
-let graphicsMode = "high";
+function getSavedSetting(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : value;
+  } catch (error) {
+    console.warn(`Could not read setting "${key}":`, error);
+    return fallback;
+  }
+}
+
+function saveSetting(key, value) {
+  try {
+    localStorage.setItem(key, String(value));
+  } catch (error) {
+    console.warn(`Could not save setting "${key}":`, error);
+  }
+}
+
+function getSavedVolume(key, fallback) {
+  const value = Number(getSavedSetting(key, fallback));
+  return Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : fallback;
+}
+
+let musicVolume = getSavedVolume("neonChaosMusicVolume", 0.22);
+let sfxVolume = getSavedVolume("neonChaosSfxVolume", 0.75);
+const savedGraphicsMode = getSavedSetting("neonChaosGraphicsMode", "high");
+let graphicsMode = savedGraphicsMode === "low" ? "low" : "high";
+let reducedEffects = getSavedSetting("neonChaosReducedEffects", "false") === "true";
+
+document.body.dataset.graphicsMode = graphicsMode;
+document.body.dataset.reducedEffects = String(reducedEffects);
+
+let sfxAudioContext = null;
+let musicDuckTimeout = null;
+
+function updateBackgroundMusicVolume() {
+  if (typeof bgMusic === "undefined") return;
+  bgMusic.volume = musicVolume * (musicDuckTimeout ? 0.45 : 1);
+}
+
+function duckBackgroundMusic(duration) {
+  if (!musicEnabled || musicVolume <= 0) return;
+  clearTimeout(musicDuckTimeout);
+  musicDuckTimeout = window.setTimeout(() => {
+    musicDuckTimeout = null;
+    updateBackgroundMusicVolume();
+  }, duration);
+  updateBackgroundMusicVolume();
+}
+
+function playSoundEffect(type) {
+  if (sfxVolume <= 0) return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+
+  try {
+    if (!sfxAudioContext) sfxAudioContext = new AudioContextClass();
+    if (sfxAudioContext.state === "suspended") {
+      void sfxAudioContext.resume();
+    }
+
+    const now = sfxAudioContext.currentTime;
+    const oscillator = sfxAudioContext.createOscillator();
+    const gain = sfxAudioContext.createGain();
+    const isHit = type === "hit";
+    oscillator.type = isHit ? "triangle" : "sine";
+    oscillator.frequency.setValueAtTime(isHit ? 220 : 880, now);
+    oscillator.frequency.exponentialRampToValueAtTime(isHit ? 90 : 1320, now + 0.12);
+    gain.gain.setValueAtTime(sfxVolume * (isHit ? 0.3 : 0.22), now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + (isHit ? 0.22 : 0.09));
+    oscillator.connect(gain);
+    gain.connect(sfxAudioContext.destination);
+    oscillator.start(now);
+    oscillator.stop(now + (isHit ? 0.23 : 0.1));
+    duckBackgroundMusic(isHit ? 900 : 350);
+  } catch (error) {
+    console.warn("Could not play sound effect:", error);
+  }
+}
 
 prestigeBtn && prestigeBtn.addEventListener("click", () => {
   updatePrestigeRequirementsUI();
@@ -295,16 +372,24 @@ if (typeof window.showNameOverlay === "function" && !localStorage.getItem("playe
 
 if (musicVolumeSlider) {
   musicVolumeSlider.value = String(musicVolume);
+  const volumeOutput = document.getElementById("music-volume-value");
+  if (volumeOutput) volumeOutput.value = `${Math.round(musicVolume * 100)}%`;
   musicVolumeSlider.addEventListener("input", (event) => {
     musicVolume = Number(event.target.value);
-    bgMusic.volume = musicVolume;
+    updateBackgroundMusicVolume();
+    saveSetting("neonChaosMusicVolume", musicVolume);
+    if (volumeOutput) volumeOutput.value = `${Math.round(musicVolume * 100)}%`;
   });
 }
 
 if (sfxVolumeSlider) {
   sfxVolumeSlider.value = String(sfxVolume);
+  const volumeOutput = document.getElementById("sfx-volume-value");
+  if (volumeOutput) volumeOutput.value = `${Math.round(sfxVolume * 100)}%`;
   sfxVolumeSlider.addEventListener("input", (event) => {
     sfxVolume = Number(event.target.value);
+    saveSetting("neonChaosSfxVolume", sfxVolume);
+    if (volumeOutput) volumeOutput.value = `${Math.round(sfxVolume * 100)}%`;
   });
 }
 
@@ -313,6 +398,7 @@ if (graphicsModeSelect) {
   graphicsModeSelect.addEventListener("change", (event) => {
     graphicsMode = event.target.value;
     document.body.dataset.graphicsMode = graphicsMode;
+    saveSetting("neonChaosGraphicsMode", graphicsMode);
   });
 }
 
@@ -2686,6 +2772,57 @@ function changeGems(amount) {
   return true;
 }
 
+function migrateClaimedExtremeAchievementGems() {
+  const migrationKey = "neonChaosExtremeGemCompensationV1";
+  let migrationState = localStorage.getItem(migrationKey);
+
+  if (migrationState === "complete") return;
+
+  if (!migrationState) {
+    const compensation = achievements.reduce((total, achievement) => {
+      const wasClaimed = unlockedAchievements.includes(achievement.id) &&
+        localStorage.getItem(`claim_${achievement.id}`) === "true";
+      return wasClaimed && achievement.extreme && achievement.gemReward
+        ? total + achievement.gemReward
+        : total;
+    }, 0);
+
+    if (compensation === 0) {
+      localStorage.setItem(migrationKey, "complete");
+      return;
+    }
+
+    migrationState = `pending:${gemCount}:${compensation}`;
+    localStorage.setItem(migrationKey, migrationState);
+  }
+
+  const [state, baselineText, compensationText] = migrationState.split(":");
+  const baselineGems = Number(baselineText);
+  const compensation = Number(compensationText);
+  if (
+    state !== "pending" ||
+    !Number.isSafeInteger(baselineGems) ||
+    !Number.isSafeInteger(compensation) ||
+    compensation <= 0
+  ) {
+    console.warn("Extreme achievement gem compensation state is invalid.");
+    return;
+  }
+
+  if (gemCount === baselineGems) {
+    if (!changeGems(compensation)) {
+      console.warn("Could not apply Extreme achievement gem compensation.");
+      return;
+    }
+  } else if (gemCount !== baselineGems + compensation) {
+    console.warn("Extreme achievement gem balance changed during compensation; leaving it unchanged.");
+    return;
+  }
+
+  localStorage.setItem(migrationKey, "complete");
+  showToast(`Your gem balance has been updated! +${compensation} gems for previously claimed Extreme achievements.`);
+}
+
 function getBoostDisplay(id) {
   if (id.endsWith("Duration")) {
     const value = prestigeBoosts[id] || 0;
@@ -3159,6 +3296,7 @@ function updateMoneyBags(delta) {
 
       coinCount += reward;
       coinsInCurrentRun += reward;
+      playSoundEffect("coin");
       authState.coins = coinCount;
       saveGame();
 
@@ -3217,6 +3355,7 @@ function updateCoins(delta) {
       reward = getCoinValueReward(reward);
       coinCount += reward;
       coinsInCurrentRun += reward;
+      playSoundEffect("coin");
       authState.coins = coinCount;
       saveGame();
 
@@ -3847,11 +3986,14 @@ totalDeathsEl.textContent =
   totalDeaths;
 authState.totalDeaths = totalDeaths;
 
-  flash.classList.add("show");
+playSoundEffect("hit");
+if (!reducedEffects) flash.classList.add("show");
 
+if (!reducedEffects) {
   setTimeout(() => {
     flash.classList.remove("show");
   }, 250);
+}
 
   finalScoreEl.textContent =
     Math.floor(score);
@@ -4528,7 +4670,7 @@ let musicEnabled = localStorage.getItem(MUSIC_STORAGE_KEY) === "true";
 
 let bgMusic = new Audio(soundtracks[currentTrackIndex]);
 bgMusic.loop = true;
-bgMusic.volume = 0.22;
+bgMusic.volume = musicVolume;
 bgMusic.autoplay = false;
 
 function tryPlayBackgroundMusic() {
@@ -4554,7 +4696,7 @@ function enableAutoplayOnInteraction() {
 
 /* RESTORE SAVED MUSIC PREFERENCE */
 window.addEventListener("load", () => {
-  bgMusic.volume = 0.22;
+  updateBackgroundMusicVolume();
   if (musicToggleLabel) {
     musicToggleLabel.textContent = musicEnabled ? "MUSIC: ON" : "MUSIC: OFF";
   }
@@ -4593,7 +4735,7 @@ if (musicToggleBtn) {
   localStorage.setItem(MUSIC_STORAGE_KEY, String(musicEnabled));
 
   if (musicEnabled) {
-    bgMusic.volume = 0.22;
+    updateBackgroundMusicVolume();
     bgMusic.play();
     if (musicToggleLabel) {
       musicToggleLabel.textContent = "MUSIC: ON";
@@ -4612,17 +4754,37 @@ if (musicToggleBtn) {
 const sensitivitySlider = document.getElementById("game-sensitivity");
 
 if (sensitivitySlider) {
-  sensitivitySlider.value = playerSpeed; // sync slider with current speed
+  const savedSensitivity = Number(getSavedSetting("neonChaosSensitivity", playerSpeed));
+  playerSpeed = Number.isFinite(savedSensitivity)
+    ? Math.round(Math.max(1, Math.min(20, savedSensitivity)) * 2) / 2
+    : 8;
+  sensitivitySlider.value = String(playerSpeed);
+  const sensitivityOutput = document.getElementById("game-sensitivity-value");
+  if (sensitivityOutput) sensitivityOutput.value = String(playerSpeed);
   sensitivitySlider.addEventListener("input", (event) => {
     playerSpeed = Number(event.target.value);
+    saveSetting("neonChaosSensitivity", playerSpeed);
+    if (sensitivityOutput) sensitivityOutput.value = String(playerSpeed);
   });
 }
 
 const chaosToggle = document.getElementById("chaos-mode");
 
 if (chaosToggle) {
+  chaosMode = getSavedSetting("neonChaosMode", "false") === "true";
+  chaosToggle.checked = chaosMode;
   chaosToggle.addEventListener("change", () => {
     chaosMode = chaosToggle.checked;
+    saveSetting("neonChaosMode", chaosMode);
+  });
+}
+
+if (reducedEffectsToggle) {
+  reducedEffectsToggle.checked = reducedEffects;
+  reducedEffectsToggle.addEventListener("change", () => {
+    reducedEffects = reducedEffectsToggle.checked;
+    document.body.dataset.reducedEffects = String(reducedEffects);
+    saveSetting("neonChaosReducedEffects", reducedEffects);
   });
 }
 
@@ -5692,6 +5854,8 @@ setInterval(() => {
   void checkPreviousMonthPodiumReward();
 }, 60 * 60 * 1000);
 void checkPreviousMonthPodiumReward();
+
+migrateClaimedExtremeAchievementGems();
 
 /* INIT */
 

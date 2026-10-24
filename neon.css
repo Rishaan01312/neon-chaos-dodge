@@ -1231,6 +1231,25 @@ body {
   gap: 18px;
   margin-top: 18px;
 }
+
+#settings-overlay .reset-card {
+  box-sizing: border-box;
+  width: min(92vw, 820px);
+  max-width: 820px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+#settings-overlay .info-sections {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 700px) {
+  #settings-overlay .info-sections {
+    grid-template-columns: 1fr;
+  }
+}
+
 .info-card.info-landscape {
   display: flex;
   flex-direction: column;
@@ -1378,6 +1397,76 @@ body {
   padding: 16px;
   text-align: left;
   backdrop-filter: blur(4px);
+}
+
+.setting-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 12px;
+  color: rgba(237,247,255,0.78);
+  font-size: 13px;
+}
+
+.setting-control-label {
+  min-width: 0;
+}
+
+.setting-control input[type="range"] {
+  grid-column: 1;
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.setting-control output {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 42px;
+  color: #7ef9ff;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.setting-control select {
+  grid-column: 1 / -1;
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid rgba(0,255,255,0.2);
+  border-radius: 9px;
+  background: rgba(6,10,24,0.88);
+  color: #edf7ff;
+  font: inherit;
+}
+
+.setting-control select:focus-visible,
+.setting-control input:focus-visible,
+#reduced-effects:focus-visible,
+#chaos-mode:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+body[data-graphics-mode="low"] #game-container .obstacle,
+body[data-graphics-mode="low"] #game-container .coin,
+body[data-graphics-mode="low"] #game-container .money-bag,
+body[data-graphics-mode="low"] #game-container .powerup {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+body[data-graphics-mode="low"] #game-container .player-trail-particle,
+body[data-reduced-effects="true"] #game-container .player-trail-particle,
+body[data-reduced-effects="true"] #flash {
+  display: none !important;
+}
+
+body[data-reduced-effects="true"] #game-container .obstacle,
+body[data-reduced-effects="true"] #game-container .coin,
+body[data-reduced-effects="true"] #game-container .money-bag,
+body[data-reduced-effects="true"] #game-container .powerup {
+  animation: none !important;
+  transition: none !important;
 }
 
 .info-block h4 {

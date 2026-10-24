@@ -4,8 +4,29 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "extreme-achievement-gem-migration-2026-10-24",
+      date: "24 October 2026",
+      time: "6:18 pm NZDT",
+      title: "Extreme Achievement Gem Compensation",
+      changes: [
+        "Granted a one-time gem balance update for previously claimed Extreme achievements."
+      ]
+    },
+    {
+      id: "settings-controls-update-2026-10-24",
+      date: "24 October 2026",
+      time: "5:48 pm NZDT",
+      title: "Settings Controls Update",
+      changes: [
+        "Added adjustable sound effects volume, graphics quality, and reduced-effects options.",
+        "Settings now save automatically, including music volume, movement sensitivity, and Chaos Mode.",
+        "Added coin and game-over sounds that briefly lower background music so the effects stay clear."
+      ]
+    },
+    {
       id: "leaderboard-layout-loading-update-2026-10-23",
       date: "23 October 2026",
+      time: "11:44 am NZDT",
       title: "Leaderboard Layout and Loading Update",
       changes: [
         "Expanded the leaderboard into a landscape layout, with monthly and all-time rankings side by side on larger screens.",
@@ -16,6 +37,7 @@
     {
       id: "gems-revival-update-2026-10-17",
       date: "17 October 2026",
+      time: "4:36 pm NZDT",
       title: "Gems and Revival Update",
       changes: [
         "Added gems from daily sets, Extreme achievements, and monthly leaderboard podiums.",
@@ -28,6 +50,7 @@
     {
       id: "mobile-support-update-2026-10-14",
       date: "14 October 2026",
+      time: "5:48 pm NZDT",
       title: "Mobile Support and Pause Restart Update",
       changes: [
         "Added touch drag steering and an on-screen button for equipped abilities.",
@@ -39,6 +62,7 @@
     {
       id: "pause-screen-update-2026-10-08",
       date: "8 October 2026",
+      time: "5:24 pm NZDT",
       title: "Pause Screen Update",
       changes: [
         "Added a stylish PAUSED screen to go with the dimmed background."
@@ -47,6 +71,7 @@
     {
       id: "leaderboard-feedback-update-2026-10-03",
       date: "3 October 2026",
+      time: "5:08 pm NZDT",
       title: "Leaderboard Feedback Update",
       changes: [
         "The leaderboard button now stays visible on the home screen and during gameplay.",
@@ -56,6 +81,7 @@
     {
       id: "void-skin-update-2026-10-02",
       date: "2 October 2026",
+      time: "5:33 pm NZDT",
       title: "Void Skin Ability and Rare Roll Update",
       changes: [
         "Void blasts now clear visible obstacles without affecting coins or power-ups.",
@@ -65,6 +91,7 @@
     {
       id: "trail-shop-update-2026-10-01",
       date: "1 October 2026",
+      time: "5:25 pm NZDT",
       title: "Trail Shop and Skin Shop Update",
       changes: [
         "Added the Trail Shop with Spark, Comet, and Orbit trails.",
@@ -75,6 +102,7 @@
     {
       id: "gameplay-update-2026-09",
       date: "30 September 2026",
+      time: "6:21 pm NZDT",
       title: "Update Log and Leaderboard Update",
       changes: [
         "Added a global leaderboard with player names and migration of existing best scores.",
@@ -116,7 +144,9 @@
 
       const date = document.createElement("p");
       date.className = "update-log-date";
-      date.textContent = update.date;
+      date.textContent = update.time
+        ? `${update.date} · ${update.time}`
+        : update.date;
 
       const title = document.createElement("h4");
       title.textContent = update.title;
