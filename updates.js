@@ -4,6 +4,19 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "daily-streak-suggestions-update-2026-10-29",
+      date: "29 October 2026",
+      time: "8:45 pm NZDT",
+      title: "Daily Rewards, Suggestion Box, and Monthly Leaderboard Update",
+      changes: [
+        "Added a daily streak popup with coin and gem rewards for Days 1-4.",
+        "Claim a randomized Day 5+ chest each consecutive day for 150-300 coins and 10-50 gems; missing a calendar day resets the streak to Day 1.",
+        "Increased monthly gem race prizes to 100 gems for first, 55 for second, and 30 for third.",
+        "Added a form for sending game ideas, improvements, and bug reports.",
+        "Suggestions are collected in a Google Sheet without sharing a display name."
+      ]
+    },
+    {
       id: "extreme-achievement-gem-migration-2026-10-24",
       date: "24 October 2026",
       time: "6:18 pm NZDT",

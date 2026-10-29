@@ -3498,9 +3498,9 @@
           <p class="lb-monthly-copy">Submit a score this month to compete. Your highest monthly score sets your podium position; your all-time best stays saved below.</p>
         </div>
         <div class="lb-prize-grid" aria-label="Monthly gem podium rewards">
-          <div class="lb-prize lb-prize--first"><span class="lb-prize-place">1ST PLACE</span><span class="lb-prize-gems">💎 50 GEMS</span></div>
-          <div class="lb-prize lb-prize--second"><span class="lb-prize-place">2ND PLACE</span><span class="lb-prize-gems">💎 30 GEMS</span></div>
-          <div class="lb-prize lb-prize--third"><span class="lb-prize-place">3RD PLACE</span><span class="lb-prize-gems">💎 15 GEMS</span></div>
+          <div class="lb-prize lb-prize--first"><span class="lb-prize-place">1ST PLACE</span><span class="lb-prize-gems">💎 100 GEMS</span></div>
+          <div class="lb-prize lb-prize--second"><span class="lb-prize-place">2ND PLACE</span><span class="lb-prize-gems">💎 55 GEMS</span></div>
+          <div class="lb-prize lb-prize--third"><span class="lb-prize-place">3RD PLACE</span><span class="lb-prize-gems">💎 30 GEMS</span></div>
         </div>
         <div class="lb-monthly-footer">
           <span>Monthly scores only • all-time records stay saved</span>
@@ -3709,8 +3709,9 @@
       if (options.monthly && index < 3) {
         const reward = document.createElement("span");
         reward.className = "lb-reward";
-        reward.textContent = `💎 ${[50, 30, 15][index]}`;
-        reward.setAttribute("aria-label", `${[50, 30, 15][index]} gems at month end`);
+        const gemPrize = [100, 55, 30][index];
+        reward.textContent = `💎 ${gemPrize}`;
+        reward.setAttribute("aria-label", `${gemPrize} gems at month end`);
         row.appendChild(reward);
       }
       list.appendChild(row);
@@ -3857,7 +3858,7 @@
     const rank = monthlyRanking.findIndex(
       entry => entry.name.toLowerCase() === playerName.toLowerCase()
     ) + 1;
-    const gems = [0, 50, 30, 15][rank] || 0;
+    const gems = [0, 100, 55, 30][rank] || 0;
     return { month: monthKey, rank: rank || null, gems };
   }
 

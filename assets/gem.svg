@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img">
+  <defs>
+    <linearGradient id="gemFace" x1=".15" y1=".05" x2=".85" y2="1">
+      <stop stop-color="#d8ffff"/>
+      <stop offset=".36" stop-color="#61f4ff"/>
+      <stop offset="1" stop-color="#138bd8"/>
+    </linearGradient>
+    <linearGradient id="gemSide" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#51eaff"/>
+      <stop offset="1" stop-color="#704bff"/>
+    </linearGradient>
+  </defs>
+  <path d="M14 5h20l10 12-20 26L4 17z" fill="url(#gemSide)" stroke="#b6fbff" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M14 5 4 17h11l9-12z" fill="#d7ffff" opacity=".92"/>
+  <path d="M34 5 24 17h20z" fill="#72eaff"/>
+  <path d="M15 17 24 43l9-26z" fill="url(#gemFace)" opacity=".95"/>
+  <path d="M15 17h18l-9-12z" fill="#fff" opacity=".42"/>
+</svg>

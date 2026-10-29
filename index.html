@@ -651,7 +651,7 @@
         <ul>
           <li>Complete the daily set to claim <strong>3 gems</strong>. Spend 5 gems to revive within 5 seconds of a run ending; each revive in that run costs 5 more gems.</li>
           <li>Achievements track milestones. Difficult achievements marked <strong>EXTREME</strong> also award gems.</li>
-          <li>Your best score can be submitted to the global leaderboard. The top three monthly scores earn 50, 30, and 15 gems.</li>
+          <li>Your best score can be submitted to the global leaderboard. The top three monthly scores earn 100, 55, and 30 gems.</li>
           <li>Check the Update Log for recent additions and changes.</li>
         </ul>
       </section>
@@ -774,6 +774,7 @@
     <div id="home-bottom-left-buttons">
       <button id="settings-btn" class="home-small-btn" title="Settings">⚙️</button>
       <button id="home-help-btn" class="home-small-btn" title="Help">❓</button>
+      <button id="suggestion-open-btn" class="home-small-btn suggestion-open-btn" title="Suggest an idea" aria-label="Suggest an idea">💡</button>
       <button id="update-log-btn" class="home-small-btn update-log-btn" title="Update log" aria-label="Update log">
         📰
         <span id="update-log-badge" class="update-log-badge" aria-label="New update">NEW</span>
@@ -796,6 +797,10 @@
 
         <button id="daily-claim-btn" class="daily-claim-btn" disabled>
           Claim +3 Gems
+        </button>
+
+        <button id="daily-streak-open-btn" class="daily-streak-open-btn" type="button">
+          Daily Streak
         </button>
 
         <div id="daily-countdown" class="daily-countdown" style="display:none;"></div>
@@ -882,6 +887,59 @@
   <audio id="bg-music" loop>
     <source src="assets/music/All I Need.mp3" type="audio/mpeg">
   </audio>
+
+  <div id="daily-streak-overlay" class="reset-overlay daily-streak-overlay" aria-hidden="true">
+    <div class="reset-card info-card daily-streak-card" role="dialog" aria-modal="true" aria-labelledby="daily-streak-title">
+      <div class="daily-streak-header">
+        <div>
+          <p class="daily-streak-kicker">SHOW UP. STACK REWARDS.</p>
+          <h3 id="daily-streak-title">DAILY STREAK</h3>
+        </div>
+        <button id="daily-streak-close-btn" class="daily-streak-close-btn" type="button" aria-label="Close daily streak">✕</button>
+      </div>
+      <p id="daily-streak-subtitle" class="daily-streak-subtitle"></p>
+      <div id="daily-streak-track" class="daily-streak-track"></div>
+      <div class="daily-streak-chest-wrap">
+        <div id="daily-streak-chest" class="daily-streak-chest" aria-hidden="true">🎁</div>
+        <p id="daily-streak-result" class="daily-streak-result" role="status" aria-live="polite"></p>
+      </div>
+      <button id="daily-streak-claim-btn" class="daily-streak-claim-btn" type="button"></button>
+      <p class="daily-streak-note">Miss a calendar day and your streak starts again at Day 1.</p>
+    </div>
+  </div>
+
+  <div id="suggestion-overlay" class="reset-overlay suggestion-overlay" aria-hidden="true">
+    <div class="reset-card info-card suggestion-card" role="dialog" aria-modal="true" aria-labelledby="suggestion-title">
+      <div class="suggestion-header">
+        <div>
+          <p class="suggestion-kicker">HELP SHAPE THE CHAOS</p>
+          <h3 id="suggestion-title">SUGGEST AN IDEA</h3>
+        </div>
+        <button id="suggestion-close-btn" class="suggestion-close-btn" type="button" aria-label="Close suggestion form">✕</button>
+      </div>
+      <p class="suggestion-intro">Got an idea to make the game more fun? Send it in!</p>
+      <form id="suggestion-form" class="suggestion-form">
+        <label class="suggestion-field">
+          <span>Category</span>
+          <select id="suggestion-category" name="category" required>
+            <option value="idea">New idea</option>
+            <option value="improvement">Improve something</option>
+            <option value="bug">Report a bug</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <label class="suggestion-field">
+          <span>Your suggestion <span id="suggestion-character-count">0 / 600</span></span>
+          <textarea id="suggestion-message" name="message" maxlength="600" rows="5" placeholder="Tell me what you think..." required></textarea>
+        </label>
+        <p class="suggestion-privacy">Suggestions are sent without your display name. A random installation ID is included only to help limit spam. Please don’t include personal or sensitive information.</p>
+        <p id="suggestion-status" class="suggestion-status" role="status" aria-live="polite"></p>
+        <div class="suggestion-actions">
+          <button id="suggestion-submit-btn" class="suggestion-submit-btn" type="submit">Send Suggestion</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- NAME POPUP -->
   <div id="name-overlay" class="reset-overlay">
@@ -1174,6 +1232,7 @@
   <div id="neon-toast" class="neon-toast"></div>
 
   <script src="leaderboard.js"></script>
+  <script src="suggestions.js"></script>
   <script src="updates.js"></script>
   <script src="neon.js"></script>
 

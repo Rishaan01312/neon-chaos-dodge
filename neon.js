@@ -5595,6 +5595,278 @@ let dailyBaseRolls = 0;
 let dailyBaseDeaths = 0;
 let dailyBasePlaySeconds = 0;
 
+const DAILY_STREAK_CLAIM_KEY = "neonChaosDailyStreakClaim";
+const DAILY_STREAK_VIEWED_KEY = "neonChaosDailyStreakViewedDate";
+const DAILY_STREAK_REWARDS = [
+  { coins: 35, gems: 0 },
+  { coins: 60, gems: 0 },
+  { coins: 0, gems: 6 },
+  { coins: 100, gems: 0 }
+];
+let dailyStreakClaim = null;
+let dailyStreakDay = 1;
+
+function readDailyStreakClaim() {
+  const raw = localStorage.getItem(DAILY_STREAK_CLAIM_KEY);
+  if (!raw) return null;
+
+  let claim;
+  try {
+    claim = JSON.parse(raw);
+  } catch (error) {
+    console.warn("Daily streak claim data could not be read:", error);
+    return null;
+  }
+
+  if (
+    !claim ||
+    !/^\d{4}-\d{1,2}-\d{1,2}$/.test(claim.date) ||
+    !Number.isInteger(claim.day) ||
+    claim.day < 1 ||
+    claim.day > 5 ||
+    !Number.isSafeInteger(claim.coins) ||
+    claim.coins < 0 ||
+    !Number.isSafeInteger(claim.gems) ||
+    claim.gems < 0 ||
+    !Number.isSafeInteger(claim.coinBefore) ||
+    claim.coinBefore < 0 ||
+    !Number.isSafeInteger(claim.gemBefore) ||
+    claim.gemBefore < 0 ||
+    !Number.isSafeInteger(claim.coinTarget) ||
+    !Number.isSafeInteger(claim.gemTarget) ||
+    claim.coinTarget !== claim.coinBefore + claim.coins ||
+    claim.gemTarget !== claim.gemBefore + claim.gems ||
+    !["pending", "claimed"].includes(claim.status)
+  ) {
+    console.warn("Daily streak claim data is invalid.");
+    return null;
+  }
+
+  const expectedReward = claim.day >= 5
+    ? claim.coins >= 150 && claim.coins <= 300 && claim.gems >= 10 && claim.gems <= 50
+    : claim.coins === DAILY_STREAK_REWARDS[claim.day - 1].coins &&
+      claim.gems === DAILY_STREAK_REWARDS[claim.day - 1].gems;
+  if (!expectedReward) {
+    console.warn("Daily streak claim reward is outside the configured range.");
+    return null;
+  }
+
+  return claim;
+}
+
+function getCalendarDayDifference(fromDate, toDate) {
+  const fromParts = fromDate.split("-").map(Number);
+  const toParts = toDate.split("-").map(Number);
+  const fromUtc = Date.UTC(fromParts[0], fromParts[1] - 1, fromParts[2]);
+  const toUtc = Date.UTC(toParts[0], toParts[1] - 1, toParts[2]);
+  return Math.round((toUtc - fromUtc) / 86400000);
+}
+
+function getDailyStreakDayForToday() {
+  if (!dailyStreakClaim) return 1;
+  const difference = getCalendarDayDifference(dailyStreakClaim.date, getTodayDateString());
+  if (difference === 0) return dailyStreakClaim.day;
+  if (difference === 1) return Math.min(dailyStreakClaim.day + 1, 5);
+  return 1;
+}
+
+function finishDailyStreakClaim(claim) {
+  if (claim.status !== "pending") return;
+
+  coinCount = claim.coinTarget;
+  gemCount = claim.gemTarget;
+  authState.coins = coinCount;
+  authState.gems = gemCount;
+  lastCoinCount = coinCount;
+  localStorage.setItem("neonChaosCoins", String(coinCount));
+  localStorage.setItem("neonChaosGems", String(gemCount));
+  coinCountEl.textContent = coinCount;
+  updateHomeStats();
+  saveGame();
+
+  claim.status = "claimed";
+  localStorage.setItem(DAILY_STREAK_CLAIM_KEY, JSON.stringify(claim));
+  dailyStreakClaim = claim;
+}
+
+function renderDailyStreak() {
+  const track = document.getElementById("daily-streak-track");
+  const subtitle = document.getElementById("daily-streak-subtitle");
+  const chest = document.getElementById("daily-streak-chest");
+  const result = document.getElementById("daily-streak-result");
+  const claimButton = document.getElementById("daily-streak-claim-btn");
+  if (!track || !subtitle || !chest || !result || !claimButton) return;
+
+  const today = getTodayDateString();
+  const todaysClaim = dailyStreakClaim?.date === today ? dailyStreakClaim : null;
+  const day = todaysClaim ? todaysClaim.day : dailyStreakDay;
+  const hasClaimed = todaysClaim?.status === "claimed";
+  const isChestDay = day >= 5;
+  const chestWrap = document.querySelector(".daily-streak-chest-wrap");
+  const stages = [
+    { label: "DAY 1", amount: "35", currency: "COINS", icon: "coin" },
+    { label: "DAY 2", amount: "60", currency: "COINS", icon: "coin" },
+    { label: "DAY 3", amount: "6", currency: "GEMS", icon: "gem" },
+    { label: "DAY 4", amount: "100", currency: "COINS", icon: "coin" },
+    { label: "DAY 5+", amount: "MYSTERY", currency: "CHEST", icon: "chest" }
+  ];
+
+  track.innerHTML = stages.map((stage, index) => {
+    const stageDay = index + 1;
+    const isComplete = stageDay < day || (stageDay === day && hasClaimed);
+    const isCurrent = stageDay === day && !hasClaimed;
+    const stateClass = isComplete ? " is-complete" : isCurrent ? " is-current" : "";
+    const rewardArt = stage.icon === "coin"
+      ? '<img class="daily-streak-currency-icon" src="assets/coin.svg" alt="">'
+      : stage.icon === "gem"
+        ? '<img class="daily-streak-currency-icon" src="assets/gem.svg" alt="">'
+        : '<span class="daily-streak-chest-art" aria-hidden="true">🎁</span>';
+    const status = isComplete ? "✓" : isCurrent ? "TODAY" : "";
+    return `<div class="daily-streak-stage${stateClass}">
+      <div class="daily-streak-stage-heading">
+        <span class="daily-streak-stage-day">${stage.label}</span>
+        <span class="daily-streak-stage-status">${status}</span>
+      </div>
+      <span class="daily-streak-stage-art">${rewardArt}</span>
+      <span class="daily-streak-stage-reward">
+        <strong>${stage.amount}</strong>
+        <span>${stage.currency}</span>
+      </span>
+    </div>`;
+  }).join("");
+
+  if (chestWrap) chestWrap.hidden = !isChestDay;
+  subtitle.textContent = hasClaimed
+    ? `Day ${day} claimed! Keep playing tomorrow to continue your streak.`
+    : `You're on Day ${day}. Claim today's reward to keep your streak alive.`;
+  chest.classList.toggle("is-open", Boolean(hasClaimed && isChestDay));
+  result.innerHTML = hasClaimed
+    ? `Today's reward: +${todaysClaim.coins} <img class="daily-streak-result-icon" src="assets/coin.svg" alt="coins"> and +${todaysClaim.gems} <img class="daily-streak-result-icon" src="assets/gem.svg" alt="gems">`
+    : "";
+  claimButton.disabled = Boolean(hasClaimed);
+  claimButton.textContent = hasClaimed
+    ? "Reward Claimed"
+    : isChestDay
+      ? "Open Day 5+ Chest"
+      : `Claim Day ${day} Reward`;
+}
+
+function openDailyStreak() {
+  const overlay = document.getElementById("daily-streak-overlay");
+  if (!overlay) return;
+  renderDailyStreak();
+  overlay.classList.add("show");
+  overlay.setAttribute("aria-hidden", "false");
+}
+
+function closeDailyStreak() {
+  const overlay = document.getElementById("daily-streak-overlay");
+  if (!overlay) return;
+  overlay.classList.remove("show");
+  overlay.setAttribute("aria-hidden", "true");
+}
+
+function formatDailyStreakReward(claim) {
+  const rewards = [];
+  if (claim.coins > 0) rewards.push(`+${claim.coins} coins`);
+  if (claim.gems > 0) rewards.push(`+${claim.gems} gems`);
+  return rewards.join(" and ");
+}
+
+function claimDailyStreakReward() {
+  const today = getTodayDateString();
+  if (dailyStreakClaim?.date === today) return;
+
+  const day = dailyStreakDay;
+  const reward = day >= 5
+    ? {
+        coins: Math.floor(Math.random() * 151) + 150,
+        gems: Math.floor(Math.random() * 41) + 10
+      }
+    : DAILY_STREAK_REWARDS[day - 1];
+  const claim = {
+    date: today,
+    day,
+    coins: reward.coins,
+    gems: reward.gems,
+    coinBefore: coinCount,
+    gemBefore: gemCount,
+    coinTarget: coinCount + reward.coins,
+    gemTarget: gemCount + reward.gems,
+    status: "pending"
+  };
+
+  if (!Number.isSafeInteger(claim.coinTarget) || !Number.isSafeInteger(claim.gemTarget)) {
+    console.error("Daily streak reward could not be claimed because the currency balance is too large.");
+    return;
+  }
+
+  localStorage.setItem(DAILY_STREAK_CLAIM_KEY, JSON.stringify(claim));
+  dailyStreakClaim = claim;
+
+  if (day >= 5) {
+    const chest = document.getElementById("daily-streak-chest");
+    const result = document.getElementById("daily-streak-result");
+    const claimButton = document.getElementById("daily-streak-claim-btn");
+    if (!chest || !result || !claimButton) return;
+
+    chest.classList.remove("is-open");
+    chest.classList.add("is-opening");
+    result.textContent = "The chest is opening...";
+    claimButton.disabled = true;
+    claimButton.textContent = "Opening Chest...";
+    window.setTimeout(() => {
+      finishDailyStreakClaim(claim);
+      chest.classList.remove("is-opening");
+      renderDailyStreak();
+      showToast(`🎁 Chest opened! ${formatDailyStreakReward(claim)}`);
+    }, 1300);
+    return;
+  }
+
+  finishDailyStreakClaim(claim);
+  renderDailyStreak();
+  showToast(`Daily streak: ${formatDailyStreakReward(claim)}`);
+}
+
+function initDailyStreak() {
+  dailyStreakClaim = readDailyStreakClaim();
+  const recoveredPendingClaim = dailyStreakClaim?.status === "pending";
+  if (dailyStreakClaim?.status === "pending") {
+    finishDailyStreakClaim(dailyStreakClaim);
+  }
+  dailyStreakDay = getDailyStreakDayForToday();
+  renderDailyStreak();
+  window.setTimeout(() => openDailyStreakOnFirstVisit(recoveredPendingClaim), 350);
+}
+
+function openDailyStreakOnFirstVisit(force = false) {
+  const today = getTodayDateString();
+  if (!force && localStorage.getItem(DAILY_STREAK_VIEWED_KEY) === today) return;
+
+  const anotherOverlayIsOpen = Array.from(document.querySelectorAll(".reset-overlay.show"))
+    .some(overlay => overlay.id !== "daily-streak-overlay");
+  if (anotherOverlayIsOpen) {
+    window.setTimeout(() => openDailyStreakOnFirstVisit(force), 500);
+    return;
+  }
+
+  localStorage.setItem(DAILY_STREAK_VIEWED_KEY, today);
+  openDailyStreak();
+}
+
+document.getElementById("daily-streak-open-btn")?.addEventListener("click", openDailyStreak);
+document.getElementById("daily-streak-close-btn")?.addEventListener("click", closeDailyStreak);
+document.getElementById("daily-streak-claim-btn")?.addEventListener("click", claimDailyStreakReward);
+document.getElementById("daily-streak-overlay")?.addEventListener("click", event => {
+  if (event.target === event.currentTarget) closeDailyStreak();
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && document.getElementById("daily-streak-overlay")?.classList.contains("show")) {
+    closeDailyStreak();
+  }
+});
+
 function refreshDailyChallengesForOwnedSkins() {
   if (
     remainingRareSkins().length > 0 ||
@@ -5784,6 +6056,9 @@ setInterval(() => {
     // Day rolled over — regenerate
     initDailyChallenges();
     renderDailyChallenges();
+    dailyStreakDay = getDailyStreakDayForToday();
+    renderDailyStreak();
+    openDailyStreakOnFirstVisit();
   } else if (dailyClaimed) {
     const countdown = document.getElementById("daily-countdown");
     if (countdown) countdown.textContent = `New challenges in ${getMidnightCountdown()}`;
@@ -5798,6 +6073,7 @@ setInterval(() => {
 // Init on load
 initDailyChallenges();
 renderDailyChallenges();
+initDailyStreak();
 
 let monthlyPodiumCheckRunning = false;
 
