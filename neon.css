@@ -5498,7 +5498,7 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
   overflow-wrap: anywhere;
 }
 
-#moderation-overlay[data-status="blocked"] .moderation-card {
+#moderation-overlay[data-status="ban"] .moderation-card {
   border-color: rgba(255, 82, 112, 0.65);
   box-shadow: 0 0 34px rgba(255, 50, 90, 0.22);
 }

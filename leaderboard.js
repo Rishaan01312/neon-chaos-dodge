@@ -2781,27 +2781,33 @@
   function setModerationStatus(status, message) {
     const overlay = document.getElementById("moderation-overlay");
     const title = document.getElementById("moderation-title");
+    const subtitle = document.getElementById("moderation-subtitle");
     const messageElement = document.getElementById("moderation-message");
     const acknowledgeButton = document.getElementById("moderation-acknowledge-btn");
-    const nextStatus = status === "warning" || status === "blocked" ? status : "none";
+    const nextStatus = status === "warning"
+      ? "warning"
+      : status === "ban" || status === "blocked"
+        ? "ban"
+        : "none";
     const nextMessage = typeof message === "string" ? message.trim() : "";
     const nextSignature = `${nextStatus}\n${nextMessage}`;
-    const wasBlocked = moderationStatus === "blocked";
+    const wasBlocked = moderationStatus === "ban";
     const shouldFocus = moderationSignature !== nextSignature;
     moderationStatus = nextStatus;
     moderationSignature = nextSignature;
 
-    window.neonChaosModerationBlocked = nextStatus === "blocked";
-    if (wasBlocked !== (nextStatus === "blocked")) {
+    window.neonChaosModerationBlocked = nextStatus === "ban";
+    if (wasBlocked !== (nextStatus === "ban")) {
       window.dispatchEvent(new CustomEvent("neonChaosModerationStateChange", {
-        detail: { blocked: nextStatus === "blocked" }
+        detail: { blocked: nextStatus === "ban" }
       }));
     }
 
-    if (!overlay || !title || !messageElement || !acknowledgeButton) return;
+    if (!overlay || !title || !subtitle || !messageElement || !acknowledgeButton) return;
     overlay.dataset.status = nextStatus;
 
     if (nextStatus === "none") {
+      subtitle.hidden = true;
       overlay.classList.remove("show");
       overlay.setAttribute("aria-hidden", "true");
       return;
@@ -2813,13 +2819,16 @@
       return;
     }
 
-    title.textContent = nextStatus === "blocked" ? "GAME ACCESS BLOCKED" : "MESSAGE FROM THE GAME";
+    const isBan = nextStatus === "ban";
+    title.textContent = isBan ? "PLAYER BANNED" : "MESSAGE FROM THE ADMIN";
+    subtitle.textContent = isBan ? "Game access blocked." : "";
+    subtitle.hidden = !isBan;
     messageElement.textContent = nextMessage || "Please follow the game rules.";
-    acknowledgeButton.hidden = nextStatus === "blocked";
+    acknowledgeButton.hidden = isBan;
     overlay.classList.add("show");
     overlay.setAttribute("aria-hidden", "false");
     if (shouldFocus) {
-      (nextStatus === "blocked" ? title : acknowledgeButton).focus();
+      (isBan ? title : acknowledgeButton).focus();
     }
   }
 

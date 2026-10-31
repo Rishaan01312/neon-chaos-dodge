@@ -4,6 +4,16 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "player-moderation-update-2026-10-31",
+      date: "31 October 2026",
+      time: "9:11 pm NZDT",
+      title: "Player Moderation Update",
+      changes: [
+        "Added live player warnings with custom messages and the ability to ban players from the game.",
+        "Moderation is managed from the leaderboard spreadsheet and updates while players are online."
+      ]
+    },
+    {
       id: "daily-streak-suggestions-update-2026-10-29",
       date: "29 October 2026",
       time: "8:45 pm NZDT",
