@@ -5483,3 +5483,22 @@ body.neonGold  .theme-option.theme-active { border-color: #ffdd00; box-shadow: 0
   font-weight: 700;
   text-shadow: 0 0 8px rgba(0, 255, 255, 0.55);
 }
+
+.moderation-overlay {
+  z-index: 30000;
+}
+
+.moderation-card {
+  width: min(90%, 520px);
+}
+
+#moderation-message {
+  margin: 18px 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+#moderation-overlay[data-status="blocked"] .moderation-card {
+  border-color: rgba(255, 82, 112, 0.65);
+  box-shadow: 0 0 34px rgba(255, 50, 90, 0.22);
+}

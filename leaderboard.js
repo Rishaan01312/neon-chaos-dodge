@@ -9,7 +9,13 @@
   const LEGACY_BEST_MIGRATED_KEY = "leaderboardLegacyBestMigrated";
   const MAX_NAME_LENGTH = 16;
   const MAX_SCORE = 1000000;
+  const MODERATION_POLL_INTERVAL_MS = 15000;
   let cachedPlayerId = "";
+  let moderationStatus = "none";
+  let moderationSignature = "";
+  let dismissedWarningSignature = "";
+  let moderationRequestInFlight = false;
+  let moderationRequestErrorReported = false;
   const PROFANITY_LIST = [
   "2 girls 1 cup",
   "2g1c",
@@ -2772,6 +2778,83 @@
     return cachedPlayerId;
   }
 
+  function setModerationStatus(status, message) {
+    const overlay = document.getElementById("moderation-overlay");
+    const title = document.getElementById("moderation-title");
+    const messageElement = document.getElementById("moderation-message");
+    const acknowledgeButton = document.getElementById("moderation-acknowledge-btn");
+    const nextStatus = status === "warning" || status === "blocked" ? status : "none";
+    const nextMessage = typeof message === "string" ? message.trim() : "";
+    const nextSignature = `${nextStatus}\n${nextMessage}`;
+    const wasBlocked = moderationStatus === "blocked";
+    const shouldFocus = moderationSignature !== nextSignature;
+    moderationStatus = nextStatus;
+    moderationSignature = nextSignature;
+
+    window.neonChaosModerationBlocked = nextStatus === "blocked";
+    if (wasBlocked !== (nextStatus === "blocked")) {
+      window.dispatchEvent(new CustomEvent("neonChaosModerationStateChange", {
+        detail: { blocked: nextStatus === "blocked" }
+      }));
+    }
+
+    if (!overlay || !title || !messageElement || !acknowledgeButton) return;
+    overlay.dataset.status = nextStatus;
+
+    if (nextStatus === "none") {
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden", "true");
+      return;
+    }
+
+    if (nextStatus === "warning" && dismissedWarningSignature === nextSignature) {
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden", "true");
+      return;
+    }
+
+    title.textContent = nextStatus === "blocked" ? "GAME ACCESS BLOCKED" : "MESSAGE FROM THE GAME";
+    messageElement.textContent = nextMessage || "Please follow the game rules.";
+    acknowledgeButton.hidden = nextStatus === "blocked";
+    overlay.classList.add("show");
+    overlay.setAttribute("aria-hidden", "false");
+    if (shouldFocus) {
+      (nextStatus === "blocked" ? title : acknowledgeButton).focus();
+    }
+  }
+
+  async function checkModerationStatus() {
+    if (moderationRequestInFlight) return;
+    moderationRequestInFlight = true;
+
+    try {
+      const url = new URL(API_URL);
+      url.searchParams.set("action", "moderation");
+      url.searchParams.set("playerId", getPlayerId());
+      url.searchParams.set("_", String(Date.now()));
+
+      const response = await fetch(url.toString(), { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`Moderation check failed: ${response.status}`);
+      }
+
+      const payload = await response.json();
+      if (!payload || payload.ok !== true || typeof payload.status !== "string") {
+        throw new Error("Moderation response was invalid.");
+      }
+
+      setModerationStatus(payload.status, payload.message);
+      moderationRequestErrorReported = false;
+    } catch (error) {
+      if (!moderationRequestErrorReported) {
+        console.warn("Live moderation check failed:", error);
+        moderationRequestErrorReported = true;
+      }
+    } finally {
+      moderationRequestInFlight = false;
+    }
+  }
+
   function sanitizeName(rawName) {
     const trimmed = String(rawName == null ? "" : rawName).trim().replace(/\s+/g, " ");
     return trimmed.slice(0, MAX_NAME_LENGTH);
@@ -2835,6 +2918,10 @@
 
       if (!response.ok) {
         throw new Error(`Legacy best score upload failed: ${response.status}`);
+      }
+      const result = await response.text();
+      if (result !== "OK") {
+        throw new Error(result || "Legacy best score upload was rejected.");
       }
 
       safeLocalStorageSet(LEGACY_BEST_MIGRATED_KEY, "1");
@@ -3903,6 +3990,10 @@
       if (!response.ok) {
         throw new Error(`Score upload failed: ${response.status}`);
       }
+      const result = await response.text();
+      if (result !== "OK") {
+        throw new Error(result || "Score upload was rejected.");
+      }
 
       lastScoreSubmissionTs = now;
       await loadLeaderboard();
@@ -3994,6 +4085,15 @@
     ensureNameOverlay();
     ensureLeaderboardOverlay();
     attachEvents();
+    document.getElementById("moderation-acknowledge-btn")?.addEventListener("click", () => {
+      if (moderationStatus !== "warning") return;
+      dismissedWarningSignature = moderationSignature;
+      const overlay = document.getElementById("moderation-overlay");
+      overlay && overlay.classList.remove("show");
+      overlay && overlay.setAttribute("aria-hidden", "true");
+    });
+    void checkModerationStatus();
+    window.setInterval(checkModerationStatus, MODERATION_POLL_INTERVAL_MS);
 
     const storedName = getPlayerName();
     if (!storedName) {

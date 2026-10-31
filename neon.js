@@ -613,6 +613,13 @@ let paused = false;
 let pauseStartTime = 0;
 let chaosMode = false;
 
+window.addEventListener("neonChaosModerationStateChange", (event) => {
+  if (event.detail && event.detail.blocked) {
+    gameRunning = false;
+    paused = false;
+  }
+});
+
 let t1 = 0;
 let gate = false;
 let gateTimer;
@@ -4081,6 +4088,7 @@ function finishGameOver() {
 
 function reviveRun() {
   if (
+    window.neonChaosModerationBlocked === true ||
     !gameOverScreen.classList.contains("show") ||
     gameOverScreen.classList.contains("final-state") ||
     Date.now() >= reviveDeadline ||
@@ -4112,6 +4120,7 @@ skipReviveBtn && skipReviveBtn.addEventListener("click", finishGameOver);
 /* RESTART */
 
 function restartChaos() {
+  if (window.neonChaosModerationBlocked === true) return;
   if (restartBtn) restartBtn.blur();
   if (pauseRestartBtn) pauseRestartBtn.blur();
   clearInterval(reviveCountdownTimer);
@@ -4819,6 +4828,7 @@ fullscreenBtn.addEventListener(
 startGameBtn.addEventListener(
   "click",
   async () => {
+    if (window.neonChaosModerationBlocked === true) return;
 
     try {
 
