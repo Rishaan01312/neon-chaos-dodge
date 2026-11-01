@@ -14,6 +14,7 @@
   let moderationStatus = "none";
   let moderationSignature = "";
   let dismissedWarningSignature = "";
+  const seenWarningSignatures = new Set();
   let moderationRequestInFlight = false;
   let moderationRequestErrorReported = false;
   const PROFANITY_LIST = [
@@ -2778,7 +2779,28 @@
     return cachedPlayerId;
   }
 
-  function setModerationStatus(status, message) {
+  function recordModerationEvent(event, message) {
+    return fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "moderationEvent",
+        event,
+        status: "warning",
+        playerId: getPlayerId(),
+        message
+      })
+    }).then(async response => {
+      if (!response.ok) {
+        throw new Error(`Moderation event request failed: ${response.status}`);
+      }
+      const result = await response.text();
+      if (result !== "OK") {
+        throw new Error(result || "Moderation event was rejected.");
+      }
+    });
+  }
+
+  function setModerationStatus(status, message, acknowledged = false) {
     const overlay = document.getElementById("moderation-overlay");
     const title = document.getElementById("moderation-title");
     const subtitle = document.getElementById("moderation-subtitle");
@@ -2813,6 +2835,10 @@
       return;
     }
 
+    if (nextStatus === "warning" && acknowledged) {
+      dismissedWarningSignature = nextSignature;
+    }
+
     if (nextStatus === "warning" && dismissedWarningSignature === nextSignature) {
       overlay.classList.remove("show");
       overlay.setAttribute("aria-hidden", "true");
@@ -2829,6 +2855,12 @@
     overlay.setAttribute("aria-hidden", "false");
     if (shouldFocus) {
       (isBan ? title : acknowledgeButton).focus();
+    }
+    if (nextStatus === "warning" && !seenWarningSignatures.has(nextSignature)) {
+      seenWarningSignatures.add(nextSignature);
+      void recordModerationEvent("shown", nextMessage).catch(error => {
+        console.warn("Could not record that the warning was shown:", error);
+      });
     }
   }
 
@@ -2852,7 +2884,7 @@
         throw new Error("Moderation response was invalid.");
       }
 
-      setModerationStatus(payload.status, payload.message);
+      setModerationStatus(payload.status, payload.message, payload.acknowledged === true);
       moderationRequestErrorReported = false;
     } catch (error) {
       if (!moderationRequestErrorReported) {
@@ -4096,6 +4128,10 @@
     attachEvents();
     document.getElementById("moderation-acknowledge-btn")?.addEventListener("click", () => {
       if (moderationStatus !== "warning") return;
+      void recordModerationEvent("acknowledged", moderationSignature.split("\n").slice(1).join("\n"))
+        .catch(error => {
+          console.warn("Could not record warning acknowledgement:", error);
+        });
       dismissedWarningSignature = moderationSignature;
       const overlay = document.getElementById("moderation-overlay");
       overlay && overlay.classList.remove("show");
