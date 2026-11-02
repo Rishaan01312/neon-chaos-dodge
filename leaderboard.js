@@ -2,6 +2,8 @@
   "use strict";
 
   const API_URL = window.LEADERBOARD_API_URL || "https://script.google.com/macros/s/AKfycbwAHiofvrs4NnWyLTIPwId24PqH-A4Vffq394gC1u2Kqm0sur0oMkNSaU4dfR6C7dDGZg/exec";
+  // Set window.MODERATION_APPEAL_URL before this script to show the appeal link.
+  const MODERATION_APPEAL_URL = window.MODERATION_APPEAL_URL || "";
 
   const STORAGE_KEY = "playerName";
   const PLAYER_ID_KEY = "neonChaosPlayerId";
@@ -2742,8 +2744,63 @@
   "zipperheads",
   "zoophile",
   "zoophilia",
+  "cabron",
+  "cabrón",
+  "carajo",
+  "coño",
+  "hijo de puta",
+  "joder",
+  "mierda",
+  "pendejo",
+  "puta",
+  "puto",
+  "connard",
+  "enculé",
+  "encule",
+  "merde",
+  "putain",
+  "salope",
+  "scheiße",
+  "scheisse",
+  "arschloch",
+  "fick",
+  "hurensohn",
+  "merda",
+  "porra",
+  "caralho",
+  "filho da puta",
+  "foda",
+  "cazzo",
+  "stronzo",
+  "puttana",
+  "vaffanculo",
   "🖕"
   ];
+  const PROFANITY_LOOKALIKE_MAP = Object.freeze({
+    "а": "a", "α": "a",
+    "е": "e", "ε": "e",
+    "і": "i", "ι": "i",
+    "ј": "j",
+    "к": "k", "κ": "k",
+    "м": "m", "μ": "m",
+    "н": "h", "η": "h",
+    "о": "o", "ο": "o",
+    "р": "p", "ρ": "p",
+    "с": "c",
+    "ѕ": "s", "σ": "s",
+    "т": "t", "τ": "t",
+    "х": "x", "χ": "x",
+    "у": "y", "υ": "u",
+    "ӏ": "l",
+    "@": "a", "0": "o", "1": "i", "!": "i", "|": "l",
+    "2": "z", "3": "e", "4": "a", "5": "s", "$": "s",
+    "6": "g", "7": "t", "8": "b", "9": "g", "+": "t"
+  });
+  const NORMALIZED_PROFANITY_PATTERNS = new Set(
+    PROFANITY_LIST
+      .map(word => normalizeProfanityText(word).replace(/\s/g, ""))
+      .filter(Boolean)
+  );
 
   let lastScoreSubmissionTs = 0;
 
@@ -2805,33 +2862,43 @@
     const title = document.getElementById("moderation-title");
     const subtitle = document.getElementById("moderation-subtitle");
     const messageElement = document.getElementById("moderation-message");
+    const appealFooter = document.getElementById("moderation-appeal-footer");
+    const appealLink = document.getElementById("moderation-appeal-link");
     const acknowledgeButton = document.getElementById("moderation-acknowledge-btn");
     const nextStatus = status === "warning"
       ? "warning"
       : status === "ban" || status === "blocked"
         ? "ban"
+        : ["permanent ban", "permanent-ban", "permanent_ban", "permanentban"].includes(
+          String(status || "").trim().toLowerCase()
+        )
+          ? "permanent-ban"
         : "none";
     const nextMessage = typeof message === "string" ? message.trim() : "";
     const nextSignature = `${nextStatus}\n${nextMessage}`;
-    const wasBlocked = moderationStatus === "ban";
+    const isBlockedStatus = value => value === "ban" || value === "permanent-ban";
+    const wasBlocked = isBlockedStatus(moderationStatus);
     const shouldFocus = moderationSignature !== nextSignature;
     moderationStatus = nextStatus;
     moderationSignature = nextSignature;
 
-    window.neonChaosModerationBlocked = nextStatus === "ban";
-    if (wasBlocked !== (nextStatus === "ban")) {
+    window.neonChaosModerationBlocked = isBlockedStatus(nextStatus);
+    if (wasBlocked !== isBlockedStatus(nextStatus)) {
       window.dispatchEvent(new CustomEvent("neonChaosModerationStateChange", {
-        detail: { blocked: nextStatus === "ban" }
+        detail: { blocked: isBlockedStatus(nextStatus) }
       }));
     }
 
-    if (!overlay || !title || !subtitle || !messageElement || !acknowledgeButton) return;
+    if (!overlay || !title || !subtitle || !messageElement || !appealFooter || !appealLink || !acknowledgeButton) return;
     overlay.dataset.status = nextStatus;
 
     if (nextStatus === "none") {
       subtitle.hidden = true;
+      appealFooter.hidden = true;
       overlay.classList.remove("show");
       overlay.setAttribute("aria-hidden", "true");
+      dismissedWarningSignature = "";
+      seenWarningSignatures.clear();
       return;
     }
 
@@ -2845,11 +2912,23 @@
       return;
     }
 
-    const isBan = nextStatus === "ban";
-    title.textContent = isBan ? "PLAYER BANNED" : "MESSAGE FROM THE ADMIN";
-    subtitle.textContent = isBan ? "Game access blocked." : "";
-    subtitle.hidden = !isBan;
+    const isBan = isBlockedStatus(nextStatus);
+    const isPermanentBan = nextStatus === "permanent-ban";
+    title.textContent = isPermanentBan
+      ? "PERMANENTLY BANNED"
+      : isBan
+        ? "YOU HAVE BEEN BANNED"
+        : "WARNING NOTICE";
+    subtitle.textContent = isPermanentBan
+      ? "Permanent ban — game access is blocked indefinitely."
+      : isBan
+        ? "Game access is blocked."
+        : "Message from the admin";
+    subtitle.hidden = false;
     messageElement.textContent = nextMessage || "Please follow the game rules.";
+    const appealUrl = getModerationAppealUrl();
+    appealLink.href = appealUrl || "#";
+    appealFooter.hidden = !appealUrl || isPermanentBan;
     acknowledgeButton.hidden = isBan;
     overlay.classList.add("show");
     overlay.setAttribute("aria-hidden", "false");
@@ -2861,6 +2940,17 @@
       void recordModerationEvent("shown", nextMessage).catch(error => {
         console.warn("Could not record that the warning was shown:", error);
       });
+    }
+  }
+
+  function getModerationAppealUrl() {
+    if (!MODERATION_APPEAL_URL) return "";
+    try {
+      const url = new URL(MODERATION_APPEAL_URL);
+      return url.protocol === "https:" ? url.href : "";
+    } catch (error) {
+      console.warn("The moderation appeal URL is invalid:", error);
+      return "";
     }
   }
 
@@ -2902,9 +2992,29 @@
   }
 
   function containsProfanity(name) {
-    const cleanName = sanitizeName(name).toLowerCase();
-    const words = cleanName.match(/[a-z0-9]+/g) || [];
-    return PROFANITY_LIST.some((word) => words.includes(word));
+    const cleanName = sanitizeName(name);
+    if (cleanName.includes("🖕")) return true;
+    const words = normalizeProfanityText(cleanName).split(/\s+/).filter(Boolean);
+    for (let start = 0; start < words.length; start++) {
+      let candidate = "";
+      for (let end = start; end < words.length && end - start < MAX_NAME_LENGTH; end++) {
+        candidate += words[end];
+        if (NORMALIZED_PROFANITY_PATTERNS.has(candidate)) return true;
+      }
+    }
+    return false;
+  }
+
+  function normalizeProfanityText(value) {
+    return String(value == null ? "" : value)
+      .normalize("NFKD")
+      .replace(/\p{M}/gu, "")
+      .toLowerCase()
+      .replace(/[аαеεіιјкκмμнηоοрρсѕσтτхχυӏ@01!|23456789$+]/gu, character =>
+        PROFANITY_LOOKALIKE_MAP[character] || character
+      )
+      .replace(/[^\p{L}\p{N}]+/gu, " ")
+      .trim();
   }
 
   function formatRankLabel(rank) {

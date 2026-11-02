@@ -1232,16 +1232,23 @@
   <div id="neon-toast" class="neon-toast"></div>
 
   <div id="moderation-overlay" class="reset-overlay moderation-overlay" aria-hidden="true">
-    <div class="reset-card moderation-card" role="alertdialog" aria-modal="true" aria-labelledby="moderation-title" aria-describedby="moderation-subtitle moderation-message">
-      <h3 id="moderation-title" tabindex="-1">MESSAGE FROM THE ADMIN</h3>
+    <div class="reset-card moderation-card" role="alertdialog" aria-modal="true" aria-labelledby="moderation-title" aria-describedby="moderation-subtitle moderation-message moderation-appeal-footer">
+      <h3 id="moderation-title" tabindex="-1">WARNING NOTICE</h3>
       <p id="moderation-subtitle" hidden></p>
       <p id="moderation-message"></p>
+      <p id="moderation-appeal-footer" class="moderation-appeal-footer" hidden>
+        Think this decision was a mistake?
+        <a id="moderation-appeal-link" href="#" target="_blank" rel="noopener noreferrer">Submit an appeal</a>
+      </p>
       <div class="reset-actions">
         <button id="moderation-acknowledge-btn" class="ghost-btn" type="button">I understand</button>
       </div>
     </div>
   </div>
 
+  <script>
+    window.MODERATION_APPEAL_URL = "https://forms.gle/VsxeWeF92KAHzExU7";
+  </script>
   <script src="leaderboard.js"></script>
   <script src="suggestions.js"></script>
   <script src="updates.js"></script>

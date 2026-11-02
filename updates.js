@@ -4,6 +4,16 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "moderation-appeals-permanent-ban-update-2026-11-02",
+      date: "2 November 2026",
+      time: "11:44 am NZDT",
+      title: "Moderation and Appeals Update",
+      changes: [
+        "Added distinct warning, temporary ban, and permanent ban messages.",
+        "Added an optional appeal form link to moderation messages."
+      ]
+    },
+    {
       id: "player-moderation-update-2026-10-31",
       date: "31 October 2026",
       time: "9:11 pm NZDT",
