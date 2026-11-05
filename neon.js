@@ -448,7 +448,7 @@ function saveGame() {
       JSON.stringify(authState.prestigeBoosts)
   ) {
     triggerCheatDetection("In-memory tampering detected. Save blocked.");
-    return;
+    return false;
   }
   const data = {
     coins: coinCount,
@@ -475,6 +475,7 @@ function saveGame() {
 
   const save = { data, checksum: createChecksum(data) };
   localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+  return true;
 }
 
 function loadGame() {
@@ -598,6 +599,177 @@ if (save.data.celestialVerified) {
     );
   }
 }
+
+const TRANSFER_FORMAT = "neon-chaos-dodge-save";
+const TRANSFER_VERSION = 1;
+const TRANSFER_EXACT_KEYS = new Set([
+  "playerName",
+  "voidVerified",
+  "phantomVerified",
+  "celestialVerified",
+  "voidVersion",
+  "leaderboardLegacyBestMigrated"
+]);
+
+function isTransferableStorageKey(key) {
+  return key.startsWith("neonChaos") ||
+    key.startsWith("claim_") ||
+    TRANSFER_EXACT_KEYS.has(key);
+}
+
+function getTransferableStorageEntries() {
+  const entries = [];
+  for (let index = 0; index < localStorage.length; index++) {
+    const key = localStorage.key(index);
+    if (key && isTransferableStorageKey(key)) {
+      const value = localStorage.getItem(key);
+      if (value !== null) entries.push([key, value]);
+    }
+  }
+  return entries;
+}
+
+function exportProgress() {
+  try {
+    if (!saveGame()) {
+      window.alert("Progress could not be exported because the current save was blocked.");
+      return;
+    }
+
+    const bundle = {
+      format: TRANSFER_FORMAT,
+      version: TRANSFER_VERSION,
+      exportedAt: new Date().toISOString(),
+      entries: getTransferableStorageEntries()
+    };
+    const blob = new Blob([JSON.stringify(bundle, null, 2)], {
+      type: "application/json"
+    });
+    const downloadUrl = URL.createObjectURL(blob);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = downloadUrl;
+    downloadLink.download = "neon-chaos-dodge-save.json";
+    downloadLink.click();
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+  } catch (error) {
+    console.error("Could not export game progress:", error);
+    window.alert("Your progress could not be exported. Check browser storage and try again.");
+  }
+}
+
+function validateProgressImport(bundle) {
+  if (
+    !bundle ||
+    bundle.format !== TRANSFER_FORMAT ||
+    bundle.version !== TRANSFER_VERSION ||
+    !Array.isArray(bundle.entries) ||
+    bundle.entries.length > 500
+  ) {
+    throw new Error("This is not a supported Neon Chaos Dodge save file.");
+  }
+
+  const entries = new Map();
+  for (const entry of bundle.entries) {
+    if (
+      !Array.isArray(entry) ||
+      entry.length !== 2 ||
+      typeof entry[0] !== "string" ||
+      !isTransferableStorageKey(entry[0]) ||
+      typeof entry[1] !== "string" ||
+      entries.has(entry[0])
+    ) {
+      throw new Error("The save file contains invalid or duplicate data.");
+    }
+    entries.set(entry[0], entry[1]);
+  }
+
+  const savedProgress = entries.get(SAVE_KEY);
+  if (typeof savedProgress !== "string") {
+    throw new Error("The save file does not contain game progress.");
+  }
+
+  let save;
+  try {
+    save = JSON.parse(savedProgress);
+  } catch {
+    throw new Error("The save file's game progress is damaged.");
+  }
+  if (
+    !save ||
+    !save.data ||
+    typeof save.data !== "object" ||
+    save.checksum !== createChecksum(save.data)
+  ) {
+    throw new Error("The save file's game progress failed its integrity check.");
+  }
+
+  return entries;
+}
+
+function restoreTransferableStorage(entries) {
+  const existingKeys = [];
+  for (let index = 0; index < localStorage.length; index++) {
+    const key = localStorage.key(index);
+    if (key && isTransferableStorageKey(key)) existingKeys.push(key);
+  }
+  for (const key of existingKeys) localStorage.removeItem(key);
+  for (const [key, value] of entries) {
+    localStorage.setItem(key, value);
+  }
+}
+
+async function importProgressFile(file) {
+  if (!file) return;
+  if (file.size > 1024 * 1024) {
+    window.alert("That save file is too large to import.");
+    return;
+  }
+
+  let importedEntries;
+  try {
+    importedEntries = validateProgressImport(JSON.parse(await file.text()));
+  } catch (error) {
+    console.error("Could not validate imported game progress:", error);
+    window.alert(error instanceof Error ? error.message : "The save file could not be read.");
+    return;
+  }
+
+  if (!window.confirm(
+    "Import this save and replace the progress and player name in this browser profile?"
+  )) {
+    return;
+  }
+
+  const previousEntries = getTransferableStorageEntries();
+  try {
+    restoreTransferableStorage([...importedEntries.entries()]);
+  } catch (error) {
+    console.error("Could not import game progress:", error);
+    try {
+      restoreTransferableStorage(previousEntries);
+    } catch (restoreError) {
+      console.error("Could not restore the previous game progress:", restoreError);
+    }
+    window.alert("The save could not be imported. Your previous progress was restored where possible.");
+    return;
+  }
+
+  window.alert("Progress imported. The game will now reload.");
+  location.reload();
+}
+
+const exportSaveBtn = document.getElementById("export-save-btn");
+const importSaveBtn = document.getElementById("import-save-btn");
+const importSaveFile = document.getElementById("import-save-file");
+
+exportSaveBtn && exportSaveBtn.addEventListener("click", exportProgress);
+importSaveBtn && importSaveBtn.addEventListener("click", () => importSaveFile.click());
+importSaveFile && importSaveFile.addEventListener("change", event => {
+  const file = event.target.files && event.target.files[0];
+  importProgressFile(file).finally(() => {
+    event.target.value = "";
+  });
+});
 
 let bestScore = parseInt(
   localStorage.getItem("neonChaosBest") || "0",

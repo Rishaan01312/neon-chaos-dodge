@@ -4,6 +4,16 @@
   const SEEN_UPDATE_KEY = "neonChaosSeenUpdate";
   const updates = [
     {
+      id: "progress-transfer-update-2026-11-03",
+      date: "6 November 2026",
+      time: "8:54 am NZDT",
+      title: "Progress Transfer Update",
+      changes: [
+        "Added options to export game progress and player name to a save file, or import them into another browser profile.",
+        "Importing validates the save file and replaces progress in the current profile."
+      ]
+    },
+    {
       id: "moderation-appeals-permanent-ban-update-2026-11-02",
       date: "2 November 2026",
       time: "11:44 am NZDT",
