@@ -1001,6 +1001,41 @@ body {
   color: #ccc;
 }
 
+.monthly-reward-card {
+  border-color: rgba(255, 215, 72, 0.45);
+  box-shadow:
+    0 0 36px rgba(255, 196, 0, 0.16),
+    0 0 90px rgba(255, 0, 255, 0.1);
+}
+
+.monthly-reward-kicker {
+  color: #ffe478 !important;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.monthly-reward-card h3 {
+  color: #fff3b0;
+  text-shadow: 0 0 18px rgba(255, 207, 63, 0.35);
+}
+
+.monthly-reward-prize {
+  color: #ffe478 !important;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.monthly-reward-actions {
+  justify-content: center;
+  gap: 12px;
+}
+
+.monthly-reward-actions #monthly-reward-claim-btn {
+  border-color: rgba(255, 215, 72, 0.55);
+  color: #fff3b0;
+}
+
 .reset-instruction {
   margin-top: 0;
   font-size: 14px;

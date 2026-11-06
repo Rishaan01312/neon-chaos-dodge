@@ -6257,20 +6257,129 @@ initDailyChallenges();
 renderDailyChallenges();
 initDailyStreak();
 
+const MONTHLY_PODIUM_PENDING_KEY = "neonChaosPendingPodiumRewards";
+const MONTHLY_PODIUM_PROCESSED_KEY = "neonChaosPodiumRewardProcessedMonth";
+const dismissedMonthlyPodiumRewards = new Set();
 let monthlyPodiumCheckRunning = false;
+let monthlyPodiumClaimInProgress = false;
 
-async function checkPreviousMonthPodiumReward() {
-  if (monthlyPodiumCheckRunning || typeof window.getMonthlyPodiumReward !== "function") {
+function getPendingMonthlyPodiumRewards() {
+  const savedRewards = localStorage.getItem(MONTHLY_PODIUM_PENDING_KEY);
+  if (!savedRewards) return [];
+
+  try {
+    const rewards = JSON.parse(savedRewards);
+    if (!Array.isArray(rewards)) {
+      throw new Error("Pending monthly rewards were not a list.");
+    }
+
+    return rewards.filter(reward =>
+      reward &&
+      /^\d{4}-\d{2}$/.test(reward.month) &&
+      Number.isInteger(reward.rank) &&
+      reward.rank >= 1 &&
+      reward.rank <= 3 &&
+      [100, 55, 30][reward.rank - 1] === reward.gems
+    );
+  } catch (error) {
+    console.warn("Could not read pending monthly podium rewards:", error);
+    return [];
+  }
+}
+
+function savePendingMonthlyPodiumRewards(rewards) {
+  localStorage.setItem(MONTHLY_PODIUM_PENDING_KEY, JSON.stringify(rewards));
+}
+
+function showPendingMonthlyPodiumReward() {
+  const overlay = document.getElementById("monthly-reward-overlay");
+  const message = document.getElementById("monthly-reward-message");
+  const prize = document.getElementById("monthly-reward-prize");
+  const claimButton = document.getElementById("monthly-reward-claim-btn");
+  if (!overlay || !message || !prize || !claimButton) return;
+
+  const reward = getPendingMonthlyPodiumRewards().find(
+    item => !dismissedMonthlyPodiumRewards.has(item.month)
+  );
+  if (!reward) {
+    if (overlay.classList.contains("show")) {
+      document.getElementById("start-game-btn")?.focus();
+    }
+    overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden", "true");
     return;
   }
+
+  const monthDate = new Date(`${reward.month}-01T00:00:00Z`);
+  const monthName = new Intl.DateTimeFormat(undefined, {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(monthDate);
+  const suffix = ["st", "nd", "rd"][reward.rank - 1] || "th";
+  message.textContent = `You placed ${reward.rank}${suffix} in the ${monthName} race.`;
+  prize.textContent = `💎 ${reward.gems} gems`;
+  claimButton.textContent = `Claim ${reward.gems} gems`;
+  overlay.classList.add("show");
+  overlay.setAttribute("aria-hidden", "false");
+  claimButton.focus();
+}
+
+function dismissMonthlyPodiumReward() {
+  const overlay = document.getElementById("monthly-reward-overlay");
+  const visibleReward = getPendingMonthlyPodiumRewards().find(
+    item => !dismissedMonthlyPodiumRewards.has(item.month)
+  );
+  if (visibleReward) dismissedMonthlyPodiumRewards.add(visibleReward.month);
+  if (overlay) {
+    document.getElementById("start-game-btn")?.focus();
+    overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden", "true");
+  }
+}
+
+function claimMonthlyPodiumReward() {
+  if (monthlyPodiumClaimInProgress) return;
+
+  const pendingRewards = getPendingMonthlyPodiumRewards();
+  const reward = pendingRewards.find(
+    item => !dismissedMonthlyPodiumRewards.has(item.month)
+  );
+  if (!reward) {
+    showPendingMonthlyPodiumReward();
+    return;
+  }
+
+  monthlyPodiumClaimInProgress = true;
+  if (changeGems(reward.gems)) {
+    savePendingMonthlyPodiumRewards(
+      pendingRewards.filter(item => item.month !== reward.month)
+    );
+    showToast(`Monthly podium reward claimed: +${reward.gems} gems!`);
+    showPendingMonthlyPodiumReward();
+  }
+  monthlyPodiumClaimInProgress = false;
+}
+
+document.getElementById("monthly-reward-claim-btn")?.addEventListener(
+  "click",
+  claimMonthlyPodiumReward
+);
+document.getElementById("monthly-reward-later-btn")?.addEventListener(
+  "click",
+  dismissMonthlyPodiumReward
+);
+
+async function checkPreviousMonthPodiumReward() {
+  if (monthlyPodiumCheckRunning) return;
+  if (!localStorage.getItem("playerName")) return;
+
+  showPendingMonthlyPodiumReward();
+  if (typeof window.getMonthlyPodiumReward !== "function") return;
 
   const now = new Date();
   const previousMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
-  const processedMonth = localStorage.getItem("neonChaosPodiumRewardProcessedMonth");
-  if (!localStorage.getItem("playerName")) {
-    return;
-  }
-
+  const processedMonth = localStorage.getItem(MONTHLY_PODIUM_PROCESSED_KEY);
   let nextMonthToProcess = previousMonth;
   if (processedMonth) {
     const match = /^(\d{4})-(\d{2})$/.exec(processedMonth);
@@ -6287,17 +6396,26 @@ async function checkPreviousMonthPodiumReward() {
       const reward = await window.getMonthlyPodiumReward(monthKey);
       if (!reward) return;
 
-      localStorage.setItem("neonChaosPodiumRewardProcessedMonth", monthKey);
-      if (reward.gems > 0) {
-        changeGems(reward.gems);
-        showToast(`Monthly podium: ${reward.rank}${["st", "nd", "rd"][reward.rank - 1] || "th"} place! +${reward.gems} gems`);
+      if (reward.gems > 0 && reward.rank >= 1 && reward.rank <= 3) {
+        const pendingRewards = getPendingMonthlyPodiumRewards();
+        if (!pendingRewards.some(item => item.month === monthKey)) {
+          pendingRewards.push({
+            month: monthKey,
+            rank: reward.rank,
+            gems: reward.gems
+          });
+          savePendingMonthlyPodiumRewards(pendingRewards);
+        }
       }
+
+      localStorage.setItem(MONTHLY_PODIUM_PROCESSED_KEY, monthKey);
       nextMonthToProcess = new Date(Date.UTC(
         nextMonthToProcess.getUTCFullYear(),
         nextMonthToProcess.getUTCMonth() + 1,
         1
       ));
     }
+    showPendingMonthlyPodiumReward();
   } catch (error) {
     console.warn("Monthly podium reward check failed:", error);
   } finally {
